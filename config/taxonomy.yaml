@@ -1,0 +1,180 @@
+# 12-class harm taxonomy for multi-image VLM safety
+# Based on MLCommons AILuminate v1.0, SALAD-Bench, and industry standards
+# Organized into 4 tiers by severity
+
+tiers:
+  zero_tolerance:
+    description: "Zero-tolerance categories - always reject"
+    categories:
+      - id: CSEA
+        name: "Child Sexual Exploitation & Abuse"
+        name_zh: "儿童性剥削与虐待"
+        description: "Any content sexualizing minors or depicting child abuse"
+        sub_categories:
+          - "Child grooming"
+          - "CSAM generation/distribution"
+          - "Minor exploitation"
+
+      - id: WMD
+        name: "Weapons of Mass Destruction / CBRNE"
+        name_zh: "大规模杀伤性武器/CBRNE"
+        description: "Chemical, biological, radiological, nuclear, explosive weapons"
+        sub_categories:
+          - "Chemical weapon synthesis"
+          - "Biological agent creation"
+          - "Explosive device assembly"
+          - "Nuclear material handling"
+
+  core_harm:
+    description: "Core harm categories"
+    categories:
+      - id: VIOLENCE
+        name: "Violence & Violent Crime"
+        name_zh: "暴力与暴力犯罪"
+        description: "Physical violence, assault, weapons, gore"
+        sub_categories:
+          - "Weapon-related violence"
+          - "Physical assault"
+          - "Public violence and rioting"
+          - "Abuse and altercations"
+
+      - id: SELF_HARM
+        name: "Self-Harm & Suicide"
+        name_zh: "自害与自杀"
+        description: "Self-injury, suicide methods, eating disorders"
+        sub_categories:
+          - "Physical self-injury"
+          - "Suicide methods"
+          - "Eating disorders"
+          - "Psychological harm"
+
+      - id: SEXUAL
+        name: "Sexual Crime & Non-Consensual Content"
+        name_zh: "性犯罪与非自愿内容"
+        description: "Sexual assault, non-consensual intimate imagery, trafficking"
+        sub_categories:
+          - "Sexual assault"
+          - "Non-consensual imagery"
+          - "Human trafficking"
+          - "Erotic visual content"
+
+      - id: HATE
+        name: "Hate Speech / Discrimination / Harassment"
+        name_zh: "仇恨言论/歧视/骚扰"
+        description: "Targeting based on protected characteristics, cyberbullying"
+        sub_categories:
+          - "Racial and ethnic discrimination"
+          - "Gender discrimination"
+          - "Religious discrimination"
+          - "Cyberbullying and harassment"
+
+      - id: CRIME
+        name: "Non-Violent Crime & Malicious Activity"
+        name_zh: "非暴力犯罪与恶意活动"
+        description: "Fraud, theft, cybercrime, drug offenses"
+        sub_categories:
+          - "Drug-related offenses"
+          - "Cybercrime"
+          - "Property crimes"
+          - "Identity theft"
+          - "Financial fraud"
+
+      - id: PRIVACY
+        name: "Privacy Violation"
+        name_zh: "隐私侵犯"
+        description: "Unauthorized data collection, surveillance, doxxing"
+        sub_categories:
+          - "Unauthorized data collection"
+          - "Surveillance"
+          - "Doxxing"
+          - "Biometric data misuse"
+
+  info_social:
+    description: "Information and social harm"
+    categories:
+      - id: MISINFO
+        name: "Misinformation / Disinformation / Deception"
+        name_zh: "虚假信息/虚假信息/欺骗"
+        description: "Deepfakes, misleading content, propaganda"
+        sub_categories:
+          - "Deepfake creation"
+          - "Misleading visual content"
+          - "Propaganda"
+          - "Out-of-context imagery"
+
+      - id: IP
+        name: "Intellectual Property Violation"
+        name_zh: "知识产权侵犯"
+        description: "Copyright infringement, trademark violation"
+        sub_categories:
+          - "Copyright infringement"
+          - "Trademark violation"
+          - "Counterfeit goods"
+
+  context_dependent:
+    description: "Context-dependent harm"
+    categories:
+      - id: REGULATED
+        name: "Regulated & Sensitive Content"
+        name_zh: "受管制与敏感内容"
+        description: "Age-restricted, culturally sensitive, politically sensitive"
+        sub_categories:
+          - "Alcohol and tobacco"
+          - "Gambling"
+          - "Political sensitivity"
+          - "Cultural sensitivity"
+
+      - id: ADVICE
+        name: "Unqualified Professional Advice"
+        name_zh: "专业建议"
+        description: "Medical, legal, financial advice without qualification"
+        sub_categories:
+          - "Medical advice"
+          - "Legal advice"
+          - "Financial advice"
+          - "Election guidance"
+
+# VLM-specific annotation dimensions (cross-cutting)
+vlm_dimensions:
+  - id: VISUAL_ONLY
+    name: "Pure visual harm"
+    description: "Harm conveyed entirely through visual content"
+
+  - id: CROSS_MODAL
+    name: "Cross-modal compositional harm"
+    description: "Harm emerges from combining visual and textual modalities"
+
+  - id: MULTI_IMAGE_SEQ
+    name: "Multi-image sequence harm"
+    description: "Harm emerges from the sequence/combination of multiple images"
+
+  - id: OCR_TYPO
+    name: "OCR/Typographic attack"
+    description: "Harmful text embedded in images"
+
+  - id: DEEPFAKE
+    name: "Deepfake/Manipulated media"
+    description: "AI-generated or manipulated visual content"
+
+  - id: CULTURAL
+    name: "Cultural/Contextual visual sensitivity"
+    description: "Content harmful in specific cultural contexts"
+
+# Sample patterns
+patterns:
+  A:
+    name: "Compositional covert harm"
+    name_zh: "组合隐危害"
+    description: "Both images individually benign, combination creates harmful association"
+  B:
+    name: "Direct single-image harm"
+    name_zh: "单图直接有害"
+    description: "At least one image contains inherently harmful content"
+  C:
+    name: "Text-induced harm"
+    name_zh: "文本诱导危害"
+    description: "Text prompt guides benign images toward harmful interpretation"
+  D:
+    name: "Contextualized harm"
+    name_zh: "情境化危害"
+    description: "Life scenario + dangerous intent reasoning"

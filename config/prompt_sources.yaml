@@ -1,0 +1,111 @@
+# Sources of malicious prompts for Path 2 (Prompt Decomposition)
+# and reference datasets for Path 3 (Dataset Expansion)
+
+prompt_sources:
+  harmbench:
+    name: "HarmBench"
+    hf_repo: "harmbench/harmbench"
+    description: "510 behaviors across 7 semantic categories"
+    categories: 7
+    size: 510
+    format: "csv"
+    text_field: "behavior"
+    category_field: "semantic_category"
+
+  advbench:
+    name: "AdvBench"
+    hf_repo: "walledai/AdvBench"
+    description: "Adversarial behaviors and strings for jailbreak evaluation"
+    format: "csv"
+    text_field: "prompt"
+
+  beavertails:
+    name: "BeaverTails"
+    hf_repo: "PKU-Alignment/BeaverTails"
+    description: "14 harm categories with severity levels"
+    categories: 14
+    format: "parquet"
+    text_field: "prompt"
+    category_field: "category"
+    filter: "is_safe == False"
+
+  sorry_bench:
+    name: "SORRY-Bench"
+    hf_repo: "sorry-bench/sorry-bench-202406"
+    description: "44 fine-grained categories with linguistic diversity"
+    categories: 44
+    format: "json"
+    text_field: "turns"
+    category_field: "category"
+
+  redteam_2k:
+    name: "RedTeam-2K"
+    hf_repo: "Katsumata420/RedTeam-2K"
+    description: "2000 red-teaming prompts"
+    format: "json"
+    text_field: "prompt"
+
+  jailbreakv_28k:
+    name: "JailBreakV-28K"
+    hf_repo: "JailbreakV-28K/JailBreakV-28K"
+    description: "28K jailbreak queries with 16 attack strategies"
+    categories: 16
+    format: "json"
+    text_field: "jailbreak_query"
+    category_field: "policy"
+
+# Safety datasets for Path 3 (Dataset Expansion)
+safety_datasets:
+  spa_vl:
+    name: "SPA-VL"
+    hf_repo: "sqrti/SPA-VL"
+    description: "100K+ safety preference quadruples"
+    size: 100788
+    has_images: true
+    categories: 53
+    format: "parquet"
+
+  vlguard:
+    name: "VLGuard"
+    hf_repo: "ys-zong/VLGuard"
+    description: "~3000 samples with 9 sub-categories"
+    size: 3000
+    has_images: true
+    categories: 9
+    format: "json"
+
+  unsafebench:
+    name: "UnsafeBench"
+    hf_repo: "yiting/UnsafeBench"
+    description: "10K images across 11 categories (real + AI-generated)"
+    size: 10000
+    has_images: true
+    categories: 11
+    format: "parquet"
+
+  hateful_memes:
+    name: "Hateful Memes"
+    hf_repo: "limjiayi/hateful_memes_expanded"
+    description: "10K+ memes with hate labels"
+    size: 10000
+    has_images: true
+    categories: 2  # binary: hateful / not hateful
+    format: "json"
+
+  beavertails_v:
+    name: "BeaverTails-V"
+    hf_repo: "PKU-Alignment/BeaverTails-V"
+    description: "Visual version of BeaverTails with 9 domains"
+    has_images: true
+    categories: 9
+    format: "parquet"
+
+  mis:
+    name: "MIS"
+    local_path: "/mnt/hdd/xuran/MIS/mis_train"
+    description: "Multi-Image Safety - 3927 training samples (reference format)"
+    size: 3927
+    has_images: true
+    multi_image: true
+    categories: 6
+    format: "json"
