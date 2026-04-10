@@ -46,6 +46,11 @@ PYTHON = sys.executable
 OUTPUT_DIR = DATA_DIR / "raw" / "path6"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+if "--clean" in sys.argv:
+    from src.common.utils import clear_all_step_states
+    clear_all_step_states(OUTPUT_DIR)
+    sys.argv.remove("--clean")
+
 
 def get_gpu_ids(default: str = "0,1,2,3") -> list[int]:
     """Parse the visible GPU list from the environment."""
@@ -186,7 +191,7 @@ clip_cfg = config.get("clip", {{}})
 chains = load_jsonl('{chains_file}')
 scored = score_chains_clip(
     chains,
-    theta_safe=clip_cfg.get("theta_safe", 0.25),
+    theta_safe=clip_cfg.get("theta_safe", 0.40),
     theta_harm=min(clip_cfg.get("theta_harm", 0.35), 0.30),  # Slightly relaxed for chains
 )
 save_jsonl(scored, '{scored_file}')

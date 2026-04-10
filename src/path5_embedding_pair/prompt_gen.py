@@ -63,13 +63,12 @@ def generate_prompts_vllm(
     """Generate text prompts for all pairs using local vLLM."""
     from vllm import LLM, SamplingParams
 
-    llm = LLM(
-        model=model_path,
+    from src.common.utils import get_safe_vllm_kwargs
+    llm = LLM(**get_safe_vllm_kwargs(
+        "path5",
+        model_path=model_path,
         tensor_parallel_size=tensor_parallel_size,
-        trust_remote_code=True,
-        max_model_len=8192,
-        enforce_eager=True,  # Skip torch.compile for Qwen3.5 Mamba2 hybrid
-    )
+    ))
     sampling_params = SamplingParams(
         temperature=0.7,
         max_tokens=1024,

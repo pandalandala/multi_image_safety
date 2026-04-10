@@ -1,0 +1,30 @@
+HF_HOME=/mnt2/xuran_hdd/cache
+Preparing to cache 6 Hugging Face models
+
+=== Caching Qwen/Qwen3.5-27B ===
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/file_download.py:949: FutureWarning: `resume_download` is deprecated and will be removed in version 1.0.0. Downloads always resume when possible. If you want to force a new download, use `force_download=True`.
+  warnings.warn(
+Fetching 23 files:   0%|          | 0/23 [00:00<?, ?it/s]Fetching 23 files: 100%|██████████| 23/23 [00:00<00:00, 83091.29it/s]
+OK Qwen/Qwen3.5-27B -> /mnt2/xuran_hdd/cache/hub/models--Qwen--Qwen3.5-27B/snapshots/b7ca741b86de18df552fd2cc952861e04621a4bd
+
+=== Caching stabilityai/stable-diffusion-xl-base-1.0 ===
+Fetching 57 files:   0%|          | 0/57 [00:00<?, ?it/s]Fetching 57 files: 100%|██████████| 57/57 [00:00<00:00, 1042.78it/s]
+OK stabilityai/stable-diffusion-xl-base-1.0 -> /mnt2/xuran_hdd/cache/hub/models--stabilityai--stable-diffusion-xl-base-1.0/snapshots/462165984030d82259a11f4367a4eed129e94a7b
+
+=== Caching stabilityai/stable-diffusion-3.5-medium ===
+Fetching 45 files:   0%|          | 0/45 [00:00<?, ?it/s]Fetching 45 files: 100%|██████████| 45/45 [00:00<00:00, 9681.15it/s]
+OK stabilityai/stable-diffusion-3.5-medium -> /mnt2/xuran_hdd/cache/hub/models--stabilityai--stable-diffusion-3.5-medium/snapshots/b940f670f0eda2d07fbb75229e779da1ad11eb80
+
+=== Caching stabilityai/stable-diffusion-3.5-large-turbo ===
+Fetching 45 files:   0%|          | 0/45 [00:00<?, ?it/s]Fetching 45 files: 100%|██████████| 45/45 [00:00<00:00, 7496.08it/s]
+OK stabilityai/stable-diffusion-3.5-large-turbo -> /mnt2/xuran_hdd/cache/hub/models--stabilityai--stable-diffusion-3.5-large-turbo/snapshots/ec07796fc06b096cc56de9762974a28f4c632eda
+
+=== Caching Falconsai/nsfw_image_detection ===
+Fetching 9 files:   0%|          | 0/9 [00:00<?, ?it/s]Fetching 9 files: 100%|██████████| 9/9 [00:00<00:00, 35511.51it/s]
+OK Falconsai/nsfw_image_detection -> /mnt2/xuran_hdd/cache/hub/models--Falconsai--nsfw_image_detection/snapshots/04367978d3474804ab1a00a9bd6548b741764069
+
+=== Caching meta-llama/Llama-Guard-4-12B ===
+Fetching 20 files:   0%|          | 0/20 [00:00<?, ?it/s]Fetching 20 files:   5%|▌         | 1/20 [00:00<00:09,  1.97it/s]Fetching 20 files:  45%|████▌     | 9/20 [00:01<00:01,  5.55it/s]Fetching 20 files:  50%|█████     | 10/20 [07:43<10:52, 65.26s/it]Fetching 20 files:  60%|██████    | 12/20 [07:47<06:16, 47.08s/it]Fetching 20 files: 100%|██████████| 20/20 [07:47<00:00, 23.36s/it]
+OK meta-llama/Llama-Guard-4-12B -> /mnt2/xuran_hdd/cache/hub/models--meta-llama--Llama-Guard-4-12B/snapshots/87acb4b94e930c3d679e6e7ee9d57e2feab9ea71
+
+Wrote manifest to /mnt/hdd/xuran/multi_image_safety/logs/hf_precache_results.json

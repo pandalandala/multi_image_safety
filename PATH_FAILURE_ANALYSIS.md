@@ -534,3 +534,48 @@ Path 1 和 Path 6 当前都出现了同类问题：
 2. 修 CLIP 过滤阈值和筛选逻辑
 
 只要这两件事解决掉，整套 Path 1-6 的成功率会明显提升。
+
+
+
+
+
+修改后：
+All files compile cleanly. Here's a summary of everything done:
+
+修改完成 — 16 个文件
+Phase 1: vLLM 配置统一 (修复 Path 3/4/5)
+文件	修改
+/mnt/hdd/xuran/multi_image_safety/config/pipeline.yaml	max_model_len: 8192→4096, gpu_memory_utilization: 0.9→0.68, theta_safe: 0.25→0.40
+/mnt/hdd/xuran/multi_image_safety/src/common/utils.py	新增 get_safe_vllm_kwargs() + clear_all_step_states()
+/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py	用 get_safe_vllm_kwargs("path4") 替换硬编码
+/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/intent_inject.py	同上
+/mnt/hdd/xuran/multi_image_safety/src/path5_embedding_pair/prompt_gen.py	用 get_safe_vllm_kwargs("path5")
+/mnt/hdd/xuran/multi_image_safety/src/quality/composition_verify.py	用 get_safe_vllm_kwargs("quality")
+/mnt/hdd/xuran/multi_image_safety/run_path3_expand.py	内联代码 8192→4096, 0.9→0.68, 加 disable_custom_all_reduce=True
+/mnt/hdd/xuran/multi_image_safety/run_path5_embedding.py	同上
+Phase 2: CLIP 过滤放宽 (修复 Path 1/6)
+文件	修改
+/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/pair_filter.py	theta_safe 0.25→0.40, 加诊断日志 + top-K fallback
+/mnt/hdd/xuran/multi_image_safety/src/path6_tag_kg_fusion/tag_builder.py	同上
+/mnt/hdd/xuran/multi_image_safety/run_path1_kg_concept.py	fallback default 0.25→0.40, --clean
+/mnt/hdd/xuran/multi_image_safety/run_path6_tag_kg.py	同上
+Phase 3: --clean 标志 (所有 6 个 runner)
+所有 runner 脚本均支持 python run_pathN.py --clean 清除 step state
+
+Phase 4: 外部数据鲁棒性
+文件	修改
+/mnt/hdd/xuran/multi_image_safety/src/common/clip_utils.py	Openverse 403 重试 (3次+指数退避) + OPENVERSE_API_TOKEN 支持
+/mnt/hdd/xuran/multi_image_safety/src/path3_dataset_expand/expand.py	config_name 支持 + fallback split (test, validation)
+Phase 5: 缓存路径一致性
+run_path3/4/5 的 os.environ["HF_HOME"] 改为 os.environ.setdefault("HF_HOME", ...)
+
+运行命令 (按优先级):
+
+
+cd /mnt/hdd/xuran/multi_image_safety
+python run_path2.py --clean           # P2: 最接近成功
+python run_path4_scenario.py --clean  # P4: vLLM 已修复
+python run_path3_expand.py --clean    # P3: vLLM + 数据源修复
+python run_path5_embedding.py --clean # P5: vLLM + Openverse 修复
+python run_path1_kg_concept.py --clean # P1: CLIP 过滤放宽
+python run_path6_tag_kg.py --clean    # P6: CLIP 过滤放宽

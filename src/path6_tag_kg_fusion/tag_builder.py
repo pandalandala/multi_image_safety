@@ -88,8 +88,10 @@ def parse_chain_response(text: str, category: str) -> list[dict]:
 
 def score_chains_clip(
     chains: list[dict],
-    theta_safe: float = 0.25,
+    theta_safe: float = 0.40,
     theta_harm: float = 0.30,
+    min_pass_rate: float = 0.10,
+    fallback_top_k: int = 200,
 ) -> list[dict]:
     """
     Score and filter chains using CLIP embeddings.
@@ -97,9 +99,12 @@ def score_chains_clip(
     For each chain:
       - First and last concepts must have low harm similarity (< theta_safe)
       - Combined first+last embedding must approach harm (> theta_harm)
+
+    If hard filter pass rate < min_pass_rate, falls back to top-K ranking
+    by covertness score.
     """
     harm_vectors = build_harm_vectors()
-    scored = []
+    all_scored = []
 
     for chain_data in chains:
         cat = chain_data["category"]
@@ -121,15 +126,62 @@ def score_chains_clip(
         combined = combined / (np.linalg.norm(combined) + 1e-8)
         combined_sim = float(cosine_similarity(combined, harm_vec))
 
-        if sim_first < theta_safe and sim_last < theta_safe and combined_sim > theta_harm:
-            chain_data["clip_endpoint_sims"] = [sim_first, sim_last]
-            chain_data["clip_combined_sim"] = combined_sim
-            # Covertness: more hops + lower individual = more covert
-            chain_data["covertness_score"] = min(5, max(1, chain_data["hop_count"] + int(combined_sim > 0.4)))
-            scored.append(chain_data)
+        chain_data["clip_endpoint_sims"] = [sim_first, sim_last]
+        chain_data["clip_combined_sim"] = combined_sim
+        chain_data["covertness_score"] = min(5, max(1, chain_data["hop_count"] + int(combined_sim > 0.4)))
+        chain_data["_covertness"] = combined_sim - max(sim_first, sim_last)
+        all_scored.append(chain_data)
 
-    logger.info("Chain CLIP scoring: %d / %d chains passed", len(scored), len(chains))
-    return scored
+    # Diagnostic logging
+    if all_scored:
+        indiv = [s for c in all_scored for s in c["clip_endpoint_sims"]]
+        combi = [c["clip_combined_sim"] for c in all_scored]
+        logger.info(
+            "CLIP score distribution (endpoint): n=%d, min=%.3f, max=%.3f, "
+            "mean=%.3f, p25=%.3f, p50=%.3f, p75=%.3f",
+            len(indiv), np.min(indiv), np.max(indiv), np.mean(indiv),
+            np.percentile(indiv, 25), np.percentile(indiv, 50), np.percentile(indiv, 75),
+        )
+        logger.info(
+            "CLIP score distribution (combined): n=%d, min=%.3f, max=%.3f, "
+            "mean=%.3f, p25=%.3f, p50=%.3f, p75=%.3f",
+            len(combi), np.min(combi), np.max(combi), np.mean(combi),
+            np.percentile(combi, 25), np.percentile(combi, 50), np.percentile(combi, 75),
+        )
+
+    # Hard filter
+    passed = [
+        c for c in all_scored
+        if c["clip_endpoint_sims"][0] < theta_safe
+        and c["clip_endpoint_sims"][1] < theta_safe
+        and c["clip_combined_sim"] > theta_harm
+    ]
+
+    pass_rate = len(passed) / max(len(all_scored), 1)
+    logger.info(
+        "Chain CLIP hard filter: %d / %d chains passed (%.1f%%, theta_safe=%.2f, theta_harm=%.2f)",
+        len(passed), len(all_scored), pass_rate * 100, theta_safe, theta_harm,
+    )
+
+    # Fallback: if hard filter too strict, rank by covertness and take top-K
+    if pass_rate < min_pass_rate and len(all_scored) > 0:
+        logger.warning(
+            "Hard filter pass rate %.1f%% < %.0f%% threshold. "
+            "Falling back to top-%d ranking by covertness score.",
+            pass_rate * 100, min_pass_rate * 100, fallback_top_k,
+        )
+        candidates = [c for c in all_scored if c["clip_combined_sim"] > theta_harm]
+        if not candidates:
+            candidates = all_scored
+        candidates.sort(key=lambda c: -c["_covertness"])
+        passed = candidates[:fallback_top_k]
+        logger.info("Fallback yielded %d chains", len(passed))
+
+    # Cleanup internal key
+    for c in passed:
+        c.pop("_covertness", None)
+
+    return passed
 
 
 def extract_endpoint_pairs(scored_chains: list[dict]) -> list[dict]:

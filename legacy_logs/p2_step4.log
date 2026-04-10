@@ -1,0 +1,18 @@
+2026-04-06 16:21:28 [INFO] src.path2_prompt_decompose.validate: Validating 1948 samples
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Device set to use cuda:0
+You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+2026-04-06 16:23:53 [WARNING] src.path2_prompt_decompose.validate: NSFW check failed for /mnt/hdd/xuran/multi_image_safety/data/raw/path2/images/1078/image2.png: cannot identify image file '/mnt/hdd/xuran/multi_image_safety/data/raw/path2/images/1078/image2.png'
+2026-04-06 16:25:30 [INFO] src.common.utils: Saved 1910 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path2/validated_samples.jsonl
+2026-04-06 16:25:30 [INFO] src.path2_prompt_decompose.validate: Validation: 1910/1948 passed (98.0%)
+
+================================================================================
+Step 4: Validating single-image safety (NSFW check)
+================================================================================
+
+
+================================================================================
+✓ STEP 4 COMPLETE: Validated 1910 samples passed safety check
+Output: /mnt/hdd/xuran/multi_image_safety/data/raw/path2/validated_samples.jsonl
+================================================================================
+

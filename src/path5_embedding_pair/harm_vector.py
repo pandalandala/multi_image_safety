@@ -102,7 +102,7 @@ def build_harm_vectors() -> dict[str, np.ndarray]:
 def pair_images(
     image_infos: list[dict],
     harm_vectors: dict[str, np.ndarray],
-    theta_safe: float = 0.25,
+    theta_safe: float = 0.40,
     theta_harm: float = 0.35,
     max_pairs_per_category: int = 400,
 ) -> list[dict]:
@@ -173,7 +173,7 @@ def run(
     pairs = pair_images(
         image_infos,
         harm_vectors,
-        theta_safe=clip_config.get("theta_safe", 0.25),
+        theta_safe=clip_config.get("theta_safe", 0.40),
         theta_harm=clip_config.get("theta_harm", 0.35),
     )
 

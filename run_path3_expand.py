@@ -21,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-os.environ["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
@@ -48,6 +48,12 @@ PROJ = Path(__file__).parent
 PYTHON = sys.executable
 OUTPUT_DIR = DATA_DIR / "raw" / "path3"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+if "--clean" in sys.argv:
+    from src.common.utils import clear_all_step_states
+    clear_all_step_states(OUTPUT_DIR)
+    sys.argv.remove("--clean")
+
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
 ALL_GPU_IDS = get_visible_gpu_csv()
 
@@ -216,9 +222,10 @@ llm = LLM(
     model='{local_cfg["model_path"]}',
     tensor_parallel_size={llm_tensor_parallel_size},
     trust_remote_code=True,
-    max_model_len=8192,
+    max_model_len=4096,
     enforce_eager=True,
-    gpu_memory_utilization={local_cfg.get("gpu_memory_utilization", 0.9)},
+    gpu_memory_utilization=0.68,
+    disable_custom_all_reduce=True,
 )
 sampling_params = SamplingParams(temperature=0.7, max_tokens=2048, top_p=0.9)
 outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
@@ -349,9 +356,10 @@ llm = LLM(
     model='{local_cfg["model_path"]}',
     tensor_parallel_size={llm_tensor_parallel_size},
     trust_remote_code=True,
-    max_model_len=8192,
+    max_model_len=4096,
     enforce_eager=True,
-    gpu_memory_utilization={local_cfg.get("gpu_memory_utilization", 0.9)},
+    gpu_memory_utilization=0.68,
+    disable_custom_all_reduce=True,
 )
 sampling_params = SamplingParams(temperature=0.7, max_tokens=1024, top_p=0.9)
 outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})

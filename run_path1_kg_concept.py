@@ -47,6 +47,11 @@ PYTHON = sys.executable
 OUTPUT_DIR = DATA_DIR / "raw" / "path1"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+if "--clean" in sys.argv:
+    from src.common.utils import clear_all_step_states
+    clear_all_step_states(OUTPUT_DIR)
+    sys.argv.remove("--clean")
+
 
 def get_gpu_ids(default: str = "0,1,2,3") -> list[int]:
     """Parse the visible GPU list from the environment."""
@@ -231,7 +236,7 @@ clip_cfg = config.get("clip", {{}})
 pairs = load_jsonl('{all_mined_file}')
 filtered = filter_pairs_clip(
     pairs,
-    theta_safe=clip_cfg.get("theta_safe", 0.25),
+    theta_safe=clip_cfg.get("theta_safe", 0.40),
     theta_harm=clip_cfg.get("theta_harm", 0.35),
 )
 ranked = rank_pairs_by_covertness(filtered)

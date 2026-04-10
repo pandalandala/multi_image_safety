@@ -1,0 +1,179 @@
+Running Path 3: expansion (Method A text-only + Method B with images)
+Using GPUs: 4,5,6,7
+2026-04-09 22:29:44 [INFO] __main__: ============================================================
+2026-04-09 22:29:44 [INFO] __main__: PATH 3: Dataset Expansion
+2026-04-09 22:29:44 [INFO] __main__: ============================================================
+2026-04-09 22:29:44 [INFO] __main__: ============================================================
+2026-04-09 22:29:44 [INFO] __main__: PATH 3 STEP 1: Collecting images from HF datasets + external retrieval
+2026-04-09 22:29:44 [INFO] __main__: ============================================================
+Generating train split:   0%|          | 0/93258 [00:00<?, ? examples/s]Generating train split:   0%|          | 100/93258 [00:00<05:37, 276.26 examples/s]Generating train split:   2%|▏         | 1600/93258 [00:00<00:25, 3546.10 examples/s]Generating train split:   4%|▎         | 3400/93258 [00:00<00:14, 6021.70 examples/s]Generating train split:   5%|▌         | 4700/93258 [00:00<00:13, 6803.74 examples/s]Generating train split:   6%|▌         | 5800/93258 [00:01<00:12, 7078.88 examples/s]Generating train split:   8%|▊         | 7100/93258 [00:01<00:11, 7441.07 examples/s]Generating train split:   9%|▉         | 8700/93258 [00:01<00:09, 8532.01 examples/s]Generating train split:  10%|█         | 9700/93258 [00:01<00:11, 7557.92 examples/s]Generating train split:  11%|█▏        | 10600/93258 [00:01<00:10, 7777.59 examples/s]Generating train split:  13%|█▎        | 11758/93258 [00:01<00:10, 7783.60 examples/s]Generating train split:  14%|█▍        | 13358/93258 [00:01<00:09, 8452.35 examples/s]Generating train split:  16%|█▌        | 14558/93258 [00:02<00:08, 9131.25 examples/s]Generating train split:  17%|█▋        | 15958/93258 [00:02<00:08, 9398.82 examples/s]Generating train split:  19%|█▉        | 17558/93258 [00:02<00:08, 9317.73 examples/s]Generating train split:  20%|██        | 19058/93258 [00:02<00:08, 8633.31 examples/s]Generating train split:  22%|██▏       | 20758/93258 [00:02<00:07, 9200.41 examples/s]Generating train split:  23%|██▎       | 21858/93258 [00:02<00:07, 9453.56 examples/s]Generating train split:  25%|██▍       | 23158/93258 [00:02<00:07, 9847.47 examples/s]Generating train split:  26%|██▌       | 24316/93258 [00:03<00:06, 9927.88 examples/s]Generating train split:  28%|██▊       | 26116/93258 [00:03<00:06, 11150.28 examples/s]Generating train split:  30%|██▉       | 27816/93258 [00:03<00:05, 11873.13 examples/s]Generating train split:  32%|███▏      | 29716/93258 [00:03<00:05, 11562.01 examples/s]Generating train split:  34%|███▍      | 31716/93258 [00:03<00:05, 11068.02 examples/s]Generating train split:  36%|███▌      | 33416/93258 [00:03<00:05, 11263.70 examples/s]Generating train split:  38%|███▊      | 35073/93258 [00:03<00:05, 11033.92 examples/s]Generating train split:  39%|███▉      | 36773/93258 [00:04<00:04, 11814.12 examples/s]Generating train split:  41%|████      | 38373/93258 [00:04<00:04, 11973.01 examples/s]Generating train split:  43%|████▎     | 39673/93258 [00:04<00:04, 12168.98 examples/s]Generating train split:  44%|████▍     | 41373/93258 [00:04<00:04, 10515.36 examples/s]Generating train split:  46%|████▋     | 43173/93258 [00:04<00:04, 10610.05 examples/s]Generating train split:  48%|████▊     | 44873/93258 [00:04<00:04, 10607.79 examples/s]Generating train split:  50%|█████     | 46730/93258 [00:04<00:04, 11574.41 examples/s]Generating train split:  52%|█████▏    | 48330/93258 [00:05<00:03, 12197.67 examples/s]Generating train split:  53%|█████▎    | 49830/93258 [00:05<00:03, 12593.92 examples/s]Generating train split:  55%|█████▌    | 51330/93258 [00:05<00:03, 12716.48 examples/s]Generating train split:  57%|█████▋    | 53230/93258 [00:05<00:03, 12496.39 examples/s]Generating train split:  59%|█████▉    | 54830/93258 [00:05<00:03, 12702.35 examples/s]Generating train split:  61%|██████    | 56630/93258 [00:05<00:02, 12547.63 examples/s]Generating train split:  63%|██████▎   | 58387/93258 [00:05<00:02, 12910.83 examples/s]Generating train split:  64%|██████▍   | 60087/93258 [00:05<00:02, 13310.06 examples/s]Generating train split:  66%|██████▋   | 61787/93258 [00:06<00:02, 14150.11 examples/s]Generating train split:  68%|██████▊   | 63787/93258 [00:06<00:02, 13309.24 examples/s]Generating train split:  70%|███████   | 65487/93258 [00:06<00:02, 13395.12 examples/s]Generating train split:  72%|███████▏  | 67087/93258 [00:06<00:02, 12556.74 examples/s]Generating train split:  74%|███████▍  | 68787/93258 [00:06<00:02, 11846.08 examples/s]Generating train split:  75%|███████▌  | 70044/93258 [00:06<00:02, 11390.49 examples/s]Generating train split:  77%|███████▋  | 71444/93258 [00:06<00:01, 11533.62 examples/s]Generating train split:  79%|███████▊  | 73244/93258 [00:07<00:01, 12244.35 examples/s]Generating train split:  80%|████████  | 74944/93258 [00:07<00:01, 12745.27 examples/s]Generating train split:  82%|████████▏ | 76544/93258 [00:07<00:01, 12655.90 examples/s]Generating train split:  84%|████████▍ | 78444/93258 [00:07<00:01, 13430.84 examples/s]Generating train split:  86%|████████▌ | 80044/93258 [00:07<00:01, 12580.05 examples/s]Generating train split:  88%|████████▊ | 81701/93258 [00:07<00:01, 11555.93 examples/s]Generating train split:  89%|████████▉ | 83201/93258 [00:07<00:00, 12062.32 examples/s]Generating train split:  91%|█████████ | 84901/93258 [00:08<00:00, 11036.25 examples/s]Generating train split:  92%|█████████▏| 86201/93258 [00:08<00:00, 8607.44 examples/s] Generating train split:  94%|█████████▎| 87201/93258 [00:08<00:00, 7534.87 examples/s]Generating train split:  95%|█████████▍| 88201/93258 [00:08<00:00, 6728.76 examples/s]Generating train split:  95%|█████████▌| 89001/93258 [00:08<00:00, 5442.06 examples/s]Generating train split:  97%|█████████▋| 90001/93258 [00:09<00:00, 5016.55 examples/s]Generating train split:  97%|█████████▋| 90801/93258 [00:09<00:00, 5052.88 examples/s]Generating train split:  98%|█████████▊| 91701/93258 [00:09<00:00, 5253.94 examples/s]Generating train split: 100%|█████████▉| 93101/93258 [00:09<00:00, 6679.30 examples/s]Generating train split: 100%|██████████| 93258/93258 [00:09<00:00, 9687.42 examples/s]
+2026-04-09 22:34:18 [INFO] src.path3_dataset_expand.expand: Downloaded SPA-VL: 2000 samples
+2026-04-09 22:34:18 [INFO] src.path3_dataset_expand.expand: Dataset spa_vl columns: ['image', 'question', 'chosen', 'rejected', 'image_name']
+2026-04-09 22:34:18 [INFO] src.path3_dataset_expand.expand: Dataset spa_vl detected columns: {'image': 'image', 'text': 'question'}
+2026-04-09 22:36:01 [INFO] src.path3_dataset_expand.expand: Extracted 2000 images from spa_vl (1999 with descriptions)
+Generating train split:   0%|          | 0/1999 [00:00<?, ? examples/s]Generating train split:   0%|          | 0/1999 [00:00<?, ? examples/s]Generating train split:   0%|          | 0/1999 [00:00<?, ? examples/s]
+2026-04-09 22:36:33 [WARNING] src.path3_dataset_expand.expand: Failed to download VLGuard: An error occurred while generating the dataset
+Generating train split:   0%|          | 0/8109 [00:00<?, ? examples/s]Generating train split:  11%|█         | 900/8109 [00:00<00:01, 6000.51 examples/s]Generating train split:  26%|██▌       | 2100/8109 [00:00<00:00, 6992.44 examples/s]Generating train split:  42%|████▏     | 3400/8109 [00:00<00:00, 7033.85 examples/s]Generating train split:  52%|█████▏    | 4200/8109 [00:00<00:00, 5037.79 examples/s]Generating train split:  60%|██████    | 4900/8109 [00:00<00:00, 4744.73 examples/s]Generating train split:  68%|██████▊   | 5500/8109 [00:01<00:00, 3833.56 examples/s]Generating train split:  76%|███████▋  | 6200/8109 [00:01<00:00, 3682.00 examples/s]Generating train split:  84%|████████▍ | 6800/8109 [00:01<00:00, 3747.35 examples/s]Generating train split:  89%|████████▉ | 7200/8109 [00:01<00:00, 2838.19 examples/s]Generating train split:  95%|█████████▍| 7700/8109 [00:01<00:00, 3046.44 examples/s]Generating train split: 100%|██████████| 8109/8109 [00:01<00:00, 4130.39 examples/s]
+Generating test split:   0%|          | 0/2037 [00:00<?, ? examples/s]Generating test split:  49%|████▉     | 1000/2037 [00:00<00:00, 8862.93 examples/s]Generating test split:  93%|█████████▎| 1900/2037 [00:00<00:00, 4933.29 examples/s]Generating test split: 100%|██████████| 2037/2037 [00:00<00:00, 5316.76 examples/s]
+2026-04-09 22:37:07 [INFO] src.path3_dataset_expand.expand: Downloaded UnsafeBench: 8109 samples
+2026-04-09 22:37:07 [INFO] src.path3_dataset_expand.expand: Dataset unsafebench columns: ['image', 'safety_label', 'category', 'source', 'text']
+2026-04-09 22:37:07 [INFO] src.path3_dataset_expand.expand: Dataset unsafebench detected columns: {'image': 'image', 'text': 'text', 'category': 'category'}
+2026-04-09 22:39:06 [INFO] src.path3_dataset_expand.expand: Extracted 2000 images from unsafebench (959 with descriptions)
+Generating train split:   0%|          | 0/12887 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 12887/12887 [00:00<00:00, 676580.24 examples/s]
+Generating validation split:   0%|          | 0/1040 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 1040/1040 [00:00<00:00, 159199.86 examples/s]
+Generating test split:   0%|          | 0/3000 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 3000/3000 [00:00<00:00, 261245.97 examples/s]
+2026-04-09 22:39:23 [INFO] src.path3_dataset_expand.expand: Downloaded Hateful Memes: 12887 samples
+2026-04-09 22:39:23 [INFO] src.path3_dataset_expand.expand: Dataset hateful_memes columns: ['id', 'img', 'label', 'text']
+2026-04-09 22:39:23 [INFO] src.path3_dataset_expand.expand: Dataset hateful_memes detected columns: {'image': 'img', 'text': 'text', 'category': 'label'}
+2026-04-09 22:39:24 [INFO] src.path3_dataset_expand.expand: Extracted 0 images from hateful_memes (0 with descriptions)
+2026-04-09 22:39:28 [WARNING] src.path3_dataset_expand.expand: Failed to download BeaverTails-V: Config name is missing.
+Please pick one among the available configs: ['psychological_horror_and_dark_themes', 'psychological_harm_and_manipulation', 'dangerous_behavior', 'pornographic_content', 'harmful_health_content', 'identity_misuse_and_impersonation', 'discriminatory_depictions', 'false_information', 'privacy_invasion_and_surveillance', 'financial_and_academic_fraud', 'sexual_crimes', 'terrorism_or_extremism', 'violence_and_physical_harm', 'deception_in_personal_relationships', 'sensitive_information_in_key_areas', 'horror_and_gore', 'environmental_damage', 'hacking_or_digital_crime', 'animal_abuse', 'insulting_and_harassing_behavior']
+Example of usage:
+	`load_dataset('PKU-Alignment/BeaverTails-V', 'psychological_horror_and_dark_themes')`
+2026-04-09 22:39:28 [WARNING] src.path3_dataset_expand.expand: MIS train JSON not found at /mnt/hdd/xuran/MIS/mis_train/mis_train.json
+2026-04-09 22:40:46 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'crowd gathering outdoor event': HTTP Error 403: Forbidden
+2026-04-09 22:43:11 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 15 images for category VIOLENCE
+2026-04-09 22:43:11 [INFO] src.path3_dataset_expand.expand: LAION crawl VIOLENCE: 15 images
+2026-04-09 22:45:58 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 7 images for category SELF_HARM
+2026-04-09 22:45:58 [INFO] src.path3_dataset_expand.expand: LAION crawl SELF_HARM: 7 images
+2026-04-09 22:48:40 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 8 images for category CRIME
+2026-04-09 22:48:40 [INFO] src.path3_dataset_expand.expand: LAION crawl CRIME: 8 images
+2026-04-09 22:51:20 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 5 images for category PRIVACY
+2026-04-09 22:51:20 [INFO] src.path3_dataset_expand.expand: LAION crawl PRIVACY: 5 images
+2026-04-09 22:52:30 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'microphone stand at outdoor rally': HTTP Error 403: Forbidden
+2026-04-09 22:54:26 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 1 images for category HATE
+2026-04-09 22:54:26 [INFO] src.path3_dataset_expand.expand: LAION crawl HATE: 1 images
+2026-04-09 22:56:36 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 2 images for category SEXUAL
+2026-04-09 22:56:36 [INFO] src.path3_dataset_expand.expand: LAION crawl SEXUAL: 2 images
+2026-04-09 22:59:40 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'reporter holding microphone outdoors': HTTP Error 403: Forbidden
+2026-04-09 22:59:49 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 14 images for category MISINFO
+2026-04-09 22:59:49 [INFO] src.path3_dataset_expand.expand: LAION crawl MISINFO: 14 images
+2026-04-09 23:02:35 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 7 images for category WMD
+2026-04-09 23:02:35 [INFO] src.path3_dataset_expand.expand: LAION crawl WMD: 7 images
+2026-04-09 23:05:06 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 3 images for category REGULATED
+2026-04-09 23:05:06 [INFO] src.path3_dataset_expand.expand: LAION crawl REGULATED: 3 images
+2026-04-09 23:08:00 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 5 images for category ADVICE
+2026-04-09 23:08:00 [INFO] src.path3_dataset_expand.expand: LAION crawl ADVICE: 5 images
+2026-04-09 23:09:58 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 9 images for category IP
+2026-04-09 23:09:58 [INFO] src.path3_dataset_expand.expand: LAION crawl IP: 9 images
+2026-04-09 23:09:58 [INFO] src.path3_dataset_expand.expand: LAION crawl total: 76 images
+2026-04-09 23:09:58 [INFO] src.path3_dataset_expand.expand: Data collection complete: 4076 total images, 3034 with descriptions
+2026-04-09 23:09:58 [INFO] src.common.utils: Saved 4076 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/all_image_infos.jsonl
+2026-04-09 23:09:58 [INFO] __main__: Total images: 4076
+2026-04-09 23:09:58 [INFO] __main__: Images with descriptions (for Method A): 3034
+2026-04-09 23:09:58 [INFO] __main__: ============================================================
+2026-04-09 23:09:58 [INFO] __main__: PATH 3 STEP 2: Method A — vLLM element decompose (subprocess)
+2026-04-09 23:09:58 [INFO] __main__: ============================================================
+2026-04-09 23:09:58 [INFO] src.common.utils: Saved 3034 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/_method_a_input.jsonl
+Loading LLM for 3034 decompose prompts...
+INFO 04-09 23:10:06 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 04-09 23:10:08 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-09 23:10:08 [model.py:1678] Using max model len 8192
+INFO 04-09 23:10:08 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-09 23:10:09 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-09 23:10:09 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-09 23:10:09 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-09 23:10:09 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-09 23:10:09 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-09 23:10:09 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-09 23:10:09 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+WARNING 04-09 23:10:28 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 101, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 710, in __init__
+    super().__init__(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 535, in __init__
+    with launch_core_engines(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
+    wait_for_engine_startup(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+2026-04-09 23:10:36 [WARNING] __main__: Method A subprocess failed — continuing with existing Method A results
+2026-04-09 23:10:36 [INFO] __main__: ============================================================
+2026-04-09 23:10:36 [INFO] __main__: PATH 3 STEP 3: Method B — LLM cross-image pairing (subprocess)
+2026-04-09 23:10:36 [INFO] __main__: ============================================================
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Images with descriptions: 3034/4076
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Category groups: Hate(98), Violence(96), Self-harm(148), Sexual(203), Shocking(221), Illegal activity(132), Deception(61), VIOLENCE(15), SELF_HARM(7), CRIME(8), PRIVACY(5), HATE(1), SEXUAL(2), MISINFO(14), WMD(7), REGULATED(3), ADVICE(5), IP(9)
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Pairing buckets: Hate(99), Violence(111), Self-harm(155), Shocking(588), Sexual(205), Illegal activity(159), Deception(85)
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Uncategorized images: 1999
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Intra-category pairs: 2426
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Cross-category pairs: 2000
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Uncategorized-mix pairs: 500
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Total candidate pairs: 4000
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Prepared 4000 LLM prompts (filtered from 4000 pairs)
+2026-04-09 23:10:36 [INFO] src.common.utils: Saved 4000 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/_method_b_pairs.jsonl
+2026-04-09 23:10:36 [INFO] src.common.utils: Saved 4000 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/_method_b_input.jsonl
+2026-04-09 23:10:36 [INFO] src.path3_dataset_expand.cross_pair: Saved 4000 prompts for Method B subprocess
+2026-04-09 23:10:36 [INFO] src.common.utils: Saved 4000 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/_method_b_input.jsonl
+Loading LLM for 4000 cross-pair prompts...
+INFO 04-09 23:10:44 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 04-09 23:10:46 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-09 23:10:46 [model.py:1678] Using max model len 8192
+INFO 04-09 23:10:46 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-09 23:10:47 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-09 23:10:47 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-09 23:10:47 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-09 23:10:47 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-09 23:10:47 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-09 23:10:47 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-09 23:10:47 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+WARNING 04-09 23:11:05 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+Traceback (most recent call last):
+  File "<string>", line 14, in <module>
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 101, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 710, in __init__
+    super().__init__(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 535, in __init__
+    with launch_core_engines(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
+    wait_for_engine_startup(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+2026-04-09 23:11:13 [WARNING] __main__: Method B subprocess failed — continuing with existing Method B results
+2026-04-09 23:11:13 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path3/cross_paired_samples.jsonl
+
+================================================================================
+✓ PATH 3 EXPAND COMPLETE: 0 samples
+  Method A text-only:      0
+  Method B with images:    0
+  Method A with images:    0
+  Mixed merged output:     /mnt/hdd/xuran/multi_image_safety/data/raw/path3/cross_paired_samples.jsonl
+  Status note:             /mnt/hdd/xuran/multi_image_safety/data/raw/path3/STATUS.md
+  Next step if needed:     python run_path3_acquire_images.py
+================================================================================
+2026-04-09 23:11:14 [INFO] __main__: PATH 3 complete!

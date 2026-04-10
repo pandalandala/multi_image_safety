@@ -1,0 +1,70 @@
+Running Path 4: Scenario Construction
+Using GPUs: 4,5,6,7
+2026-04-09 23:11:14 [INFO] __main__: ============================================================
+2026-04-09 23:11:14 [INFO] __main__: PATH 4: Scenario Construction
+2026-04-09 23:11:14 [INFO] __main__: ============================================================
+2026-04-09 23:11:14 [INFO] __main__: ============================================================
+2026-04-09 23:11:14 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
+2026-04-09 23:11:14 [INFO] __main__: ============================================================
+INFO 04-09 23:11:22 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 04-09 23:11:23 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-09 23:11:23 [model.py:1678] Using max model len 8192
+INFO 04-09 23:11:23 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-09 23:11:25 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-09 23:11:25 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-09 23:11:25 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-09 23:11:25 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-09 23:11:25 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-09 23:11:25 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-09 23:11:25 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+WARNING 04-09 23:11:42 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 184, in run
+    scenes = generate_scenes_vllm(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 77, in generate_scenes_vllm
+    llm = LLM(
+          ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 101, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 710, in __init__
+    super().__init__(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 535, in __init__
+    with launch_core_engines(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
+    wait_for_engine_startup(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/multi_image_safety/run_path4_scenario.py", line 91, in <module>
+    raise RuntimeError("Step 1 (scene_gen) failed")
+RuntimeError: Step 1 (scene_gen) failed
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 105, in <module>
+    main()
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 99, in main
+    runner(use_api=args.use_api)
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 66, in run_path4
+    run_script("run_path4_scenario.py")
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 24, in run_script
+    raise RuntimeError(f"{script_name} failed with exit code {result.returncode}")
+RuntimeError: run_path4_scenario.py failed with exit code 1

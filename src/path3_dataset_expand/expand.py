@@ -90,12 +90,28 @@ def download_dataset(dataset_config: dict, split: str = "train") -> Optional[obj
         logger.warning(f"No hf_repo for dataset {dataset_config.get('name')}")
         return None
 
+    config_name = dataset_config.get("config_name")
+
     try:
-        ds = load_dataset(hf_repo, split=split)
+        ds = load_dataset(hf_repo, config_name, split=split)
         logger.info(f"Downloaded {dataset_config['name']}: {len(ds)} samples")
         return ds
     except Exception as e:
-        logger.warning(f"Failed to download {dataset_config['name']}: {e}")
+        logger.warning(f"Failed to download {dataset_config['name']} (split={split}): {e}")
+        # Try fallback splits
+        for fallback_split in ("test", "validation"):
+            if fallback_split == split:
+                continue
+            try:
+                ds = load_dataset(hf_repo, config_name, split=fallback_split)
+                logger.info(
+                    f"Downloaded {dataset_config['name']} via fallback split={fallback_split}: "
+                    f"{len(ds)} samples"
+                )
+                return ds
+            except Exception:
+                continue
+        logger.warning(f"All split attempts failed for {dataset_config['name']}")
         return None
 
 

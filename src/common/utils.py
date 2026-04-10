@@ -288,6 +288,55 @@ def clear_step_state(
             path.unlink(missing_ok=True)
 
 
+def clear_all_step_states(output_dir: str | Path) -> int:
+    """Remove all step state markers so pipeline can re-run cleanly."""
+    state_dir = get_step_state_dir(output_dir)
+    if not state_dir.exists():
+        return 0
+    count = 0
+    for marker in state_dir.glob("*.json"):
+        marker.unlink(missing_ok=True)
+        count += 1
+    if count:
+        logger.info("Cleared %d step state markers from %s", count, state_dir)
+    return count
+
+
+def get_safe_vllm_kwargs(
+    path_name: str = "",
+    *,
+    model_path: str | None = None,
+    tensor_parallel_size: int | None = None,
+) -> dict:
+    """Return conservative vLLM LLM() constructor kwargs.
+
+    Reads from pipeline.yaml and clamps to safe defaults proven to work
+    on GPUs with ~33-47 GB free VRAM.
+    """
+    config = load_config()
+    local_cfg = config["llm"]["local"]
+    env_prefix = f"MIS_{path_name.upper()}_" if path_name else "MIS_"
+
+    max_model_len = min(
+        int(local_cfg.get("max_model_len", 4096)),
+        int(os.environ.get(f"{env_prefix}MAX_MODEL_LEN", "4096")),
+    )
+    gpu_mem_util = min(
+        float(local_cfg.get("gpu_memory_utilization", 0.68)),
+        float(os.environ.get(f"{env_prefix}GPU_MEMORY_UTILIZATION", "0.68")),
+    )
+
+    return {
+        "model": model_path or local_cfg["model_path"],
+        "tensor_parallel_size": tensor_parallel_size or int(local_cfg.get("tensor_parallel_size", 4)),
+        "trust_remote_code": True,
+        "max_model_len": max_model_len,
+        "enforce_eager": True,
+        "gpu_memory_utilization": gpu_mem_util,
+        "disable_custom_all_reduce": True,
+    }
+
+
 def get_hf_home() -> str:
     """Get the HuggingFace cache directory."""
     config = load_config()

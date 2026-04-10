@@ -8,13 +8,16 @@ __pycache__/
 .venv/
 venv/
 
-data/
-logs/
-legacy_logs/
-
-*.log
-*.jsonl
-*.arrow
+data/images/
+data/**/images/
+data/**/crawled_images/
+data/**/extracted_images/
+data/**/*.png
+data/**/*.jpg
+data/**/*.jpeg
+data/**/*.webp
+data/**/*.bmp
+data/**/*.gif
 
 CUDA_VISIBLE_DEVICES=0,1,2,3
 CUDA_VISIBLE_DEVICES=4,5,6,7

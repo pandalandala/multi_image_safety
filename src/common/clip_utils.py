@@ -3,6 +3,7 @@
 import html
 import json
 import logging
+import os
 import re
 import urllib.parse
 import urllib.request
@@ -199,7 +200,7 @@ def find_harm_pairs(
     image_embeddings: np.ndarray,
     image_paths: list[str],
     harm_vector: np.ndarray,
-    theta_safe: float = 0.25,
+    theta_safe: float = 0.40,
     theta_harm: float = 0.35,
     max_pairs: int = 1000,
 ) -> list[tuple[int, int, float]]:
@@ -641,12 +642,36 @@ def _retrieve_from_openverse(
     base_url = ov_cfg.get("api_url", DEFAULT_OPENVERSE_API_URL)
     url = base_url.rstrip("?") + "?" + urllib.parse.urlencode(params)
 
-    try:
-        request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = json.loads(response.read().decode("utf-8"))
-    except Exception as e:
-        logger.error(f"Openverse retrieval failed for '{query_text}': {e}")
+    headers = dict(DEFAULT_HTTP_HEADERS)
+    ov_token = os.environ.get("OPENVERSE_API_TOKEN", "").strip()
+    if ov_token:
+        headers["Authorization"] = f"Bearer {ov_token}"
+
+    import time as _time
+    data = None
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            request = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.loads(response.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 429):
+                wait = 2 ** (attempt + 1)
+                logger.warning(
+                    "Openverse API %d for '%s' (attempt %d/%d), retrying in %ds. "
+                    "Tip: set OPENVERSE_API_TOKEN for authenticated access.",
+                    e.code, query_text, attempt + 1, max_retries, wait,
+                )
+                _time.sleep(wait)
+                continue
+            logger.error("Openverse HTTP %d for '%s': %s", e.code, query_text, e)
+            return []
+        except Exception as e:
+            logger.error("Openverse retrieval failed for '%s': %s", query_text, e)
+            return []
+    if data is None:
         return []
 
     exclude_mature = ov_cfg.get("exclude_mature", True)

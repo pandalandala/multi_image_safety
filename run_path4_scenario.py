@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-os.environ["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
@@ -42,6 +42,12 @@ PROJ = Path(__file__).parent
 PYTHON = sys.executable
 OUTPUT_DIR = DATA_DIR / "raw" / "path4"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+if "--clean" in sys.argv:
+    from src.common.utils import clear_all_step_states
+    clear_all_step_states(OUTPUT_DIR)
+    sys.argv.remove("--clean")
+
 FINAL_OUTPUT = OUTPUT_DIR / "samples_with_images.jsonl"
 SCENES_OUTPUT = OUTPUT_DIR / "generated_scenes.jsonl"
 INTENT_OUTPUT = OUTPUT_DIR / "intent_injected_samples.jsonl"

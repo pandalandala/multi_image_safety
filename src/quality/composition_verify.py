@@ -94,12 +94,12 @@ def verify_composition_local(
     """Batch verify compositional harm using local vLLM."""
     from vllm import LLM, SamplingParams
 
-    llm = LLM(
-        model=model_path,
+    from src.common.utils import get_safe_vllm_kwargs
+    llm = LLM(**get_safe_vllm_kwargs(
+        "quality",
+        model_path=model_path,
         tensor_parallel_size=tensor_parallel_size,
-        trust_remote_code=True,
-        max_model_len=8192,
-    )
+    ))
     sampling_params = SamplingParams(temperature=0.3, max_tokens=512, top_p=0.9)
 
     prompts = []

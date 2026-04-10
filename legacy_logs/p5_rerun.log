@@ -1,0 +1,42 @@
+2026-04-07 21:08:59 [INFO] __main__: ============================================================
+2026-04-07 21:08:59 [INFO] __main__: PATH 5 STEP 1: Acquire images per harm category
+2026-04-07 21:08:59 [INFO] __main__: ============================================================
+2026-04-07 21:08:59 [INFO] __main__: External retrieval enabled — crawling configured image backends
+2026-04-07 21:10:16 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'crowd gathering outdoor event': HTTP Error 403: Forbidden
+2026-04-07 21:13:27 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 17 images for category VIOLENCE
+2026-04-07 21:16:55 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 8 images for category SELF_HARM
+2026-04-07 21:20:03 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 8 images for category CRIME
+2026-04-07 21:21:44 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'mail letters and envelopes': The read operation timed out
+2026-04-07 21:24:20 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 6 images for category PRIVACY
+2026-04-07 21:25:39 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'microphone stand at outdoor rally': HTTP Error 403: Forbidden
+2026-04-07 21:28:12 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 1 images for category HATE
+2026-04-07 21:31:22 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 3 images for category SEXUAL
+2026-04-07 21:35:28 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'reporter holding microphone outdoors': HTTP Error 403: Forbidden
+2026-04-07 21:35:40 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 14 images for category MISINFO
+2026-04-07 21:41:27 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'lab freezer in research room': The read operation timed out
+2026-04-07 21:41:33 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 7 images for category WMD
+2026-04-07 21:43:27 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'vape shop counter': The read operation timed out
+2026-04-07 21:47:33 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 4 images for category REGULATED
+2026-04-07 21:51:44 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 6 images for category ADVICE
+2026-04-07 21:54:38 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 10 images for category IP
+2026-04-07 21:54:38 [INFO] src.common.utils: Saved 84 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_image_info.jsonl
+2026-04-07 21:54:38 [INFO] src.path5_embedding_pair.crawl_laion: Total crawled images: 84
+2026-04-07 21:54:38 [INFO] __main__: Crawled 84 images total
+2026-04-07 21:54:38 [INFO] __main__: Step 1 complete: 84 images
+2026-04-07 21:54:38 [INFO] __main__: ============================================================
+2026-04-07 21:54:38 [INFO] __main__: PATH 5 STEP 2: LLM cross-image pairing (subprocess)
+2026-04-07 21:54:38 [INFO] __main__: ============================================================
+2026-04-07 21:54:39 [INFO] src.path3_dataset_expand.cross_pair: Images with descriptions: 0/84
+2026-04-07 21:54:39 [WARNING] src.path3_dataset_expand.cross_pair: Too few images with descriptions for cross-pairing
+2026-04-07 21:54:39 [INFO] src.path3_dataset_expand.cross_pair: Prepared 0 LLM prompts (filtered from 0 pairs)
+2026-04-07 21:54:39 [INFO] __main__: Generated 0 candidate pairs, 0 prompts
+2026-04-07 21:54:39 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path5/_cross_pair_input.jsonl
+2026-04-07 21:54:39 [WARNING] __main__: No valid prompt data — skipping LLM step
+
+================================================================================
+✓ PATH 5 COMPLETE: 0 samples with text prompts
+  Images: 84
+  Candidate pairs: 0
+  Final samples: 0
+  Output: /mnt/hdd/xuran/multi_image_safety/data/raw/path5/samples_with_prompts.jsonl
+================================================================================

@@ -1,0 +1,92 @@
+Running Path 5: Embedding Pair Matching
+Using GPUs: 4,5,6,7
+2026-04-09 23:11:50 [INFO] __main__: ============================================================
+2026-04-09 23:11:50 [INFO] __main__: PATH 5: Image Pair Mining
+2026-04-09 23:11:50 [INFO] __main__: ============================================================
+2026-04-09 23:11:51 [INFO] __main__: ============================================================
+2026-04-09 23:11:51 [INFO] __main__: PATH 5 STEP 1: Acquire images per harm category
+2026-04-09 23:11:51 [INFO] __main__: ============================================================
+2026-04-09 23:11:51 [INFO] __main__: External retrieval enabled — crawling configured image backends
+2026-04-09 23:12:46 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'crowd gathering outdoor event': HTTP Error 403: Forbidden
+2026-04-09 23:14:08 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 17 images for category VIOLENCE
+2026-04-09 23:15:41 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 7 images for category SELF_HARM
+2026-04-09 23:16:56 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 8 images for category CRIME
+2026-04-09 23:18:14 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 5 images for category PRIVACY
+2026-04-09 23:18:55 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'microphone stand at outdoor rally': HTTP Error 403: Forbidden
+2026-04-09 23:19:32 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 1 images for category HATE
+2026-04-09 23:20:30 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 2 images for category SEXUAL
+2026-04-09 23:22:24 [ERROR] src.common.clip_utils: Openverse retrieval failed for 'reporter holding microphone outdoors': HTTP Error 403: Forbidden
+2026-04-09 23:22:26 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 14 images for category MISINFO
+2026-04-09 23:24:02 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 7 images for category WMD
+2026-04-09 23:25:20 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 3 images for category REGULATED
+2026-04-09 23:26:33 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 5 images for category ADVICE
+2026-04-09 23:27:19 [INFO] src.path5_embedding_pair.crawl_laion: Crawled 9 images for category IP
+2026-04-09 23:27:19 [INFO] src.common.utils: Saved 78 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_image_info.jsonl
+2026-04-09 23:27:19 [INFO] src.path5_embedding_pair.crawl_laion: Total crawled images: 78
+2026-04-09 23:27:19 [INFO] src.common.utils: Saved 78 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_image_info.jsonl
+2026-04-09 23:27:19 [INFO] __main__: Crawled 78 images total
+2026-04-09 23:27:19 [INFO] __main__: Step 1 complete: 78 images
+2026-04-09 23:27:19 [INFO] __main__: ============================================================
+2026-04-09 23:27:19 [INFO] __main__: PATH 5 STEP 2: LLM cross-image pairing (subprocess)
+2026-04-09 23:27:19 [INFO] __main__: ============================================================
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Images with descriptions: 78/78
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Category groups: VIOLENCE(17), SELF_HARM(7), CRIME(8), PRIVACY(5), HATE(1), SEXUAL(2), MISINFO(14), WMD(7), REGULATED(3), ADVICE(5), IP(9)
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Pairing buckets: Violence(17), Self-harm(7), Shocking(16), Illegal activity(27), Deception(24), Hate(1), Sexual(2)
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Intra-category pairs: 357
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Cross-category pairs: 1170
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Uncategorized-mix pairs: 0
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Total candidate pairs: 1527
+2026-04-09 23:27:19 [INFO] src.path3_dataset_expand.cross_pair: Prepared 1527 LLM prompts (filtered from 1527 pairs)
+2026-04-09 23:27:19 [INFO] __main__: Generated 1527 candidate pairs, 1527 prompts
+2026-04-09 23:27:19 [INFO] src.common.utils: Saved 1527 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path5/_cross_pair_input.jsonl
+Loading LLM for 1527 cross-pair prompts...
+INFO 04-09 23:27:27 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 04-09 23:27:29 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-09 23:27:29 [model.py:1678] Using max model len 8192
+INFO 04-09 23:27:29 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-09 23:27:30 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-09 23:27:30 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-09 23:27:30 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-09 23:27:30 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-09 23:27:30 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-09 23:27:30 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-09 23:27:30 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+WARNING 04-09 23:27:47 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+Traceback (most recent call last):
+  File "<string>", line 14, in <module>
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 101, in make_client
+    return SyncMPClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 710, in __init__
+    super().__init__(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 535, in __init__
+    with launch_core_engines(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
+    wait_for_engine_startup(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
+    raise RuntimeError(
+RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+2026-04-09 23:27:55 [ERROR] __main__: LLM cross-pairing subprocess failed
+
+================================================================================
+✓ PATH 5 COMPLETE: 0 samples with text prompts
+  Images: 78
+  Candidate pairs: 1527
+  Final samples: 0
+  Output: /mnt/hdd/xuran/multi_image_safety/data/raw/path5/samples_with_prompts.jsonl
+================================================================================
+2026-04-09 23:27:55 [INFO] __main__: PATH 5 complete!

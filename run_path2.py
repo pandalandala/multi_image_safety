@@ -131,9 +131,13 @@ def run(use_api: bool = False) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Path 2: Prompt Decomposition")
     parser.add_argument("--use-api", action="store_true", help="Use API for LLM calls")
+    parser.add_argument("--clean", action="store_true", help="Clear all step states before running")
     args = parser.parse_args()
 
     setup_logging()
+    if args.clean:
+        from src.common.utils import clear_all_step_states
+        clear_all_step_states(DATA_DIR / "raw" / "path2")
     run(use_api=args.use_api)
 
 
