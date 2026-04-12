@@ -7,10 +7,10 @@ Canonical flow:
 4. `run_path3_acquire_images.py` is the optional next step if you want images for Method A too.
 
 Current counts:
-- Method A text-only: 0
-- Method B with images: 0
+- Method A text-only: 2688
+- Method B with images: 887
 - Method A with images: 0
-- Mixed merged output: 0
+- Mixed merged output: 3575
 
 Key files:
 - `method_a_decomposed.jsonl`: Method A text-only samples

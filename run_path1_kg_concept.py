@@ -18,13 +18,15 @@ import sys
 from pathlib import Path
 
 os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
-os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0,1,2,3")
+os.environ.setdefault("MIS_GPU_CANDIDATES", os.environ.get("CUDA_VISIBLE_DEVICES", "0,1,2,3,4,5,6,7"))
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
+os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
+    apply_gpu_runtime_profile,
     clear_step_state,
     get_effective_tensor_parallel_size,
     setup_logging,
@@ -36,6 +38,7 @@ from src.common.utils import (
     finish_step,
     is_step_complete,
     jsonl_record_count,
+    log_gpu_runtime_profile,
     start_step,
 )
 
@@ -87,15 +90,50 @@ def run_subprocess(code: str, gpu_ids: str | None = None) -> int:
         env["CUDA_VISIBLE_DEVICES"] = gpu_ids
     env["HF_HOME"] = os.environ["HF_HOME"]
     env["PYTHONPATH"] = str(PROJ)
+    env.setdefault("OMP_NUM_THREADS", "1")
+    env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+    env.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
+    env.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
     result = subprocess.run([PYTHON, "-c", code], env=env, cwd=str(PROJ))
     return result.returncode
 
 
-visible_gpus = get_gpu_ids()
-all_gpu_ids = ",".join(str(gpu_id) for gpu_id in visible_gpus)
-single_gpu_id = str(visible_gpus[0])
-local_cfg, llm_max_model_len, llm_gpu_memory_utilization, llm_tensor_parallel_size = get_llm_runtime_limits()
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
+
+
+def select_llm_runtime() -> tuple[list[int], str, str, dict, int, float, int]:
+    """Select GPUs for Path 1 vLLM steps and return runtime knobs."""
+    profile = apply_gpu_runtime_profile(
+        path_name="path1",
+        task_type="llm",
+        preferred_gpu_count=4,
+        requested_tensor_parallel_size=4,
+    )
+    log_gpu_runtime_profile(logger, profile, "Path 1 LLM")
+    visible_gpus = get_gpu_ids(default=profile["selected_gpu_csv"])
+    all_gpu_ids = ",".join(str(gpu_id) for gpu_id in visible_gpus)
+    single_gpu_id = str(visible_gpus[0])
+    local_cfg, max_model_len, gpu_memory_utilization, tensor_parallel_size = get_llm_runtime_limits()
+    return (
+        visible_gpus,
+        all_gpu_ids,
+        single_gpu_id,
+        local_cfg,
+        max_model_len,
+        gpu_memory_utilization,
+        tensor_parallel_size,
+    )
+
+
+(
+    visible_gpus,
+    all_gpu_ids,
+    single_gpu_id,
+    local_cfg,
+    llm_max_model_len,
+    llm_gpu_memory_utilization,
+    llm_tensor_parallel_size,
+) = select_llm_runtime()
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) -> bool:
@@ -268,6 +306,12 @@ if step_complete("step3_generate_images", images_file) and os.environ.get("MIS_F
     all_results = load_jsonl(images_file)
     logger.info(f"Skipping Step 3; completion marker found: {len(all_results)} pairs")
 else:
+    image_profile = apply_gpu_runtime_profile(
+        path_name="path1",
+        task_type="image",
+        preferred_gpu_count=4,
+    )
+    log_gpu_runtime_profile(logger, image_profile, "Path 1 Step 3")
     clear_step_state(
         OUTPUT_DIR,
         "step3_generate_images",
@@ -278,7 +322,7 @@ else:
         ],
     )
     start_step(OUTPUT_DIR, "step3_generate_images")
-    free_gpus = visible_gpus
+    free_gpus = image_profile["selected_gpu_ids"]
     num_workers = len(free_gpus)
     n = len(filtered_pairs)
     chunk_size = (n + num_workers - 1) // num_workers
@@ -363,6 +407,15 @@ if step_complete("step4_generate_prompts", final_output):
     logger.info("Skipping Step 4; completion marker found")
     final_results = load_jsonl(final_output)
 else:
+    (
+        visible_gpus,
+        all_gpu_ids,
+        single_gpu_id,
+        local_cfg,
+        llm_max_model_len,
+        llm_gpu_memory_utilization,
+        llm_tensor_parallel_size,
+    ) = select_llm_runtime()
     clear_step_state(OUTPUT_DIR, "step4_generate_prompts", stale_paths=[final_output])
     start_step(OUTPUT_DIR, "step4_generate_prompts")
     rc = run_subprocess(f"""

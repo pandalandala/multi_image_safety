@@ -19,6 +19,7 @@ os.environ["HF_HOME"] = "/mnt2/xuran_hdd/cache"
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
+    apply_gpu_runtime_profile,
     clear_step_state,
     env_flag_is_true,
     finish_step,
@@ -27,6 +28,7 @@ from src.common.utils import (
     jsonl_record_count,
     setup_logging,
     load_jsonl,
+    log_gpu_runtime_profile,
     save_jsonl,
     DATA_DIR,
     start_step,
@@ -35,6 +37,12 @@ from src.path3_dataset_expand.status import write_path3_status
 
 setup_logging()
 logger = logging.getLogger(__name__)
+IMAGE_PROFILE = apply_gpu_runtime_profile(
+    path_name="path3",
+    task_type="image",
+    preferred_gpu_count=4,
+)
+log_gpu_runtime_profile(logger, IMAGE_PROFILE, "Path 3 image acquire")
 
 PROJ = Path(__file__).parent
 PYTHON = sys.executable
@@ -89,13 +97,13 @@ def main() -> None:
     for i, sample in enumerate(samples):
         sample["sample_id_global"] = 3000 + i  # Path 3 ID range: 3000+
 
-    free_gpus = get_visible_gpu_ids()
+    free_gpus = get_visible_gpu_ids(max_gpus=None)
     logger.info(f"Using visible GPUs for Method A image acquisition: {free_gpus}")
     if not free_gpus:
         logger.error("No GPUs configured for Method A image acquisition!")
         sys.exit(1)
 
-    num_workers = min(len(free_gpus), 4)
+    num_workers = len(free_gpus)
     force_regenerate = os.environ.get("MIS_FORCE_REGENERATE_IMAGES", "").strip() == "1"
     n = len(samples)
     chunk_size = (n + num_workers - 1) // num_workers

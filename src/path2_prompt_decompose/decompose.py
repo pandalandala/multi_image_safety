@@ -24,6 +24,30 @@ from src.common.utils import (
 logger = logging.getLogger(__name__)
 
 
+def _is_valid_image_description(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _filter_invalid_decomposed_results(results: list[dict]) -> list[dict]:
+    """Drop decomposed samples missing either benign image description."""
+    filtered = []
+    dropped = 0
+    for idx, sample in enumerate(results):
+        if _is_valid_image_description(sample.get("image1_description")) and _is_valid_image_description(sample.get("image2_description")):
+            filtered.append(sample)
+            continue
+        dropped += 1
+        logger.warning(
+            "Dropping decomposed prompt %s due to missing image description(s): image1=%r image2=%r",
+            idx,
+            sample.get("image1_description"),
+            sample.get("image2_description"),
+        )
+    if dropped:
+        logger.warning("Filtered out %d decomposed samples with invalid image descriptions", dropped)
+    return filtered
+
+
 def _build_system_message() -> str:
     return (
         "You are a safety research assistant helping to construct a multi-image "
@@ -388,6 +412,7 @@ def run(
             batch_size=batch_size,
         )
 
+    results = _filter_invalid_decomposed_results(results)
     save_jsonl(results, Path(output_dir) / "decomposed_prompts.jsonl")
     return results
 

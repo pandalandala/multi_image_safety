@@ -21,6 +21,7 @@ os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
+    apply_gpu_runtime_profile,
     clear_step_state,
     setup_logging,
     load_config,
@@ -30,9 +31,9 @@ from src.common.utils import (
     env_flag_is_true,
     finish_step,
     get_effective_tensor_parallel_size,
-    get_visible_gpu_csv,
     is_step_complete,
     jsonl_record_count,
+    log_gpu_runtime_profile,
     start_step,
 )
 from src.common.image_generation import should_force_regenerate_images
@@ -52,7 +53,6 @@ if "--clean" in sys.argv:
 
 MAX_PATH5_CANDIDATE_PAIRS = 10000
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
-ALL_GPU_IDS = get_visible_gpu_csv()
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1, validator=None) -> bool:
@@ -138,15 +138,21 @@ if not crawled and laion_enabled:
 
 if not crawled:
     if not laion_enabled:
+        image_profile = apply_gpu_runtime_profile(
+            path_name="path5",
+            task_type="image",
+            preferred_gpu_count=4,
+        )
+        log_gpu_runtime_profile(logger, image_profile, "Path 5 Step 1")
         logger.info("Refreshing T2I fallback pool to match the current query list")
         env = os.environ.copy()
-        env["CUDA_VISIBLE_DEVICES"] = ALL_GPU_IDS
+        env["CUDA_VISIBLE_DEVICES"] = image_profile["selected_gpu_csv"]
         env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
         env["PYTHONPATH"] = str(PROJ)
 
         sdxl_code = f"""
 import sys, os
-os.environ['CUDA_VISIBLE_DEVICES'] = '{ALL_GPU_IDS}'
+os.environ['CUDA_VISIBLE_DEVICES'] = '{image_profile["selected_gpu_csv"]}'
 os.environ['HF_HOME'] = '/mnt2/xuran_hdd/cache'
 sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, save_jsonl
@@ -240,73 +246,45 @@ save_jsonl(prompt_data, method_b_input)
 results = []
 
 if prompt_data:
-    local_cfg = config["llm"]["local"]
-    llm_tensor_parallel_size = get_effective_tensor_parallel_size(
-        local_cfg.get("tensor_parallel_size")
+    llm_profile = apply_gpu_runtime_profile(
+        path_name="path5",
+        task_type="llm",
+        preferred_gpu_count=4,
+        requested_tensor_parallel_size=4,
     )
+    log_gpu_runtime_profile(logger, llm_profile, "Path 5 Step 2")
+    local_cfg = config["llm"]["local"]
+    llm_tensor_parallel_size = llm_profile["tensor_parallel_size"]
+    worker_script = PROJ / "run_path5_step2_worker.py"
 
     env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = ALL_GPU_IDS
+    env["CUDA_VISIBLE_DEVICES"] = llm_profile["selected_gpu_csv"]
     env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
     env["PYTHONPATH"] = str(PROJ)
 
-    code = f"""
-import json, sys
-sys.path.insert(0, '{PROJ}')
-from src.common.utils import setup_logging, load_jsonl, save_jsonl
-from src.path3_dataset_expand.cross_pair import parse_cross_pair_response
-from src.common.schema import Pattern, SourcePath
-from vllm import LLM, SamplingParams
-setup_logging()
-
-prompt_data = load_jsonl('{method_b_input}')
-conversations = [[{{"role": "user", "content": item["prompt"]}}] for item in prompt_data]
-
-print(f'Loading LLM for {{len(conversations)}} cross-pair prompts...')
-llm = LLM(
-    model='{local_cfg["model_path"]}',
-    tensor_parallel_size={llm_tensor_parallel_size},
-    trust_remote_code=True,
-    max_model_len=4096,
-    enforce_eager=True,
-    gpu_memory_utilization=0.68,
-    disable_custom_all_reduce=True,
-)
-sampling_params = SamplingParams(temperature=0.7, max_tokens=1024, top_p=0.9)
-outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
-
-results = []
-rejected = 0
-for item, output in zip(prompt_data, outputs):
-    text = output.outputs[0].text
-    parsed = parse_cross_pair_response(text)
-    if parsed:
-        results.append({{
-            "image1_path": item["info1"].get("path", ""),
-            "image2_path": item["info2"].get("path", ""),
-            "image1_caption": item["info1"].get("description", ""),
-            "image2_caption": item["info2"].get("description", ""),
-            "image1_description": item["info1"].get("description", ""),
-            "image2_description": item["info2"].get("description", ""),
-            "image1_query": item["info1"].get("query", ""),
-            "image2_query": item["info2"].get("query", ""),
-            "category": parsed.get("category", "CRIME"),
-            "text_prompt": parsed["text_prompt"],
-            "reasoning": parsed.get("reasoning", ""),
-            "confidence": parsed.get("confidence", 3),
-            "pairing_mode": item.get("pairing_mode", ""),
-            "pattern": Pattern.A.value,
-            "source_path": SourcePath.PATH5.value,
-        }})
-    else:
-        rejected += 1
-
-save_jsonl(results, '{output_file}')
-print(f'Path 5: {{len(results)}} accepted, {{rejected}} rejected out of {{len(prompt_data)}}')
-"""
-    rc = subprocess.run([PYTHON, "-c", code], env=env, cwd=str(PROJ)).returncode
+    rc = subprocess.run(
+        [
+            PYTHON,
+            str(worker_script),
+            "--input-file",
+            str(method_b_input),
+            "--output-file",
+            str(output_file),
+            "--model-path",
+            str(local_cfg["model_path"]),
+            "--tensor-parallel-size",
+            str(llm_tensor_parallel_size),
+            "--max-model-len",
+            str(llm_profile["max_model_len"]),
+            "--gpu-memory-utilization",
+            str(llm_profile["gpu_memory_utilization"]),
+        ],
+        env=env,
+        cwd=str(PROJ),
+    ).returncode
     if rc != 0:
         logger.error("LLM cross-pairing subprocess failed")
+        raise SystemExit(rc)
     else:
         results = load_jsonl(output_file) if output_file.exists() else []
         logger.info(f"LLM cross-pairing: {len(results)} samples generated")

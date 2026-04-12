@@ -22,6 +22,13 @@ _PIPELINES: dict[tuple[str, str, str], object] = {}
 _TEXT_EMBED_CACHE: dict[str, object] = {}
 
 
+def _normalize_description(description: str | None) -> str:
+    """Return a stripped prompt string, or an empty string for invalid descriptions."""
+    if description is None:
+        return ""
+    return str(description).strip()
+
+
 def should_force_regenerate_images() -> bool:
     """Return True when callers should ignore cached/generated image files."""
     return os.environ.get("MIS_FORCE_REGENERATE_IMAGES", "").strip() == "1"
@@ -235,6 +242,10 @@ def generate_image(
       output_resolution: if set, resize the image to this square size before saving
     """
     backend_name, backend_cfg, root_cfg = _resolve_backend_config(backend)
+    prompt_text = _normalize_description(description)
+    if not prompt_text:
+        logger.warning("Skipping T2I generation for empty image description: %r", description)
+        return False
     pipe = get_t2i_pipeline(backend_name)
 
     out_path = Path(output_path)
@@ -261,7 +272,7 @@ def generate_image(
             generator = torch.Generator(device=generator_device).manual_seed(seed)
 
             kwargs = {
-                "prompt": description,
+                "prompt": prompt_text,
                 "negative_prompt": negative_prompt,
                 "width": width,
                 "height": height,
@@ -283,7 +294,7 @@ def generate_image(
                 image.save(tmp_path)
 
             passed_filter = passes_download_filter(tmp_path, min_width=min_width, min_height=min_height)
-            clip_score = _score_prompt_image_alignment(description, tmp_path) if passed_filter else float("-inf")
+            clip_score = _score_prompt_image_alignment(prompt_text, tmp_path) if passed_filter else float("-inf")
             accept = passed_filter and (clip_threshold <= 0.0 or clip_score >= clip_threshold)
 
             if passed_filter and clip_score > best_score:
@@ -315,7 +326,7 @@ def generate_image(
                 max_attempts,
                 clip_score,
                 clip_threshold,
-                description[:80],
+                prompt_text[:80],
             )
 
         if keep_best and best_tmp is not None and best_tmp.exists():
@@ -332,7 +343,7 @@ def generate_image(
 
         return False
     except Exception as e:
-        logger.warning(f"T2I generation failed for '{description[:80]}...': {e}")
+        logger.warning("T2I generation failed for %r: %s", prompt_text[:80], e)
         return False
     finally:
         for attempt in range(1, max_attempts + 1):

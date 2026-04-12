@@ -7,6 +7,7 @@ import logging
 import os
 from pathlib import Path
 import shutil
+import subprocess
 from typing import Any
 
 import yaml
@@ -135,10 +136,37 @@ def env_flag_is_true(name: str) -> bool:
     return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _parse_gpu_id_csv(raw: str | None, default: str) -> list[int]:
+    """Parse a CSV GPU list into integer GPU ids."""
+    value = raw or default
+    gpu_ids = []
+    for part in value.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            gpu_ids.append(int(part))
+        except ValueError:
+            logger.warning("Ignoring invalid GPU id %r in %r", part, value)
+    return gpu_ids
+
+
+def get_gpu_candidate_ids(default: str = "0,1,2,3,4,5,6,7") -> list[int]:
+    """Return candidate GPU ids that this run is allowed to use."""
+    raw = (
+        os.environ.get("MIS_GPU_CANDIDATES")
+        or os.environ.get("CUDA_VISIBLE_DEVICES")
+        or default
+    )
+    gpu_ids = _parse_gpu_id_csv(raw, default)
+    if not gpu_ids:
+        gpu_ids = _parse_gpu_id_csv(default, default)
+    return gpu_ids
+
+
 def get_visible_gpu_ids(default: str = "0,1,2,3", max_gpus: int | None = 4) -> list[int]:
     """Return the GPU ids exposed through CUDA_VISIBLE_DEVICES."""
-    raw = os.environ.get("CUDA_VISIBLE_DEVICES", default)
-    gpu_ids = [int(part.strip()) for part in raw.split(",") if part.strip()]
+    gpu_ids = _parse_gpu_id_csv(os.environ.get("CUDA_VISIBLE_DEVICES"), default)
     if max_gpus is not None:
         return gpu_ids[:max_gpus]
     return gpu_ids
@@ -155,6 +183,328 @@ def get_effective_tensor_parallel_size(requested: int | None = None, default: st
     if requested is None:
         return visible_gpu_count
     return max(1, min(int(requested), visible_gpu_count))
+
+
+def query_gpu_inventory(default: str = "0,1,2,3,4,5,6,7") -> list[dict[str, Any]]:
+    """Return per-GPU free-memory inventory for candidate GPUs."""
+    candidate_ids = set(get_gpu_candidate_ids(default=default))
+    if not candidate_ids:
+        return []
+
+    try:
+        gpu_query = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=index,uuid,memory.total,memory.free,utilization.gpu",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if gpu_query.returncode != 0:
+            raise RuntimeError(gpu_query.stderr.strip() or gpu_query.stdout.strip())
+        rows = [line.strip() for line in gpu_query.stdout.splitlines() if line.strip()]
+    except Exception as exc:
+        logger.warning("Failed to query GPU inventory via nvidia-smi: %s", exc)
+        try:
+            import torch
+
+            torch_inventory = []
+            for gpu_id in sorted(candidate_ids):
+                with torch.cuda.device(gpu_id):
+                    free_bytes, total_bytes = torch.cuda.mem_get_info()
+                torch_inventory.append(
+                    {
+                        "index": gpu_id,
+                        "uuid": "",
+                        "total_gb": float(total_bytes) / (1024.0 ** 3),
+                        "free_gb": float(free_bytes) / (1024.0 ** 3),
+                        "utilization": 0.0,
+                        "process_count": 0,
+                    }
+                )
+            if torch_inventory:
+                return torch_inventory
+        except Exception:
+            logger.debug("Failed to query GPU inventory via torch.cuda", exc_info=True)
+        return [
+            {
+                "index": gpu_id,
+                "uuid": "",
+                "total_gb": 48.0,
+                "free_gb": 48.0,
+                "utilization": 0.0,
+                "process_count": 0,
+            }
+            for gpu_id in sorted(candidate_ids)
+        ]
+
+    process_counts: dict[str, int] = {}
+    try:
+        proc_query = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-compute-apps=gpu_uuid,pid,used_memory",
+                "--format=csv,noheader,nounits",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        proc_rows = [line.strip() for line in proc_query.stdout.splitlines() if line.strip()]
+        for row in proc_rows:
+            if "No running compute processes found" in row:
+                break
+            parts = [part.strip() for part in row.split(",")]
+            if len(parts) < 3:
+                continue
+            gpu_uuid = parts[0]
+            process_counts[gpu_uuid] = process_counts.get(gpu_uuid, 0) + 1
+    except Exception:
+        logger.debug("Failed to query GPU process inventory", exc_info=True)
+
+    inventory = []
+    for row in rows:
+        parts = [part.strip() for part in row.split(",")]
+        if len(parts) < 5:
+            continue
+        try:
+            index = int(parts[0])
+            if index not in candidate_ids:
+                continue
+            total_gb = float(parts[2]) / 1024.0
+            free_gb = float(parts[3]) / 1024.0
+            util_value = parts[4]
+            utilization = float(util_value) if util_value.upper() != "N/A" else 0.0
+        except ValueError:
+            continue
+        uuid = parts[1]
+        inventory.append(
+            {
+                "index": index,
+                "uuid": uuid,
+                "total_gb": total_gb,
+                "free_gb": free_gb,
+                "utilization": utilization,
+                "process_count": process_counts.get(uuid, 0),
+            }
+        )
+
+    return sorted(inventory, key=lambda item: item["index"])
+
+
+def _gpu_preference_key(gpu: dict[str, Any]) -> tuple[float, float, int, int]:
+    """Sort GPUs by more free memory, less load, fewer processes, lower id."""
+    return (-float(gpu["free_gb"]), float(gpu["utilization"]), int(gpu["process_count"]), int(gpu["index"]))
+
+
+def format_gpu_inventory(inventory: list[dict[str, Any]]) -> str:
+    """Render GPU inventory compactly for logs."""
+    parts = []
+    for gpu in inventory:
+        parts.append(
+            "GPU{index} free={free:.1f}/{total:.1f}GiB util={util:.0f}% procs={procs}".format(
+                index=gpu["index"],
+                free=gpu["free_gb"],
+                total=gpu["total_gb"],
+                util=gpu["utilization"],
+                procs=gpu["process_count"],
+            )
+        )
+    return "; ".join(parts)
+
+
+def select_gpu_runtime_profile(
+    *,
+    path_name: str,
+    task_type: str,
+    preferred_gpu_count: int = 4,
+    requested_tensor_parallel_size: int | None = None,
+    requested_gpu_memory_utilization: float | None = None,
+    requested_max_model_len: int | None = None,
+    requested_batch_size: int | None = None,
+    default_candidates: str = "0,1,2,3,4,5,6,7",
+) -> dict[str, Any]:
+    """Select the best GPU set for an LLM or image-generation task."""
+    mode = os.environ.get("MIS_GPU_MODE", "adaptive").strip().lower() or "adaptive"
+    inventory = query_gpu_inventory(default=default_candidates)
+    if not inventory:
+        raise RuntimeError("No candidate GPUs found for runtime selection")
+
+    preferred_gpu_count = max(1, preferred_gpu_count)
+    candidate_ids = [gpu["index"] for gpu in inventory]
+    sorted_inventory = sorted(inventory, key=_gpu_preference_key)
+
+    if task_type == "image":
+        min_free_gb = float(
+            os.environ.get(
+                "MIS_GPU_IMAGE_MIN_FREE_GB",
+                os.environ.get("MIS_GPU_MIN_FREE_GB", "8"),
+            )
+        )
+        eligible = [gpu for gpu in sorted_inventory if gpu["free_gb"] >= min_free_gb]
+        if mode == "strict4":
+            target_count = preferred_gpu_count
+        else:
+            target_count = min(preferred_gpu_count, len(eligible))
+        if target_count < 1:
+            raise RuntimeError(
+                "No GPUs satisfy image-generation free-memory threshold "
+                f"({min_free_gb:.1f} GiB). Inventory: {format_gpu_inventory(inventory)}"
+            )
+        selected = eligible[:target_count]
+        fallback_reason = ""
+        if len(selected) < preferred_gpu_count:
+            fallback_reason = (
+                f"preferred {preferred_gpu_count} GPUs for image work, "
+                f"selected {len(selected)} because only {len(eligible)} met the "
+                f"{min_free_gb:.1f} GiB free-memory threshold"
+            )
+        return {
+            "path_name": path_name,
+            "task_type": task_type,
+            "mode": mode,
+            "selected_gpu_ids": [gpu["index"] for gpu in selected],
+            "selected_gpu_csv": ",".join(str(gpu["index"]) for gpu in selected),
+            "gpu_count": len(selected),
+            "worker_count": len(selected),
+            "tensor_parallel_size": 1,
+            "fallback_mode": "none" if not fallback_reason else "reduced_workers",
+            "fallback_reason": fallback_reason,
+            "inventory": inventory,
+        }
+
+    path_prefix = f"MIS_{path_name.upper()}_"
+    base_max_model_len = int(
+        os.environ.get(f"{path_prefix}MAX_MODEL_LEN", str(requested_max_model_len or 4096))
+    )
+    base_gpu_util = float(
+        os.environ.get(
+            f"{path_prefix}GPU_MEMORY_UTILIZATION",
+            str(requested_gpu_memory_utilization if requested_gpu_memory_utilization is not None else 0.68),
+        )
+    )
+    base_batch_size = int(
+        os.environ.get(f"{path_prefix}VLLM_BATCH_SIZE", str(requested_batch_size or 64))
+    )
+    requested_tp = requested_tensor_parallel_size or preferred_gpu_count
+    profile_counts = [min(preferred_gpu_count, requested_tp, len(candidate_ids))]
+    if mode in {"adaptive", "auto"}:
+        for count in (2, 1):
+            if count <= len(candidate_ids) and count not in profile_counts:
+                profile_counts.append(count)
+
+    attempted: list[str] = []
+    for count in profile_counts:
+        if count >= 4:
+            gpu_util = base_gpu_util
+            max_model_len = base_max_model_len
+            batch_size = base_batch_size
+        elif count == 2:
+            gpu_util = min(base_gpu_util, 0.55)
+            max_model_len = min(base_max_model_len, 3072)
+            batch_size = max(8, base_batch_size // 2)
+        else:
+            gpu_util = min(base_gpu_util, 0.40)
+            max_model_len = min(base_max_model_len, 2048)
+            batch_size = max(4, base_batch_size // 4)
+
+        eligible = [
+            gpu for gpu in sorted_inventory
+            if gpu["free_gb"] >= (gpu["total_gb"] * gpu_util)
+        ]
+        attempted.append(
+            f"{count}gpu@util={gpu_util:.2f}: eligible={len(eligible)}"
+        )
+        if len(eligible) < count:
+            continue
+        selected = eligible[:count]
+        fallback_reason = ""
+        fallback_mode = "none"
+        if count != profile_counts[0]:
+            fallback_mode = "adaptive_llm"
+            fallback_reason = (
+                f"preferred {profile_counts[0]}-GPU llm profile was unavailable; "
+                f"using {count} GPUs with max_model_len={max_model_len}, "
+                f"gpu_memory_utilization={gpu_util:.2f}, batch_size={batch_size}"
+            )
+        return {
+            "path_name": path_name,
+            "task_type": task_type,
+            "mode": mode,
+            "selected_gpu_ids": [gpu["index"] for gpu in selected],
+            "selected_gpu_csv": ",".join(str(gpu["index"]) for gpu in selected),
+            "gpu_count": len(selected),
+            "worker_count": len(selected),
+            "tensor_parallel_size": max(1, min(requested_tp, len(selected))),
+            "max_model_len": max_model_len,
+            "gpu_memory_utilization": gpu_util,
+            "batch_size": batch_size,
+            "fallback_mode": fallback_mode,
+            "fallback_reason": fallback_reason,
+            "inventory": inventory,
+        }
+
+    raise RuntimeError(
+        f"No {task_type} GPU profile for {path_name} satisfied free-memory constraints. "
+        f"Attempts: {', '.join(attempted)}. Inventory: {format_gpu_inventory(inventory)}"
+    )
+
+
+def apply_gpu_runtime_profile(
+    *,
+    path_name: str,
+    task_type: str,
+    preferred_gpu_count: int = 4,
+    requested_tensor_parallel_size: int | None = None,
+    requested_gpu_memory_utilization: float | None = None,
+    requested_max_model_len: int | None = None,
+    requested_batch_size: int | None = None,
+    default_candidates: str = "0,1,2,3,4,5,6,7",
+) -> dict[str, Any]:
+    """Select GPUs for the current process and export the chosen runtime profile."""
+    profile = select_gpu_runtime_profile(
+        path_name=path_name,
+        task_type=task_type,
+        preferred_gpu_count=preferred_gpu_count,
+        requested_tensor_parallel_size=requested_tensor_parallel_size,
+        requested_gpu_memory_utilization=requested_gpu_memory_utilization,
+        requested_max_model_len=requested_max_model_len,
+        requested_batch_size=requested_batch_size,
+        default_candidates=default_candidates,
+    )
+    os.environ["CUDA_VISIBLE_DEVICES"] = profile["selected_gpu_csv"]
+    os.environ["MIS_SELECTED_GPUS"] = profile["selected_gpu_csv"]
+    os.environ["MIS_GPU_COUNT"] = str(profile["gpu_count"])
+    os.environ["MIS_GPU_FALLBACK_MODE"] = str(profile["fallback_mode"])
+    os.environ["MIS_GPU_FALLBACK_REASON"] = str(profile["fallback_reason"])
+
+    if task_type == "llm":
+        path_prefix = f"MIS_{path_name.upper()}_"
+        os.environ[f"{path_prefix}MAX_MODEL_LEN"] = str(profile["max_model_len"])
+        os.environ[f"{path_prefix}GPU_MEMORY_UTILIZATION"] = f"{profile['gpu_memory_utilization']:.2f}"
+        os.environ[f"{path_prefix}VLLM_BATCH_SIZE"] = str(profile["batch_size"])
+
+    return profile
+
+
+def log_gpu_runtime_profile(logger: logging.Logger, profile: dict[str, Any], label: str) -> None:
+    """Log the selected GPU runtime profile and current inventory."""
+    logger.info(
+        "%s GPU runtime: selected_gpus=%s gpu_count=%s tensor_parallel_size=%s "
+        "worker_count=%s mode=%s fallback_mode=%s fallback_reason=%s",
+        label,
+        profile.get("selected_gpu_csv", ""),
+        profile.get("gpu_count", 0),
+        profile.get("tensor_parallel_size", 1),
+        profile.get("worker_count", 0),
+        profile.get("mode", ""),
+        profile.get("fallback_mode", ""),
+        profile.get("fallback_reason", "") or "none",
+    )
+    if _is_truthy_env(os.environ.get("MIS_GPU_VERBOSE", "1")):
+        logger.info("%s GPU inventory: %s", label, format_gpu_inventory(profile.get("inventory", [])))
 
 
 def jsonl_file_has_records(path: str | Path) -> bool:
@@ -325,10 +675,12 @@ def get_safe_vllm_kwargs(
         float(local_cfg.get("gpu_memory_utilization", 0.68)),
         float(os.environ.get(f"{env_prefix}GPU_MEMORY_UTILIZATION", "0.68")),
     )
+    effective_tp = tensor_parallel_size or int(local_cfg.get("tensor_parallel_size", 4))
+    effective_tp = get_effective_tensor_parallel_size(effective_tp)
 
     return {
         "model": model_path or local_cfg["model_path"],
-        "tensor_parallel_size": tensor_parallel_size or int(local_cfg.get("tensor_parallel_size", 4)),
+        "tensor_parallel_size": effective_tp,
         "trust_remote_code": True,
         "max_model_len": max_model_len,
         "enforce_eager": True,
@@ -365,12 +717,18 @@ def get_hf_token() -> str | None:
 
 def apply_path2_runtime_defaults() -> dict[str, str]:
     """Apply stable runtime defaults for Path 2 unless already overridden."""
+    default_candidates = (
+        os.environ.get("MIS_GPU_CANDIDATES")
+        or os.environ.get("CUDA_VISIBLE_DEVICES")
+        or "0,1,2,3,4,5,6,7"
+    )
     defaults = {
         "HF_HOME": "/mnt2/xuran_hdd/cache",
-        "CUDA_VISIBLE_DEVICES": "0,1,2,3",
+        "MIS_GPU_CANDIDATES": default_candidates,
         "OMP_NUM_THREADS": "1",
         "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
         "VLLM_ENABLE_V1_MULTIPROCESSING": "0",
+        "VLLM_WORKER_MULTIPROC_METHOD": "spawn",
         "MIS_PATH2_MAX_MODEL_LEN": "4096",
         "MIS_PATH2_GPU_MEMORY_UTILIZATION": "0.68",
         "MIS_PATH2_VLLM_BATCH_SIZE": "64",

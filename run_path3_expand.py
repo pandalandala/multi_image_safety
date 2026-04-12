@@ -26,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
     DATA_DIR,
+    apply_gpu_runtime_profile,
     clear_step_state,
     env_flag_is_true,
     finish_step,
@@ -35,6 +36,7 @@ from src.common.utils import (
     jsonl_record_count,
     load_config,
     load_jsonl,
+    log_gpu_runtime_profile,
     save_jsonl,
     start_step,
     setup_logging,
@@ -55,7 +57,17 @@ if "--clean" in sys.argv:
     sys.argv.remove("--clean")
 
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
-ALL_GPU_IDS = get_visible_gpu_csv()
+LLM_PROFILE = apply_gpu_runtime_profile(
+    path_name="path3",
+    task_type="llm",
+    preferred_gpu_count=4,
+    requested_tensor_parallel_size=4,
+)
+log_gpu_runtime_profile(logger, LLM_PROFILE, "Path 3 LLM")
+ALL_GPU_IDS = LLM_PROFILE["selected_gpu_csv"]
+LLM_MAX_MODEL_LEN = LLM_PROFILE["max_model_len"]
+LLM_GPU_MEMORY_UTILIZATION = LLM_PROFILE["gpu_memory_utilization"]
+LLM_TENSOR_PARALLEL_SIZE = LLM_PROFILE["tensor_parallel_size"]
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) -> bool:
@@ -156,6 +168,30 @@ def _method_b_result_key(item: dict) -> tuple[str, str]:
     )
 
 
+def _build_worker_env(gpu_ids: str | None = None) -> dict[str, str]:
+    """Build a stable subprocess runtime environment for Path 3 workers."""
+    env = os.environ.copy()
+    env["CUDA_VISIBLE_DEVICES"] = gpu_ids or ALL_GPU_IDS
+    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+    env["PYTHONPATH"] = str(PROJ)
+    env.setdefault("OMP_NUM_THREADS", "1")
+    env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+    env.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
+    env.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
+    return env
+
+
+def _run_worker_script(script_name: str, args: list[str], gpu_ids: str | None = None) -> int:
+    """Run a file-backed worker subprocess for Path 3."""
+    worker = PROJ / script_name
+    result = subprocess.run(
+        [PYTHON, str(worker), *args],
+        env=_build_worker_env(gpu_ids),
+        cwd=str(PROJ),
+    )
+    return result.returncode
+
+
 def _run_method_a(images_with_desc: list[dict]) -> list[dict]:
     """Run Method A incrementally, reusing existing outputs when possible."""
     logger.info("=" * 60)
@@ -189,9 +225,6 @@ def _run_method_a(images_with_desc: list[dict]) -> list[dict]:
 
     config = load_config()
     local_cfg = config["llm"]["local"]
-    llm_tensor_parallel_size = get_effective_tensor_parallel_size(
-        local_cfg.get("tensor_parallel_size")
-    )
 
     input_file = OUTPUT_DIR / "_method_a_input.jsonl"
     temp_output = OUTPUT_DIR / "_method_a_new.jsonl"
@@ -199,65 +232,25 @@ def _run_method_a(images_with_desc: list[dict]) -> list[dict]:
     start_step(OUTPUT_DIR, "step2_method_a_decompose")
     save_jsonl(pending_inputs, input_file)
 
-    env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = ALL_GPU_IDS
-    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
-    env["PYTHONPATH"] = str(PROJ)
-
-    code = f"""
-import json, sys
-sys.path.insert(0, '{PROJ}')
-from src.common.utils import setup_logging, load_jsonl, save_jsonl
-from src.path3_dataset_expand.element_decompose import prepare_batch_decompose_prompts
-from src.common.schema import Pattern, SourcePath
-from vllm import LLM, SamplingParams
-setup_logging()
-
-images_with_desc = load_jsonl('{input_file}')
-prompts = prepare_batch_decompose_prompts(images_with_desc)
-conversations = [[{{"role": "user", "content": p}}] for p in prompts]
-
-print(f'Loading LLM for {{len(prompts)}} decompose prompts...')
-llm = LLM(
-    model='{local_cfg["model_path"]}',
-    tensor_parallel_size={llm_tensor_parallel_size},
-    trust_remote_code=True,
-    max_model_len=4096,
-    enforce_eager=True,
-    gpu_memory_utilization=0.68,
-    disable_custom_all_reduce=True,
-)
-sampling_params = SamplingParams(temperature=0.7, max_tokens=2048, top_p=0.9)
-outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
-
-results = []
-for item, output in zip(images_with_desc, outputs):
-    text = output.outputs[0].text
-    try:
-        start, end = text.rfind("{{"), text.rfind("}}") + 1
-        data = json.loads(text[start:end]) if start >= 0 and end > 0 else {{}}
-        if "image1_description" in data and "image2_description" in data:
-            results.append({{
-                "original_description": item.get("description", ""),
-                "original_category": item.get("category", ""),
-                "category": item.get("category", "CRIME"),
-                "image1_description": data["image1_description"],
-                "image2_description": data["image2_description"],
-                "text_prompt": data.get("text_prompt", ""),
-                "reasoning": data.get("decomposition_reasoning", ""),
-                "pattern": Pattern.A.value,
-                "source_path": SourcePath.PATH3.value,
-                "source_dataset": item.get("dataset", ""),
-            }})
-    except Exception:
-        pass
-
-save_jsonl(results, '{temp_output}')
-print(f'Method A: {{len(results)}}/{{len(images_with_desc)}} samples saved')
-"""
-    result = subprocess.run([PYTHON, "-c", code], env=env, cwd=str(PROJ))
+    result = _run_worker_script(
+        "run_path3_method_a_worker.py",
+        [
+            "--input-file",
+            str(input_file),
+            "--output-file",
+            str(temp_output),
+            "--model-path",
+            str(local_cfg["model_path"]),
+            "--tensor-parallel-size",
+            str(LLM_TENSOR_PARALLEL_SIZE),
+            "--max-model-len",
+            str(LLM_MAX_MODEL_LEN),
+            "--gpu-memory-utilization",
+            str(LLM_GPU_MEMORY_UTILIZATION),
+        ],
+    )
     input_file.unlink(missing_ok=True)
-    if result.returncode != 0:
+    if result != 0:
         logger.warning("Method A subprocess failed — continuing with existing Method A results")
         temp_output.unlink(missing_ok=True)
         return existing_results
@@ -320,14 +313,6 @@ def _run_method_b(all_image_infos: list[dict]) -> list[dict]:
 
     config = load_config()
     local_cfg = config["llm"]["local"]
-    llm_tensor_parallel_size = get_effective_tensor_parallel_size(
-        local_cfg.get("tensor_parallel_size")
-    )
-
-    env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = ALL_GPU_IDS
-    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
-    env["PYTHONPATH"] = str(PROJ)
 
     method_b_input = OUTPUT_DIR / "_method_b_input.jsonl"
     temp_output = OUTPUT_DIR / "_method_b_new.jsonl"
@@ -339,62 +324,25 @@ def _run_method_b(all_image_infos: list[dict]) -> list[dict]:
     start_step(OUTPUT_DIR, "step3_method_b_cross_pair")
     save_jsonl(pending_prompt_data, method_b_input)
 
-    code = f"""
-import sys
-sys.path.insert(0, '{PROJ}')
-from src.common.utils import setup_logging, load_jsonl, save_jsonl
-from src.path3_dataset_expand.cross_pair import parse_cross_pair_response
-from src.common.schema import Pattern, SourcePath
-from vllm import LLM, SamplingParams
-setup_logging()
-
-prompt_data = load_jsonl('{method_b_input}')
-conversations = [[{{"role": "user", "content": item["prompt"]}}] for item in prompt_data]
-
-print(f'Loading LLM for {{len(conversations)}} cross-pair prompts...')
-llm = LLM(
-    model='{local_cfg["model_path"]}',
-    tensor_parallel_size={llm_tensor_parallel_size},
-    trust_remote_code=True,
-    max_model_len=4096,
-    enforce_eager=True,
-    gpu_memory_utilization=0.68,
-    disable_custom_all_reduce=True,
-)
-sampling_params = SamplingParams(temperature=0.7, max_tokens=1024, top_p=0.9)
-outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
-
-results = []
-rejected = 0
-for item, output in zip(prompt_data, outputs):
-    text = output.outputs[0].text
-    parsed = parse_cross_pair_response(text)
-    if parsed:
-        results.append({{
-            "image1_path": item["info1"].get("path", ""),
-            "image2_path": item["info2"].get("path", ""),
-            "image1_description": item["info1"].get("description", ""),
-            "image2_description": item["info2"].get("description", ""),
-            "image1_source": item["info1"].get("dataset", ""),
-            "image2_source": item["info2"].get("dataset", ""),
-            "category": parsed.get("category", "CRIME"),
-            "text_prompt": parsed["text_prompt"],
-            "reasoning": parsed.get("reasoning", ""),
-            "confidence": parsed.get("confidence", 3),
-            "pairing_mode": item.get("pairing_mode", ""),
-            "category_hint": item.get("category_hint", ""),
-            "pattern": Pattern.B.value,
-            "source_path": SourcePath.PATH3.value,
-        }})
-    else:
-        rejected += 1
-
-save_jsonl(results, '{temp_output}')
-print(f'Method B: {{len(results)}} accepted, {{rejected}} rejected out of {{len(prompt_data)}}')
-"""
-    result = subprocess.run([PYTHON, "-c", code], env=env, cwd=str(PROJ))
+    result = _run_worker_script(
+        "run_path3_method_b_worker.py",
+        [
+            "--input-file",
+            str(method_b_input),
+            "--output-file",
+            str(temp_output),
+            "--model-path",
+            str(local_cfg["model_path"]),
+            "--tensor-parallel-size",
+            str(LLM_TENSOR_PARALLEL_SIZE),
+            "--max-model-len",
+            str(LLM_MAX_MODEL_LEN),
+            "--gpu-memory-utilization",
+            str(LLM_GPU_MEMORY_UTILIZATION),
+        ],
+    )
     method_b_input.unlink(missing_ok=True)
-    if result.returncode != 0:
+    if result != 0:
         logger.warning("Method B subprocess failed — continuing with existing Method B results")
         temp_output.unlink(missing_ok=True)
         return existing_results

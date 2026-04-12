@@ -20,6 +20,7 @@ os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
+    apply_gpu_runtime_profile,
     clear_step_state,
     setup_logging,
     load_config,
@@ -28,10 +29,10 @@ from src.common.utils import (
     DATA_DIR,
     env_flag_is_true,
     finish_step,
-    get_visible_gpu_csv,
     get_visible_gpu_ids,
     is_step_complete,
     jsonl_record_count,
+    log_gpu_runtime_profile,
     start_step,
 )
 
@@ -52,8 +53,14 @@ FINAL_OUTPUT = OUTPUT_DIR / "samples_with_images.jsonl"
 SCENES_OUTPUT = OUTPUT_DIR / "generated_scenes.jsonl"
 INTENT_OUTPUT = OUTPUT_DIR / "intent_injected_samples.jsonl"
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
-FREE_GPUS = get_visible_gpu_ids()
-ALL_GPU_IDS = get_visible_gpu_csv()
+LLM_PROFILE = apply_gpu_runtime_profile(
+    path_name="path4",
+    task_type="llm",
+    preferred_gpu_count=4,
+    requested_tensor_parallel_size=4,
+)
+log_gpu_runtime_profile(logger, LLM_PROFILE, "Path 4 LLM")
+ALL_GPU_IDS = LLM_PROFILE["selected_gpu_csv"]
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) -> bool:
@@ -76,6 +83,21 @@ def run_subprocess(code: str, gpu_ids: str | None = None) -> int:
     return result.returncode
 
 
+def run_worker_script(script_name: str, args: list[str], gpu_ids: str | None = None) -> int:
+    """Run a file-backed worker subprocess."""
+    env = os.environ.copy()
+    env["CUDA_VISIBLE_DEVICES"] = gpu_ids or ALL_GPU_IDS
+    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+    env["PYTHONPATH"] = str(PROJ)
+    env.setdefault("OMP_NUM_THREADS", "1")
+    env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+    env.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
+    env.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
+    worker = PROJ / script_name
+    result = subprocess.run([PYTHON, str(worker), *args], env=env, cwd=str(PROJ))
+    return result.returncode
+
+
 # ── Step 1: Scene generation ─────────────────────────────────────────────────
 logger.info("=" * 60)
 logger.info("PATH 4 STEP 1: LLM scene generation")
@@ -86,13 +108,10 @@ if step_complete("step1_generate_scenes", SCENES_OUTPUT):
 else:
     clear_step_state(OUTPUT_DIR, "step1_generate_scenes", stale_paths=[SCENES_OUTPUT])
     start_step(OUTPUT_DIR, "step1_generate_scenes")
-    rc = run_subprocess(f"""
-import sys; sys.path.insert(0, '{PROJ}')
-from src.common.utils import setup_logging; setup_logging()
-from src.path4_scenario.scene_gen import run
-scenes = run(output_dir='{OUTPUT_DIR}', use_api=False)
-print(f'Generated {{len(scenes)}} scene-activity pairs')
-""")
+    rc = run_worker_script(
+        "run_path4_step1_worker.py",
+        ["--output-dir", str(OUTPUT_DIR)],
+    )
     if rc != 0:
         raise RuntimeError("Step 1 (scene_gen) failed")
     finish_step(
@@ -113,18 +132,17 @@ if step_complete("step2_inject_intent", INTENT_OUTPUT):
 else:
     clear_step_state(OUTPUT_DIR, "step2_inject_intent", stale_paths=[INTENT_OUTPUT])
     start_step(OUTPUT_DIR, "step2_inject_intent")
-    rc = run_subprocess(f"""
-import sys; sys.path.insert(0, '{PROJ}')
-from src.common.utils import setup_logging; setup_logging()
-from src.path4_scenario.intent_inject import run
-results = run(
-    input_file='{SCENES_OUTPUT}',
-    output_dir='{OUTPUT_DIR}',
-    use_api=False,
-    max_combinations=3000,
-)
-print(f'Intent injection complete: {{len(results)}} samples')
-""")
+    rc = run_worker_script(
+        "run_path4_step2_worker.py",
+        [
+            "--input-file",
+            str(SCENES_OUTPUT),
+            "--output-dir",
+            str(OUTPUT_DIR),
+            "--max-combinations",
+            "3000",
+        ],
+    )
     if rc != 0:
         raise RuntimeError("Step 2 (intent_inject) failed")
     finish_step(
@@ -140,15 +158,19 @@ logger.info("=" * 60)
 logger.info("PATH 4 STEP 3: Image fetch (4-GPU parallel subprocesses)")
 logger.info("=" * 60)
 
-NUM_WORKERS = len(FREE_GPUS)
-
 if force_rerun or os.environ.get("MIS_FORCE_REGENERATE_IMAGES", "").strip() == "1":
+    image_profile = apply_gpu_runtime_profile(
+        path_name="path4",
+        task_type="image",
+        preferred_gpu_count=4,
+    )
+    free_gpus = image_profile["selected_gpu_ids"]
     clear_step_state(
         OUTPUT_DIR,
         "step3_fetch_images",
         stale_paths=[
             FINAL_OUTPUT,
-            *[OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in FREE_GPUS],
+            *[OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus],
             *sorted(OUTPUT_DIR.glob("_chunk_*.jsonl")),
         ],
     )
@@ -157,30 +179,38 @@ if step_complete("step3_fetch_images", FINAL_OUTPUT) and os.environ.get("MIS_FOR
     all_results = load_jsonl(FINAL_OUTPUT)
     logger.info(f"Skipping Step 3; completion marker found: {len(all_results)} samples")
 else:
+    image_profile = apply_gpu_runtime_profile(
+        path_name="path4",
+        task_type="image",
+        preferred_gpu_count=4,
+    )
+    log_gpu_runtime_profile(logger, image_profile, "Path 4 Step 3")
+    free_gpus = image_profile["selected_gpu_ids"]
+    num_workers = len(free_gpus)
     clear_step_state(
         OUTPUT_DIR,
         "step3_fetch_images",
         stale_paths=[
             FINAL_OUTPUT,
-            *[OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in FREE_GPUS],
+            *[OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus],
             *sorted(OUTPUT_DIR.glob("_chunk_*.jsonl")),
         ],
     )
     start_step(OUTPUT_DIR, "step3_fetch_images")
     samples = load_jsonl(INTENT_OUTPUT)
     n = len(samples)
-    chunk_size = (n + NUM_WORKERS - 1) // NUM_WORKERS
-    logger.info(f"Splitting {n} samples into {NUM_WORKERS} chunks of ~{chunk_size}")
+    chunk_size = (n + num_workers - 1) // num_workers
+    logger.info(f"Splitting {n} samples into {num_workers} chunks of ~{chunk_size}")
 
     chunk_files = []
-    for i in range(NUM_WORKERS):
+    for i in range(num_workers):
         chunk = samples[i * chunk_size: (i + 1) * chunk_size]
         chunk_file = OUTPUT_DIR / f"_chunk_{i}.jsonl"
         save_jsonl(chunk, chunk_file)
         chunk_files.append(chunk_file)
 
     procs = []
-    for i, gpu_id in enumerate(FREE_GPUS):
+    for i, gpu_id in enumerate(free_gpus):
         worker_dir = OUTPUT_DIR / f"worker_{gpu_id}"
         chunk_out = OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl"
         code = f"""

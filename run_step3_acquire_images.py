@@ -18,12 +18,26 @@ if token_path.exists():
     os.environ.setdefault("HF_TOKEN", token_path.read_text(encoding="utf-8").strip())
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.common.utils import get_visible_gpu_ids, setup_logging, load_jsonl, save_jsonl, DATA_DIR
+from src.common.utils import (
+    DATA_DIR,
+    apply_gpu_runtime_profile,
+    get_visible_gpu_ids,
+    load_jsonl,
+    log_gpu_runtime_profile,
+    save_jsonl,
+    setup_logging,
+)
 from src.common.image_generation import ensure_t2i_model_cached
 from src.common.utils import clear_step_state, finish_step, is_step_complete, jsonl_record_count, start_step
 
 setup_logging()
 logger = logging.getLogger(__name__)
+IMAGE_PROFILE = apply_gpu_runtime_profile(
+    path_name="path2",
+    task_type="image",
+    preferred_gpu_count=4,
+)
+log_gpu_runtime_profile(logger, IMAGE_PROFILE, "Path 2 Step 3")
 
 PROJ = Path(__file__).parent
 PYTHON = sys.executable
@@ -54,7 +68,7 @@ clear_step_state(
 start_step(OUTPUT_DIR, "step3_acquire_images")
 
 # ── Use all visible GPUs ──────────────────────────────────────────────────────
-free_gpus = get_visible_gpu_ids()
+free_gpus = get_visible_gpu_ids(max_gpus=None)
 logger.info(f"Using visible GPUs for image acquisition: {free_gpus}")
 if not free_gpus:
     logger.error("No GPUs configured for image acquisition!")
@@ -63,7 +77,7 @@ if not free_gpus:
 logger.info("Pre-caching active T2I model before spawning GPU workers")
 ensure_t2i_model_cached()
 
-num_workers = min(len(free_gpus), 4)
+num_workers = len(free_gpus)
 force_regenerate = os.environ.get("MIS_FORCE_REGENERATE_IMAGES", "").strip() == "1"
 
 if force_regenerate:

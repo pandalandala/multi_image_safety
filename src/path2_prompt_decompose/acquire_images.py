@@ -29,6 +29,10 @@ from src.common.image_generation import (
 logger = logging.getLogger(__name__)
 
 
+def _has_valid_description(description: str | None) -> bool:
+    return bool(str(description).strip()) if description is not None else False
+
+
 def _existing_acquisition_mode(sample: dict, image_index: int) -> str:
     """Return the stored acquisition mode for an image if present."""
     return str(sample.get(f"image{image_index}_acquisition", "")).strip().lower()
@@ -106,6 +110,9 @@ def acquire_single_image(
     prefer_generation: bool = True,
 ) -> tuple[bool, str]:
     """Acquire one image and report whether it came from generation or retrieval."""
+    if not _has_valid_description(description):
+        logger.warning("Skipping image acquisition for empty description at %s", output_path)
+        return False, ""
     if prefer_generation:
         if generate_image(description, output_path):
             return True, "generated"
@@ -163,7 +170,12 @@ def acquire_images_for_sample(
         sample["sample_id"] = sample_id
         return sample
 
-    logger.debug(f"Failed to acquire images for sample {sample_id}")
+    logger.info(
+        "Failed to acquire images for sample %s (image1=%s, image2=%s)",
+        sample_id,
+        success1,
+        success2,
+    )
     return None
 
 

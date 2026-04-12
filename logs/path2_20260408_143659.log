@@ -1,70 +1,0 @@
-2026-04-08 14:37:00 [INFO] __main__: ============================================================
-2026-04-08 14:37:00 [INFO] __main__: PATH 2 STEP 1: Collect malicious prompts
-2026-04-08 14:37:00 [INFO] __main__: ============================================================
-2026-04-08 14:37:21 [INFO] src.path2_prompt_decompose.collect_prompts: Collected 166382 prompts from BeaverTails
-Downloading data:   0%|          | 0/21 [00:00<?, ?files/s]Downloading data:   5%|▍         | 1/21 [00:00<00:17,  1.13files/s]Downloading data:  29%|██▊       | 6/21 [00:01<00:02,  6.55files/s]Downloading data:  81%|████████  | 17/21 [00:01<00:00, 16.06files/s]Downloading data: 100%|██████████| 21/21 [00:01<00:00, 13.83files/s]
-Generating train split:   0%|          | 0/9450 [00:00<?, ? examples/s]Generating train split:  81%|████████  | 7650/9450 [00:00<00:00, 69642.13 examples/s]Generating train split: 100%|██████████| 9450/9450 [00:00<00:00, 73533.77 examples/s]
-2026-04-08 14:37:25 [INFO] src.path2_prompt_decompose.collect_prompts: Collected 9446 prompts from SorryBench
-Generating train split: 0 examples [00:00, ? examples/s]Generating train split: 5082 examples [00:00, 35091.38 examples/s]Generating train split: 5082 examples [00:00, 34314.45 examples/s]
-Generating test split: 0 examples [00:00, ? examples/s]Generating test split: 5083 examples [00:00, 41576.35 examples/s]Generating test split: 5083 examples [00:00, 40477.55 examples/s]
-2026-04-08 14:37:28 [INFO] src.path2_prompt_decompose.collect_prompts: Collected 384 prompts from ToxicChat
-2026-04-08 14:37:29 [INFO] src.path2_prompt_decompose.collect_prompts: Skipped 395 non-English prompts
-2026-04-08 14:37:29 [INFO] src.path2_prompt_decompose.collect_prompts: Total unique prompts: 3765
-2026-04-08 14:37:29 [INFO] src.common.utils: Saved 3765 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path2/collected_prompts.jsonl
-2026-04-08 14:37:29 [INFO] src.path2_prompt_decompose.collect_prompts: Category distribution: {'VIOLENCE': 1103, 'CRIME': 1109, 'PRIVACY': 311, 'HATE': 260, 'MISINFO': 252, 'REGULATED': 211, 'SEXUAL': 193, 'SELF_HARM': 47, 'CSEA': 33, 'IP': 110, 'ADVICE': 63, 'WMD': 73}
-2026-04-08 14:37:29 [INFO] src.path2_prompt_decompose.collect_prompts: Source distribution: {'beavertails': 1785, 'sorry_bench': 1605, 'toxic_chat': 375}
-Collected 3765 prompts
-2026-04-08 14:37:29 [INFO] __main__: Step 1 complete -> /mnt/hdd/xuran/multi_image_safety/data/raw/path2/collected_prompts.jsonl
-2026-04-08 14:37:29 [INFO] __main__: ============================================================
-2026-04-08 14:37:29 [INFO] __main__: PATH 2 STEP 2: LLM prompt decomposition (vLLM subprocess)
-2026-04-08 14:37:29 [INFO] __main__: ============================================================
-INFO 04-08 14:37:37 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
-INFO 04-08 14:37:50 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
-INFO 04-08 14:37:50 [model.py:1678] Using max model len 8192
-INFO 04-08 14:37:50 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
-INFO 04-08 14:37:50 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
-INFO 04-08 14:37:50 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
-INFO 04-08 14:37:50 [vllm.py:790] Asynchronous scheduling is enabled.
-WARNING 04-08 14:37:50 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
-WARNING 04-08 14:37:50 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
-INFO 04-08 14:37:50 [vllm.py:1025] Cudagraph is disabled under eager mode
-INFO 04-08 14:37:50 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
-WARNING 04-08 14:38:10 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
-Traceback (most recent call last):
-  File "<string>", line 5, in <module>
-  File "/mnt/hdd/xuran/multi_image_safety/src/path2_prompt_decompose/decompose.py", line 363, in run
-    results = decompose_with_vllm(
-              ^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/multi_image_safety/src/path2_prompt_decompose/decompose.py", line 186, in decompose_with_vllm
-    llm = LLM(
-          ^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
-    self.llm_engine = LLMEngine.from_engine_args(
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
-    return cls(
-           ^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
-    self.engine_core = EngineCoreClient.make_client(
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 101, in make_client
-    return SyncMPClient(vllm_config, executor_class, log_stats)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
-    return func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 710, in __init__
-    super().__init__(
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 535, in __init__
-    with launch_core_engines(
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/contextlib.py", line 144, in __exit__
-    next(self.gen)
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
-    wait_for_engine_startup(
-  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
-    raise RuntimeError(
-RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
-Traceback (most recent call last):
-  File "/mnt/hdd/xuran/multi_image_safety/run_path2.py", line 80, in <module>
-    raise RuntimeError("Step 2 (decompose) failed")
-RuntimeError: Step 2 (decompose) failed

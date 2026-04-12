@@ -1,31 +1,31 @@
 Running Path 4: Scenario Construction
-Using GPUs: 4,5,6,7
-2026-04-09 23:11:14 [INFO] __main__: ============================================================
-2026-04-09 23:11:14 [INFO] __main__: PATH 4: Scenario Construction
-2026-04-09 23:11:14 [INFO] __main__: ============================================================
-2026-04-09 23:11:14 [INFO] __main__: ============================================================
-2026-04-09 23:11:14 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
-2026-04-09 23:11:14 [INFO] __main__: ============================================================
-INFO 04-09 23:11:22 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 8192, 'tensor_parallel_size': 4, 'disable_log_stats': True, 'enforce_eager': True, 'model': 'Qwen/Qwen3.5-27B'}
-INFO 04-09 23:11:23 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
-INFO 04-09 23:11:23 [model.py:1678] Using max model len 8192
-INFO 04-09 23:11:23 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
-INFO 04-09 23:11:25 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
-INFO 04-09 23:11:25 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
-INFO 04-09 23:11:25 [vllm.py:790] Asynchronous scheduling is enabled.
-WARNING 04-09 23:11:25 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
-WARNING 04-09 23:11:25 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
-INFO 04-09 23:11:25 [vllm.py:1025] Cudagraph is disabled under eager mode
-INFO 04-09 23:11:25 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
-WARNING 04-09 23:11:42 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+Using GPUs: 0,1,2,3,4,5,6,7
+2026-04-10 08:18:40 [INFO] __main__: ============================================================
+2026-04-10 08:18:40 [INFO] __main__: PATH 4: Scenario Construction
+2026-04-10 08:18:40 [INFO] __main__: ============================================================
+2026-04-10 08:18:40 [INFO] __main__: ============================================================
+2026-04-10 08:18:40 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
+2026-04-10 08:18:40 [INFO] __main__: ============================================================
+INFO 04-10 08:18:48 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+INFO 04-10 08:18:49 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-10 08:18:49 [model.py:1678] Using max model len 4096
+INFO 04-10 08:18:49 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-10 08:18:51 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-10 08:18:51 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-10 08:18:51 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-10 08:18:51 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-10 08:18:51 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-10 08:18:51 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-10 08:18:51 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+WARNING 04-10 08:19:09 [system_utils.py:152] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
 Traceback (most recent call last):
   File "<string>", line 5, in <module>
-  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 184, in run
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 183, in run
     scenes = generate_scenes_vllm(
              ^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 77, in generate_scenes_vllm
-    llm = LLM(
-          ^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 78, in generate_scenes_vllm
+    llm = LLM(**get_safe_vllm_kwargs(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
     self.llm_engine = LLMEngine.from_engine_args(
                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -53,7 +53,7 @@ Traceback (most recent call last):
     raise RuntimeError(
 RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
 Traceback (most recent call last):
-  File "/mnt/hdd/xuran/multi_image_safety/run_path4_scenario.py", line 91, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/run_path4_scenario.py", line 97, in <module>
     raise RuntimeError("Step 1 (scene_gen) failed")
 RuntimeError: Step 1 (scene_gen) failed
 Traceback (most recent call last):
