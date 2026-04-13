@@ -24,6 +24,8 @@ _nsfw_pipeline = None
 
 DEFAULT_CLIP_RETRIEVAL_URL = "https://knn.laion.ai/knn-service"
 DEFAULT_OPENVERSE_API_URL = "https://api.openverse.org/v1/images/"
+DEFAULT_NASA_IMAGES_API_URL = "https://images-api.nasa.gov"
+DEFAULT_METMUSEUM_API_URL = "https://collectionapi.metmuseum.org/public/collection/v1"
 WATERMARK_HINTS = (
     "watermark",
     "watermarked",
@@ -69,6 +71,10 @@ NON_PHOTO_HINTS = (
 DEFAULT_HTTP_HEADERS = {
     "User-Agent": "multi-image-safety-research/0.1 (non-commercial research use)",
 }
+
+
+class ImageSourceError(RuntimeError):
+    """Raised when a configured image backend cannot be queried safely."""
 
 
 def _get_device() -> str:
@@ -313,6 +319,72 @@ def _get_retrieval_config() -> dict:
         return {}
 
 
+def _strict_backend_errors_enabled() -> bool:
+    """Whether retrieval backend failures should abort the pipeline."""
+    cfg = _get_retrieval_config()
+    return bool(cfg.get("fail_on_backend_error", False))
+
+
+def _require_backend_credentials() -> bool:
+    """Whether configured credential-backed backends must have valid env vars."""
+    cfg = _get_retrieval_config()
+    return bool(cfg.get("require_backend_credentials", False))
+
+
+def _get_backend_config(backend_name: str) -> dict:
+    """Return config for a specific retrieval backend."""
+    cfg = _get_retrieval_config()
+    return cfg.get(backend_name, {})
+
+
+def _format_http_error(e: urllib.error.HTTPError) -> str:
+    """Create a compact HTTP error detail string."""
+    detail = str(e)
+    try:
+        body = e.read().decode("utf-8", errors="replace").strip()
+    except Exception:
+        body = ""
+    if body:
+        body = " ".join(body.split())
+        return f"HTTP {e.code}: {detail}; body={body[:300]}"
+    return f"HTTP {e.code}: {detail}"
+
+
+def _raise_image_source_error(backend_name: str, query_text: str, detail: str) -> None:
+    """Raise a standardized backend failure."""
+    raise ImageSourceError(
+        f"Image backend '{backend_name}' failed for query '{query_text}': {detail}"
+    )
+
+
+def _get_backend_env(
+    backend_name: str,
+    env_key: str,
+    *,
+    required: bool = False,
+) -> str:
+    """Read a backend credential from the configured environment variable."""
+    backend_cfg = _get_backend_config(backend_name)
+    env_name = str(backend_cfg.get(env_key, "")).strip()
+    if not env_name:
+        if required:
+            _raise_image_source_error(
+                backend_name,
+                "",
+                f"missing config key '{env_key}' for backend credentials",
+            )
+        return ""
+
+    value = os.environ.get(env_name, "").strip()
+    if required and not value:
+        _raise_image_source_error(
+            backend_name,
+            "",
+            f"required environment variable '{env_name}' is not set",
+        )
+    return value
+
+
 def _strip_html(text: str) -> str:
     """Convert simple HTML snippets into plain text."""
     if not text:
@@ -514,7 +586,10 @@ def _retrieve_from_clip_retrieval(
             ))
         return filtered
     except Exception as e:
-        logger.error(f"clip-retrieval failed for '{query_text}': {e}")
+        detail = str(e)
+        logger.error("clip-retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("clip-retrieval", query_text, detail)
         return []
 
 
@@ -546,8 +621,17 @@ def _retrieve_from_wikimedia_commons(
         request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
         with urllib.request.urlopen(request, timeout=30) as response:
             data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = _format_http_error(e)
+        logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("wikimedia_commons", query_text, detail)
+        return []
     except Exception as e:
-        logger.error(f"Wikimedia Commons retrieval failed for '{query_text}': {e}")
+        detail = str(e)
+        logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("wikimedia_commons", query_text, detail)
         return []
 
     pages = data.get("query", {}).get("pages", [])
@@ -643,7 +727,11 @@ def _retrieve_from_openverse(
     url = base_url.rstrip("?") + "?" + urllib.parse.urlencode(params)
 
     headers = dict(DEFAULT_HTTP_HEADERS)
-    ov_token = os.environ.get("OPENVERSE_API_TOKEN", "").strip()
+    ov_token = _get_backend_env(
+        "openverse",
+        "api_token_env",
+        required=_strict_backend_errors_enabled() and _require_backend_credentials(),
+    )
     if ov_token:
         headers["Authorization"] = f"Bearer {ov_token}"
 
@@ -666,12 +754,24 @@ def _retrieve_from_openverse(
                 )
                 _time.sleep(wait)
                 continue
-            logger.error("Openverse HTTP %d for '%s': %s", e.code, query_text, e)
+            detail = _format_http_error(e)
+            logger.error("Openverse retrieval failed for '%s': %s", query_text, detail)
+            if _strict_backend_errors_enabled():
+                _raise_image_source_error("openverse", query_text, detail)
             return []
         except Exception as e:
-            logger.error("Openverse retrieval failed for '%s': %s", query_text, e)
+            detail = str(e)
+            logger.error("Openverse retrieval failed for '%s': %s", query_text, detail)
+            if _strict_backend_errors_enabled():
+                _raise_image_source_error("openverse", query_text, detail)
             return []
     if data is None:
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error(
+                "openverse",
+                query_text,
+                "request exhausted retries or token was rejected",
+            )
         return []
 
     exclude_mature = ov_cfg.get("exclude_mature", True)
@@ -737,6 +837,353 @@ def _retrieve_from_openverse(
     return results
 
 
+def _retrieve_from_nasa_images(
+    query_text: str,
+    num_results: int,
+    min_width: int,
+    min_height: int,
+) -> list[dict]:
+    """Retrieve image candidates from the NASA Image and Video Library."""
+    cfg = _get_retrieval_config()
+    nasa_cfg = cfg.get("nasa_images", {})
+    params = urllib.parse.urlencode({
+        "q": query_text,
+        "media_type": "image",
+        "page": "1",
+        "page_size": str(min(int(nasa_cfg.get("page_size", max(num_results * 4, 20))), 100)),
+    })
+    base_url = nasa_cfg.get("api_url", DEFAULT_NASA_IMAGES_API_URL).rstrip("/")
+    url = f"{base_url}/search?{params}"
+
+    try:
+        request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = _format_http_error(e)
+        logger.error("NASA retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("nasa_images", query_text, detail)
+        return []
+    except Exception as e:
+        detail = str(e)
+        logger.error("NASA retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("nasa_images", query_text, detail)
+        return []
+
+    results = []
+    items = data.get("collection", {}).get("items", [])
+    for item in items:
+        data_items = item.get("data") or []
+        if not data_items:
+            continue
+
+        meta = data_items[0]
+        links = item.get("links") or []
+        file_url = ""
+        for link in links:
+            if str(link.get("render", "")).strip().lower() != "image":
+                continue
+            href = str(link.get("href", "")).strip()
+            if href:
+                file_url = href
+                break
+        if not file_url:
+            continue
+
+        title = _strip_html(meta.get("title", ""))
+        description = _strip_html(meta.get("description", ""))
+        keywords = ", ".join(str(k).strip() for k in meta.get("keywords", []) if str(k).strip())
+        nasa_id = str(meta.get("nasa_id", "")).strip()
+        creator = _strip_html(
+            meta.get("photographer")
+            or meta.get("secondary_creator")
+            or meta.get("center", "")
+        )
+        source_page = f"https://images.nasa.gov/details/{urllib.parse.quote(nasa_id)}" if nasa_id else ""
+
+        if _has_watermark_hint(title, description, keywords, file_url):
+            continue
+        if _has_non_photo_hint(title, description, keywords):
+            continue
+
+        # NASA search results do not reliably expose pixel dimensions. We defer
+        # size validation to the post-download filter when width/height are unknown.
+        width = int(meta.get("width", 0) or 0)
+        height = int(meta.get("height", 0) or 0)
+        if width and width < min_width:
+            continue
+        if height and height < min_height:
+            continue
+
+        caption = description or title
+        results.append(_normalize_result(
+            url=file_url,
+            caption=caption,
+            width=width,
+            height=height,
+            source_page=source_page,
+            provider="nasa_images",
+            license_name="NASA Media Usage Guidelines",
+            creator=creator,
+        ))
+        if len(results) >= num_results:
+            break
+
+    return results
+
+
+def _retrieve_from_metmuseum(
+    query_text: str,
+    num_results: int,
+    min_width: int,
+    min_height: int,
+) -> list[dict]:
+    """Retrieve open-access image candidates from The Met Collection API."""
+    cfg = _get_retrieval_config()
+    met_cfg = cfg.get("metmuseum", {})
+    base_url = met_cfg.get("api_url", DEFAULT_METMUSEUM_API_URL).rstrip("/")
+    search_params = urllib.parse.urlencode({
+        "q": query_text,
+        "hasImages": "true",
+    })
+    search_url = f"{base_url}/search?{search_params}"
+
+    try:
+        request = urllib.request.Request(search_url, headers=DEFAULT_HTTP_HEADERS)
+        with urllib.request.urlopen(request, timeout=30) as response:
+            search_data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = _format_http_error(e)
+        logger.error("MetMuseum search failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("metmuseum", query_text, detail)
+        return []
+    except Exception as e:
+        detail = str(e)
+        logger.error("MetMuseum search failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("metmuseum", query_text, detail)
+        return []
+
+    object_ids = search_data.get("objectIDs") or []
+    max_object_fetch = int(met_cfg.get("max_object_fetch", max(num_results * 6, 24)))
+    results = []
+    for object_id in object_ids[:max_object_fetch]:
+        object_url = f"{base_url}/objects/{object_id}"
+        try:
+            request = urllib.request.Request(object_url, headers=DEFAULT_HTTP_HEADERS)
+            with urllib.request.urlopen(request, timeout=30) as response:
+                item = json.loads(response.read().decode("utf-8"))
+        except Exception as e:
+            detail = str(e)
+            logger.debug("MetMuseum object %s failed for '%s': %s", object_id, query_text, detail)
+            if _strict_backend_errors_enabled():
+                _raise_image_source_error(
+                    "metmuseum",
+                    query_text,
+                    f"object lookup {object_id} failed: {detail}",
+                )
+            continue
+
+        if item.get("isPublicDomain") is not True:
+            continue
+
+        file_url = str(item.get("primaryImage") or item.get("primaryImageSmall") or "").strip()
+        if not file_url:
+            continue
+
+        title = _strip_html(item.get("title", ""))
+        object_name = _strip_html(item.get("objectName", ""))
+        medium = _strip_html(item.get("medium", ""))
+        artist_name = _strip_html(item.get("artistDisplayName", ""))
+        source_page = str(item.get("objectURL", "")).strip()
+
+        if _has_watermark_hint(title, object_name, medium, file_url):
+            continue
+        if _has_non_photo_hint(title, object_name, medium):
+            continue
+
+        # The Met object API exposes image URLs but not pixel dimensions in the
+        # object payload, so post-download validation remains the final gate.
+        width = int(item.get("imageWidth", 0) or 0)
+        height = int(item.get("imageHeight", 0) or 0)
+        if width and width < min_width:
+            continue
+        if height and height < min_height:
+            continue
+
+        caption_parts = [part for part in (title, object_name, medium) if part]
+        results.append(_normalize_result(
+            url=file_url,
+            caption=" - ".join(caption_parts[:3]),
+            width=width,
+            height=height,
+            source_page=source_page,
+            provider="metmuseum",
+            license_name="CC0 / Public Domain",
+            creator=artist_name,
+        ))
+        if len(results) >= num_results:
+            break
+
+    return results
+
+
+def _retrieve_from_pexels(
+    query_text: str,
+    num_results: int,
+    min_width: int,
+    min_height: int,
+) -> list[dict]:
+    """Retrieve images from the Pexels API (requires PEXELS_API_KEY)."""
+    api_key = _get_backend_env(
+        "pexels",
+        "api_key_env",
+        required=_strict_backend_errors_enabled() and _require_backend_credentials(),
+    )
+    if not api_key:
+        logger.warning("PEXELS_API_KEY not set — skipping Pexels backend")
+        return []
+
+    params = urllib.parse.urlencode({
+        "query": query_text,
+        "per_page": str(min(num_results * 3, 80)),
+        "size": "large",
+    })
+    url = f"https://api.pexels.com/v1/search?{params}"
+    headers = dict(DEFAULT_HTTP_HEADERS)
+    headers["Authorization"] = api_key
+
+    try:
+        request = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = _format_http_error(e)
+        logger.error("Pexels retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("pexels", query_text, detail)
+        return []
+    except Exception as e:
+        detail = str(e)
+        logger.error("Pexels retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("pexels", query_text, detail)
+        return []
+
+    results = []
+    for photo in data.get("photos", []):
+        src = photo.get("src", {})
+        file_url = src.get("large2x") or src.get("original", "")
+        width = int(photo.get("width", 0) or 0)
+        height = int(photo.get("height", 0) or 0)
+        if not file_url or width < min_width or height < min_height:
+            continue
+
+        caption = photo.get("alt", "") or ""
+        photographer = photo.get("photographer", "") or ""
+        photo_url = photo.get("url", "")
+
+        if _has_watermark_hint(file_url, caption, photographer):
+            continue
+        if _has_non_photo_hint(file_url, caption):
+            continue
+
+        results.append(_normalize_result(
+            url=file_url,
+            caption=caption,
+            width=width,
+            height=height,
+            source_page=photo_url,
+            provider="pexels",
+            license_name="Pexels License",
+            creator=photographer,
+        ))
+        if len(results) >= num_results:
+            break
+
+    return results
+
+
+def _retrieve_from_pixabay(
+    query_text: str,
+    num_results: int,
+    min_width: int,
+    min_height: int,
+) -> list[dict]:
+    """Retrieve images from the Pixabay API (requires PIXABAY_API_KEY)."""
+    api_key = _get_backend_env(
+        "pixabay",
+        "api_key_env",
+        required=_strict_backend_errors_enabled() and _require_backend_credentials(),
+    )
+    if not api_key:
+        logger.warning("PIXABAY_API_KEY not set — skipping Pixabay backend")
+        return []
+
+    params = urllib.parse.urlencode({
+        "key": api_key,
+        "q": query_text,
+        "per_page": str(min(num_results * 3, 200)),
+        "image_type": "photo",
+        "safesearch": "true",
+        "min_width": str(min_width),
+        "min_height": str(min_height),
+    })
+    url = f"https://pixabay.com/api/?{params}"
+
+    try:
+        request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = _format_http_error(e)
+        logger.error("Pixabay retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("pixabay", query_text, detail)
+        return []
+    except Exception as e:
+        detail = str(e)
+        logger.error("Pixabay retrieval failed for '%s': %s", query_text, detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("pixabay", query_text, detail)
+        return []
+
+    results = []
+    for hit in data.get("hits", []):
+        file_url = hit.get("largeImageURL", "")
+        width = int(hit.get("imageWidth", 0) or 0)
+        height = int(hit.get("imageHeight", 0) or 0)
+        if not file_url or width < min_width or height < min_height:
+            continue
+
+        caption = hit.get("tags", "") or ""
+        creator = hit.get("user", "") or ""
+        page_url = hit.get("pageURL", "")
+
+        if _has_watermark_hint(file_url, caption, creator):
+            continue
+        if _has_non_photo_hint(file_url, caption):
+            continue
+
+        results.append(_normalize_result(
+            url=file_url,
+            caption=caption,
+            width=width,
+            height=height,
+            source_page=page_url,
+            provider="pixabay",
+            license_name="Pixabay License",
+            creator=creator,
+        ))
+        if len(results) >= num_results:
+            break
+
+    return results
+
+
 def _retrieve_from_backend(
     backend: str,
     query_text: str,
@@ -768,8 +1215,39 @@ def _retrieve_from_backend(
             min_width=min_width,
             min_height=min_height,
         )
+    if backend == "nasa_images":
+        return _retrieve_from_nasa_images(
+            query_text,
+            num_results=num_results,
+            min_width=min_width,
+            min_height=min_height,
+        )
+    if backend == "metmuseum":
+        return _retrieve_from_metmuseum(
+            query_text,
+            num_results=num_results,
+            min_width=min_width,
+            min_height=min_height,
+        )
+    if backend == "pexels":
+        return _retrieve_from_pexels(
+            query_text,
+            num_results=num_results,
+            min_width=min_width,
+            min_height=min_height,
+        )
+    if backend == "pixabay":
+        return _retrieve_from_pixabay(
+            query_text,
+            num_results=num_results,
+            min_width=min_width,
+            min_height=min_height,
+        )
 
-    logger.error(f"Unknown retrieval backend '{backend}'")
+    detail = f"unknown retrieval backend '{backend}'"
+    logger.error(detail)
+    if _strict_backend_errors_enabled():
+        _raise_image_source_error(backend, query_text, detail)
     return []
 
 
@@ -784,7 +1262,8 @@ def retrieve_from_laion(
     Retrieve images from the configured external image backend.
 
     Despite the historical name, this now dispatches to one or more configured
-    retrieval backends (`clip-retrieval`, `wikimedia_commons`, `openverse`).
+    retrieval backends (`clip-retrieval`, `wikimedia_commons`, `openverse`,
+    `nasa_images`, `metmuseum`).
     """
     if not _is_laion_enabled():
         return []
@@ -803,7 +1282,10 @@ def retrieve_from_laion(
         backends = [str(backend).strip()]
 
     if not backends:
-        logger.error("No retrieval backends configured")
+        detail = "no retrieval backends configured"
+        logger.error(detail)
+        if _strict_backend_errors_enabled():
+            _raise_image_source_error("laion", query_text, detail)
         return []
 
     all_results = []

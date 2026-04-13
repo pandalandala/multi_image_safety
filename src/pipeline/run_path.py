@@ -53,7 +53,7 @@ def run_path3():
     logger.info("=" * 60)
     logger.info("PATH 3: Dataset Expansion")
     logger.info("=" * 60)
-    run_script("run_path3_expand.py")
+    run_script("run_path3.py")
 
     logger.info("PATH 3 complete!")
 
@@ -63,7 +63,7 @@ def run_path4(use_api: bool = False):
     logger.info("=" * 60)
     logger.info("PATH 4: Scenario Construction")
     logger.info("=" * 60)
-    run_script("run_path4_scenario.py")
+    run_script("run_path4.py")
 
     logger.info("PATH 4 complete!")
 
@@ -73,7 +73,7 @@ def run_path5(use_api: bool = False):
     logger.info("=" * 60)
     logger.info("PATH 5: Image Pair Mining")
     logger.info("=" * 60)
-    run_script("run_path5_embedding.py")
+    run_script("run_path5.py")
 
     logger.info("PATH 5 complete!")
 

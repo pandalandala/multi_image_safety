@@ -22,7 +22,7 @@ def filter_pairs_clip(
     theta_safe: float = 0.40,
     theta_harm: float = 0.35,
     min_pass_rate: float = 0.10,
-    fallback_top_k: int = 500,
+    fallback_top_k: int = 3000,
 ) -> list[dict]:
     """
     Filter concept pairs using CLIP text embeddings.

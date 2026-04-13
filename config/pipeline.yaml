@@ -96,8 +96,8 @@ clip:
 # External image retrieval backends (used by Path 3/5 when enabled)
 laion:
   enabled: true
-  backend: "multi"  # "multi", "wikimedia_commons", "openverse", or "clip-retrieval"
-  backends: ["wikimedia_commons", "openverse"]
+  backend: "multi"  # "multi", "wikimedia_commons", "openverse", "nasa_images", "metmuseum", or "clip-retrieval"
+  backends: ["wikimedia_commons", "openverse", "pexels", "pixabay"]
   index_url: "https://knn.laion.ai/knn-service"  # used only by clip-retrieval backend
   num_results: 40
   aesthetic_score_min: 5.0
@@ -105,12 +105,25 @@ laion:
   min_height: 512
   deduplicate: true
   safety_filter: true
+  fail_on_backend_error: true
+  require_backend_credentials: true
+  pexels:
+    api_key_env: "PEXELS_API_KEY"
+  pixabay:
+    api_key_env: "PIXABAY_API_KEY"
   openverse:
+    api_token_env: "OPENVERSE_API_TOKEN"
     api_url: "https://api.openverse.org/v1/images/"
     page_size: 20
     allowed_sources: ["flickr"]
     allowed_licenses: ["by", "by-sa", "cc0", "pdm"]
     exclude_mature: true
+  nasa_images:
+    api_url: "https://images-api.nasa.gov"
+    page_size: 60
+  metmuseum:
+    api_url: "https://collectionapi.metmuseum.org/public/collection/v1"
+    max_object_fetch: 60
 
 # Quality control
 quality:
@@ -174,9 +187,9 @@ balance:
 # Path-specific settings
 paths:
   path1:
-    target_samples: 1500
-    oversample: 2000
-    image_source: "generated"
+    target_samples: 2000
+    oversample: 6000
+    image_source: "retrieval_first"  # Retrieve real images; T2I fallback
   path2:
     target_samples: 3000
     oversample: 4500
@@ -190,13 +203,13 @@ paths:
     oversample: 3000
     image_source: "mixed"  # LAION retrieval + T2I
   path5:
-    target_samples: 2500
-    oversample: 3750
+    target_samples: 3000
+    oversample: 5000
     image_source: "laion_retrieval"
   path6:
-    target_samples: 1000
-    oversample: 1500
-    image_source: "generated"
+    target_samples: 1500
+    oversample: 2500
+    image_source: "retrieval_first"  # Retrieve real images; T2I fallback
 
 # Huggingface cache
 hf_home: "/mnt2/xuran_hdd/cache"

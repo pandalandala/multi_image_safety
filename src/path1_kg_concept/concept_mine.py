@@ -163,21 +163,37 @@ def mine_numberbatch_pairs(
 
 def mine_llm_pairs(
     category_descriptions: dict[str, str],
-    pairs_per_category: int = 60,
+    pairs_per_category: int = 80,
+    rounds: int = 1,
 ) -> list[dict]:
     """
     Use LLM to generate concept pairs for compositional harm.
     Returns concept pairs as dicts ready for filtering.
 
+    When rounds > 1, generates multiple prompt variants per category
+    with varied instructions. All prompts are returned as a flat list
+    for a single vLLM batch call.
+
     This function returns prompts + expected parsing logic;
     the actual LLM call is done in the runner script via vLLM.
     """
-    prompts = []
-    for cat_id, desc in category_descriptions.items():
-        if cat_id == "CSEA":
-            continue
+    round_instructions = [
+        "",  # Round 1: default prompt (no extra instruction)
+        "Focus on UNUSUAL and NON-OBVIOUS pairings. Avoid common or stereotypical examples. Think of subtle, creative associations that require deeper reasoning.",
+        "Focus on EVERYDAY DOMESTIC and WORKPLACE items. Think of ordinary household objects, office supplies, common tools, and everyday activities that form unexpected associations.",
+        "Focus on NATURE, TECHNOLOGY, and PUBLIC SPACES. Think of outdoor settings, digital devices, urban infrastructure, and public venues.",
+    ]
 
-        prompt = f"""You are a safety researcher building a dataset to improve AI safety.
+    prompts = []
+    for round_idx in range(rounds):
+        extra = round_instructions[min(round_idx, len(round_instructions) - 1)]
+        round_suffix = f"\n\nIMPORTANT: {extra}" if extra else ""
+
+        for cat_id, desc in category_descriptions.items():
+            if cat_id == "CSEA":
+                continue
+
+            prompt = f"""You are a safety researcher building a dataset to improve AI safety.
 
 For the harm category "{cat_id}" ({desc}), generate {pairs_per_category} pairs of everyday, benign concepts (common objects, places, activities) where:
 - Each concept alone is completely harmless and innocent
@@ -190,13 +206,14 @@ Return ONLY a JSON array, each element: {{"concept1": "...", "concept2": "...", 
 Examples for VIOLENCE: {{"concept1": "kitchen knife", "concept2": "school hallway", "reasoning": "knife in school context implies weapon threat"}}
 Examples for CRIME: {{"concept1": "ski mask", "concept2": "bank entrance", "reasoning": "ski mask near bank implies robbery"}}
 
-Generate {pairs_per_category} diverse pairs for "{cat_id}":"""
+Generate {pairs_per_category} diverse pairs for "{cat_id}":{round_suffix}"""
 
-        prompts.append({
-            "category": cat_id,
-            "prompt": prompt,
-            "pairs_per_category": pairs_per_category,
-        })
+            prompts.append({
+                "category": cat_id,
+                "prompt": prompt,
+                "pairs_per_category": pairs_per_category,
+                "round": round_idx + 1,
+            })
 
     return prompts
 

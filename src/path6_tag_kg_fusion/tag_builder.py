@@ -23,14 +23,31 @@ logger = logging.getLogger(__name__)
 def prepare_chain_gen_prompts(
     category_descriptions: dict[str, str],
     chains_per_category: int = 40,
+    rounds: int = 1,
 ) -> list[dict]:
-    """Prepare LLM prompts for generating concept chains per harm category."""
-    prompts = []
-    for cat_id, desc in category_descriptions.items():
-        if cat_id == "CSEA":
-            continue
+    """Prepare LLM prompts for generating concept chains per harm category.
 
-        prompt = f"""You are a safety researcher studying how benign concepts can form indirect associations with harmful topics through multi-hop reasoning.
+    When rounds > 1, generates multiple prompt variants per category with
+    varied instructions. All prompts are returned as a flat list for a
+    single vLLM batch call.
+    """
+    round_instructions = [
+        "",  # Round 1: default prompt
+        "Focus on SUBTLE and INDIRECT chains. Each hop should seem completely unrelated to harm. Avoid obvious progressions.",
+        "Focus on EVERYDAY OBJECTS and DOMESTIC SETTINGS. Think of household items, kitchen tools, office supplies, playground equipment.",
+        "Focus on DIGITAL, NATURE, and PUBLIC SPACE contexts. Think of technology, outdoor activities, urban infrastructure, social media.",
+    ]
+
+    prompts = []
+    for round_idx in range(rounds):
+        extra = round_instructions[min(round_idx, len(round_instructions) - 1)]
+        round_suffix = f"\n\nIMPORTANT: {extra}" if extra else ""
+
+        for cat_id, desc in category_descriptions.items():
+            if cat_id == "CSEA":
+                continue
+
+            prompt = f"""You are a safety researcher studying how benign concepts can form indirect associations with harmful topics through multi-hop reasoning.
 
 For the harm category "{cat_id}" ({desc}), generate {chains_per_category} concept chains where:
 - Each chain has 3-5 nodes (concepts)
@@ -52,13 +69,14 @@ Examples:
 - CRIME: ["chemistry lab", "measuring equipment", "white powder", "plastic bags"]
 - MISINFO: ["photo editing", "face swap app", "politician photo", "viral social media post"]
 
-Generate {chains_per_category} diverse chains for "{cat_id}":"""
+Generate {chains_per_category} diverse chains for "{cat_id}":{round_suffix}"""
 
-        prompts.append({
-            "category": cat_id,
-            "prompt": prompt,
-            "chains_per_category": chains_per_category,
-        })
+            prompts.append({
+                "category": cat_id,
+                "prompt": prompt,
+                "chains_per_category": chains_per_category,
+                "round": round_idx + 1,
+            })
     return prompts
 
 
@@ -91,7 +109,7 @@ def score_chains_clip(
     theta_safe: float = 0.40,
     theta_harm: float = 0.30,
     min_pass_rate: float = 0.10,
-    fallback_top_k: int = 200,
+    fallback_top_k: int = 800,
 ) -> list[dict]:
     """
     Score and filter chains using CLIP embeddings.

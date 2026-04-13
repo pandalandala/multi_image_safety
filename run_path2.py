@@ -88,7 +88,7 @@ def run(use_api: bool = False) -> None:
         logger.info("[Step 2/4] Skipping prompt decomposition; completion marker found")
     else:
         logger.info("[Step 2/4] Decomposing prompts...")
-        step2_launcher = PROJECT_ROOT / "run_step2_decompose.py"
+        step2_launcher = PROJECT_ROOT / "run_path2_step2_decompose.py"
         cmd = [
             sys.executable,
             str(step2_launcher),

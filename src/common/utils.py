@@ -164,6 +164,12 @@ def get_gpu_candidate_ids(default: str = "0,1,2,3,4,5,6,7") -> list[int]:
     return gpu_ids
 
 
+def should_use_all_visible_gpus() -> bool:
+    """Return True when runs should try to consume all user-exposed GPUs."""
+    raw = os.environ.get("MIS_USE_ALL_VISIBLE_GPUS", "1")
+    return raw.strip().lower() not in {"0", "false", "no", "off"}
+
+
 def get_visible_gpu_ids(default: str = "0,1,2,3", max_gpus: int | None = 4) -> list[int]:
     """Return the GPU ids exposed through CUDA_VISIBLE_DEVICES."""
     gpu_ids = _parse_gpu_id_csv(os.environ.get("CUDA_VISIBLE_DEVICES"), default)
@@ -180,6 +186,12 @@ def get_visible_gpu_csv(default: str = "0,1,2,3", max_gpus: int | None = 4) -> s
 def get_effective_tensor_parallel_size(requested: int | None = None, default: str = "0,1,2,3") -> int:
     """Clamp tensor parallelism to the number of visible GPUs."""
     visible_gpu_count = max(1, len(get_visible_gpu_ids(default=default, max_gpus=None)))
+    if should_use_all_visible_gpus():
+        if requested is None:
+            return visible_gpu_count
+        requested = int(requested)
+        if requested >= 4:
+            return visible_gpu_count
     if requested is None:
         return visible_gpu_count
     return max(1, min(int(requested), visible_gpu_count))
@@ -319,7 +331,7 @@ def select_gpu_runtime_profile(
     *,
     path_name: str,
     task_type: str,
-    preferred_gpu_count: int = 4,
+    preferred_gpu_count: int = 8,
     requested_tensor_parallel_size: int | None = None,
     requested_gpu_memory_utilization: float | None = None,
     requested_max_model_len: int | None = None,
@@ -332,8 +344,10 @@ def select_gpu_runtime_profile(
     if not inventory:
         raise RuntimeError("No candidate GPUs found for runtime selection")
 
-    preferred_gpu_count = max(1, preferred_gpu_count)
     candidate_ids = [gpu["index"] for gpu in inventory]
+    if should_use_all_visible_gpus() and preferred_gpu_count >= 4:
+        preferred_gpu_count = len(candidate_ids)
+    preferred_gpu_count = max(1, preferred_gpu_count)
     sorted_inventory = sorted(inventory, key=_gpu_preference_key)
 
     if task_type == "image":
@@ -389,6 +403,8 @@ def select_gpu_runtime_profile(
         os.environ.get(f"{path_prefix}VLLM_BATCH_SIZE", str(requested_batch_size or 64))
     )
     requested_tp = requested_tensor_parallel_size or preferred_gpu_count
+    if should_use_all_visible_gpus() and requested_tp >= 4:
+        requested_tp = len(candidate_ids)
     profile_counts = [min(preferred_gpu_count, requested_tp, len(candidate_ids))]
     if mode in {"adaptive", "auto"}:
         for count in (2, 1):

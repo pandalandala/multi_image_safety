@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _worker_cmd(args: argparse.Namespace) -> list[str]:
-    worker = Path(__file__).with_name("run_step2_decompose_worker.py")
+    worker = Path(__file__).with_name("run_path2_step2_worker.py")
     cmd = [
         sys.executable,
         str(worker),

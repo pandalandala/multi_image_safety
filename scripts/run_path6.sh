@@ -13,4 +13,4 @@ export PYTHONPATH="/mnt/hdd/xuran/multi_image_safety:$PYTHONPATH"
 
 echo "Running Path 6: TAG+KG Fusion"
 echo "GPU candidates: ${MIS_GPU_CANDIDATES}"
-python /mnt/hdd/xuran/multi_image_safety/run_path6_tag_kg.py "$@"
+python /mnt/hdd/xuran/multi_image_safety/run_path6.py "$@"

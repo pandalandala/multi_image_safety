@@ -7,7 +7,7 @@ Path 5: Image pair mining + prompt generation
           (replaces broken CLIP harm-vector pairing; runs in isolated subprocess)
 
 Runtime estimate: ~1-2 hours
-GPUs: use all 4 visible GPUs for T2I fallback; vLLM runs tp=4 across the same 4 GPUs
+GPUs: use all visible GPUs for T2I fallback; vLLM scales across the same visible GPUs
 """
 
 import logging
@@ -126,9 +126,12 @@ elif crawled_file.exists():
         crawled = [c for c in cached if Path(c.get("path", "")).exists()]
         save_jsonl(crawled, crawled_file)
 
+MIN_IMAGES_FOR_PATH5 = 300
+
+# Step A: Try crawl if enabled and no images yet
 if not crawled and laion_enabled:
     logger.info("External retrieval enabled — crawling configured image backends")
-    from src.path5_embedding_pair.crawl_laion import run as run_crawl
+    from src.path5_embedding_pair.crawl_images import run as run_crawl
     crawled = _normalize_crawled_infos(
         run_crawl(output_dir=OUTPUT_DIR, max_per_category=500)
     )
@@ -136,21 +139,25 @@ if not crawled and laion_enabled:
         save_jsonl(crawled, crawled_file)
     logger.info(f"Crawled {len(crawled)} images total")
 
-if not crawled:
-    if not laion_enabled:
-        image_profile = apply_gpu_runtime_profile(
-            path_name="path5",
-            task_type="image",
-            preferred_gpu_count=4,
-        )
-        log_gpu_runtime_profile(logger, image_profile, "Path 5 Step 1")
-        logger.info("Refreshing T2I fallback pool to match the current query list")
-        env = os.environ.copy()
-        env["CUDA_VISIBLE_DEVICES"] = image_profile["selected_gpu_csv"]
-        env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
-        env["PYTHONPATH"] = str(PROJ)
+# Step B: ALWAYS supplement with T2I if below threshold
+if len(crawled) < MIN_IMAGES_FOR_PATH5:
+    logger.info(
+        "Only %d images (need %d), supplementing with T2I generation",
+        len(crawled), MIN_IMAGES_FOR_PATH5,
+    )
+    image_profile = apply_gpu_runtime_profile(
+        path_name="path5",
+        task_type="image",
+        preferred_gpu_count=4,
+    )
+    log_gpu_runtime_profile(logger, image_profile, "Path 5 Step 1")
+    env = os.environ.copy()
+    env["CUDA_VISIBLE_DEVICES"] = image_profile["selected_gpu_csv"]
+    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+    env["PYTHONPATH"] = str(PROJ)
 
-        sdxl_code = f"""
+    t2i_output_file = OUTPUT_DIR / "_t2i_generated.jsonl"
+    sdxl_code = f"""
 import sys, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '{image_profile["selected_gpu_csv"]}'
 os.environ['HF_HOME'] = '/mnt2/xuran_hdd/cache'
@@ -159,16 +166,25 @@ from src.common.utils import setup_logging, save_jsonl
 from src.path3_dataset_expand.expand import generate_images_from_queries
 setup_logging()
 
-paths, sources, infos = generate_images_from_queries('{OUTPUT_DIR}', max_per_category=40)
-save_jsonl(infos, '{crawled_file}')
+paths, sources, infos = generate_images_from_queries('{OUTPUT_DIR}', max_per_category=80)
+save_jsonl(infos, '{t2i_output_file}')
 print(f'T2I generated {{len(infos)}} images')
 """
-        rc = subprocess.run([PYTHON, "-c", sdxl_code], env=env, cwd=str(PROJ)).returncode
-        if rc == 0 and crawled_file.exists():
-            crawled = _normalize_crawled_infos(load_jsonl(crawled_file))
-            save_jsonl(crawled, crawled_file)
-        else:
-            logger.error("T2I generation subprocess failed")
+    rc = subprocess.run([PYTHON, "-c", sdxl_code], env=env, cwd=str(PROJ)).returncode
+    if rc == 0 and t2i_output_file.exists():
+        t2i_images = _normalize_crawled_infos(load_jsonl(t2i_output_file))
+        # Merge T2I into crawled, dedup by description
+        existing_descs = {c.get("description", "").strip().lower() for c in crawled}
+        for img in t2i_images:
+            desc = img.get("description", "").strip().lower()
+            if desc and desc not in existing_descs:
+                crawled.append(img)
+                existing_descs.add(desc)
+        save_jsonl(crawled, crawled_file)
+        t2i_output_file.unlink(missing_ok=True)
+        logger.info(f"After T2I supplement: {len(crawled)} total images")
+    else:
+        logger.error("T2I generation subprocess failed")
 
 logger.info(f"Step 1 complete: {len(crawled)} images")
 if len(crawled) >= 10 and not step_complete("step1_acquire_images", crawled_file):

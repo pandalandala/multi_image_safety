@@ -13,4 +13,4 @@ export PYTHONPATH="/mnt/hdd/xuran/multi_image_safety:$PYTHONPATH"
 
 echo "Running Path 1: KG Concept Pair Mining"
 echo "GPU candidates: ${MIS_GPU_CANDIDATES}"
-python /mnt/hdd/xuran/multi_image_safety/run_path1_kg_concept.py "$@"
+python /mnt/hdd/xuran/multi_image_safety/run_path1.py "$@"
