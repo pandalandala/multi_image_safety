@@ -1,0 +1,572 @@
+2026-04-14 14:26:15 [INFO] __main__: Path 1 LLM GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-14 14:26:15 [INFO] __main__: Path 1 LLM GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-14 14:26:16 [INFO] __main__: ============================================================
+2026-04-14 14:26:16 [INFO] __main__: PATH 1 STEP 1a: Numberbatch concept pair mining
+2026-04-14 14:26:16 [INFO] __main__: ============================================================
+2026-04-14 14:26:16 [INFO] src.path1_kg_concept.concept_mine: Numberbatch already cached at /mnt/hdd/xuran/cache/conceptnet/numberbatch-en-19.08.txt.gz
+2026-04-14 14:26:16 [INFO] src.path1_kg_concept.concept_mine: Loading Numberbatch embeddings ...
+2026-04-14 14:26:57 [INFO] src.path1_kg_concept.concept_mine: Loaded 516782 Numberbatch embeddings (dim=300)
+2026-04-14 14:27:01 [INFO] src.path1_kg_concept.concept_mine: Category WMD: 344918 safe candidates from 18 seeds
+2026-04-14 14:27:03 [INFO] src.path1_kg_concept.concept_mine: Category WMD: found 360 Numberbatch pairs
+2026-04-14 14:27:07 [INFO] src.path1_kg_concept.concept_mine: Category VIOLENCE: 346634 safe candidates from 15 seeds
+2026-04-14 14:27:09 [INFO] src.path1_kg_concept.concept_mine: Category VIOLENCE: found 36 Numberbatch pairs
+2026-04-14 14:27:13 [INFO] src.path1_kg_concept.concept_mine: Category SELF_HARM: 346191 safe candidates from 15 seeds
+2026-04-14 14:27:15 [INFO] src.path1_kg_concept.concept_mine: Category SELF_HARM: found 71 Numberbatch pairs
+2026-04-14 14:27:19 [INFO] src.path1_kg_concept.concept_mine: Category SEXUAL: 346474 safe candidates from 16 seeds
+2026-04-14 14:27:21 [INFO] src.path1_kg_concept.concept_mine: Category SEXUAL: found 26 Numberbatch pairs
+2026-04-14 14:27:25 [INFO] src.path1_kg_concept.concept_mine: Category HATE: 346671 safe candidates from 14 seeds
+2026-04-14 14:27:27 [INFO] src.path1_kg_concept.concept_mine: Category HATE: found 18 Numberbatch pairs
+2026-04-14 14:27:31 [INFO] src.path1_kg_concept.concept_mine: Category CRIME: 346466 safe candidates from 15 seeds
+2026-04-14 14:27:33 [INFO] src.path1_kg_concept.concept_mine: Category CRIME: found 16 Numberbatch pairs
+2026-04-14 14:27:37 [INFO] src.path1_kg_concept.concept_mine: Category PRIVACY: 346571 safe candidates from 13 seeds
+2026-04-14 14:27:39 [INFO] src.path1_kg_concept.concept_mine: Category PRIVACY: found 23 Numberbatch pairs
+2026-04-14 14:27:43 [INFO] src.path1_kg_concept.concept_mine: Category MISINFO: 346459 safe candidates from 11 seeds
+2026-04-14 14:27:46 [INFO] src.path1_kg_concept.concept_mine: Category MISINFO: found 98 Numberbatch pairs
+2026-04-14 14:27:50 [INFO] src.path1_kg_concept.concept_mine: Category IP: 346716 safe candidates from 10 seeds
+2026-04-14 14:27:52 [INFO] src.path1_kg_concept.concept_mine: Category IP: found 22 Numberbatch pairs
+2026-04-14 14:27:56 [INFO] src.path1_kg_concept.concept_mine: Category REGULATED: 346886 safe candidates from 13 seeds
+2026-04-14 14:27:58 [INFO] src.path1_kg_concept.concept_mine: Category REGULATED: found 16 Numberbatch pairs
+2026-04-14 14:28:02 [INFO] src.path1_kg_concept.concept_mine: Category ADVICE: 346449 safe candidates from 13 seeds
+2026-04-14 14:28:04 [INFO] src.path1_kg_concept.concept_mine: Category ADVICE: found 72 Numberbatch pairs
+2026-04-14 14:28:04 [INFO] src.path1_kg_concept.concept_mine: Total Numberbatch pairs: 758
+2026-04-14 14:28:04 [INFO] src.common.utils: Saved 758 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/numberbatch_pairs.jsonl
+Numberbatch mining: 758 pairs found
+2026-04-14 14:28:04 [INFO] __main__: ============================================================
+2026-04-14 14:28:04 [INFO] __main__: PATH 1 STEP 1b: LLM concept pair generation (vLLM)
+2026-04-14 14:28:04 [INFO] __main__: ============================================================
+Loading LLM for 22 concept mining prompts...
+INFO 04-14 14:28:24 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-14 14:28:25 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-14 14:28:26 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-14 14:28:26 [model.py:1678] Using max model len 4096
+INFO 04-14 14:28:26 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-14 14:28:31 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-14 14:28:31 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-14 14:28:31 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-14 14:28:31 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-14 14:28:31 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-14 14:28:31 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-14 14:28:31 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-14 14:28:50 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-14 14:28:50 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=4, local_world_size=4
+(Worker pid=4018698) INFO 04-14 14:29:02 [parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:58017 backend=nccl
+(Worker pid=4018699) INFO 04-14 14:29:02 [parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:58017 backend=nccl
+(Worker pid=4018697) INFO 04-14 14:29:02 [parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:58017 backend=nccl
+(Worker pid=4018696) INFO 04-14 14:29:02 [parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:58017 backend=nccl
+(Worker pid=4018698) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=4018699) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=4018697) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=4018696) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=4018698) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=4018699) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=4018697) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=4018696) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=4018696) INFO 04-14 14:29:04 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=4018696) WARNING 04-14 14:29:04 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=4018697) WARNING 04-14 14:29:04 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=4018699) WARNING 04-14 14:29:04 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=4018698) WARNING 04-14 14:29:04 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=4018696) INFO 04-14 14:29:04 [parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:19 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:20 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:20 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:20 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:20 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=4018696) INFO 04-14 14:29:20 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:27<04:31, 27.15s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:48<03:32, 23.61s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  27% Completed | 3/11 [01:12<03:10, 23.81s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  36% Completed | 4/11 [01:34<02:43, 23.30s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  45% Completed | 5/11 [02:00<02:24, 24.09s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  55% Completed | 6/11 [02:25<02:03, 24.62s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  64% Completed | 7/11 [02:52<01:41, 25.34s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  73% Completed | 8/11 [03:19<01:16, 25.64s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  82% Completed | 9/11 [03:52<00:56, 28.21s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards:  91% Completed | 10/11 [04:19<00:27, 27.79s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards: 100% Completed | 11/11 [04:30<00:00, 22.64s/it]
+(Worker_TP0 pid=4018696) Loading safetensors checkpoint shards: 100% Completed | 11/11 [04:30<00:00, 24.61s/it]
+(Worker_TP0 pid=4018696) 
+(Worker_TP0 pid=4018696) INFO 04-14 14:33:53 [default_loader.py:384] Loading weights took 270.80 seconds
+(Worker_TP0 pid=4018696) INFO 04-14 14:33:54 [gpu_model_runner.py:4820] Model loading took 12.87 GiB memory and 273.196517 seconds
+(Worker_TP0 pid=4018696) INFO 04-14 14:33:55 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP0 pid=4018696) INFO 04-14 14:34:10 [gpu_worker.py:436] Available KV cache memory: 18.07 GiB
+INFO 04-14 14:34:10 [kv_cache_utils.py:1319] GPU KV cache size: 295,568 tokens
+INFO 04-14 14:34:10 [kv_cache_utils.py:1324] Maximum concurrency for 4,096 tokens per request: 167.67x
+INFO 04-14 14:34:12 [core.py:283] init engine (profile, create kv cache, warmup model) took 17.38 seconds
+Rendering conversations:   0%|          | 0/22 [00:00<?, ?it/s]INFO 04-14 14:34:19 [hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+Rendering conversations:   5%|▍         | 1/22 [00:06<02:17,  6.56s/it]Rendering conversations: 100%|██████████| 22/22 [00:06<00:00,  3.34it/s]
+Processed prompts:   0%|          | 0/22 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:   5%|▍         | 1/22 [00:12<04:24, 12.60s/it, est. speed input: 20.88 toks/s, output: 6.75 toks/s]Processed prompts:   9%|▉         | 2/22 [00:12<01:47,  5.40s/it, est. speed input: 43.24 toks/s, output: 13.36 toks/s]Processed prompts:  14%|█▎        | 3/22 [00:13<01:02,  3.29s/it, est. speed input: 60.13 toks/s, output: 19.51 toks/s]Processed prompts:  18%|█▊        | 4/22 [00:15<00:46,  2.59s/it, est. speed input: 73.66 toks/s, output: 24.79 toks/s]Processed prompts:  23%|██▎       | 5/22 [04:23<25:49, 91.15s/it, est. speed input: 5.26 toks/s, output: 10.94 toks/s] Processed prompts:  27%|██▋       | 6/22 [05:24<21:32, 80.80s/it, est. speed input: 5.05 toks/s, output: 18.37 toks/s]Processed prompts:  32%|███▏      | 7/22 [05:45<15:22, 61.48s/it, est. speed input: 5.55 toks/s, output: 26.72 toks/s]Processed prompts:  36%|███▋      | 8/22 [06:01<10:54, 46.74s/it, est. speed input: 6.06 toks/s, output: 35.11 toks/s]Processed prompts:  41%|████      | 9/22 [06:13<07:48, 36.02s/it, est. speed input: 6.64 toks/s, output: 43.47 toks/s]Processed prompts:  45%|████▌     | 10/22 [06:20<05:23, 27.00s/it, est. speed input: 7.22 toks/s, output: 52.22 toks/s]Processed prompts:  50%|█████     | 11/22 [06:37<04:23, 23.99s/it, est. speed input: 7.67 toks/s, output: 59.50 toks/s]Processed prompts:  55%|█████▍    | 12/22 [06:37<02:48, 16.82s/it, est. speed input: 8.42 toks/s, output: 68.98 toks/s]Processed prompts:  64%|██████▎   | 14/22 [06:37<01:12,  9.02s/it, est. speed input: 9.92 toks/s, output: 88.05 toks/s]Processed prompts:  68%|██████▊   | 15/22 [06:38<00:47,  6.80s/it, est. speed input: 10.66 toks/s, output: 97.57 toks/s]Processed prompts:  73%|███████▎  | 16/22 [06:38<00:30,  5.05s/it, est. speed input: 11.41 toks/s, output: 107.07 toks/s]Processed prompts:  77%|███████▋  | 17/22 [06:38<00:19,  3.84s/it, est. speed input: 12.12 toks/s, output: 116.45 toks/s]Processed prompts:  82%|████████▏ | 18/22 [06:40<00:13,  3.35s/it, est. speed input: 12.73 toks/s, output: 125.38 toks/s]Processed prompts:  86%|████████▋ | 19/22 [06:41<00:07,  2.54s/it, est. speed input: 13.37 toks/s, output: 134.77 toks/s]Processed prompts:  91%|█████████ | 20/22 [06:41<00:03,  1.83s/it, est. speed input: 14.03 toks/s, output: 144.28 toks/s]Processed prompts:  95%|█████████▌| 21/22 [06:41<00:01,  1.38s/it, est. speed input: 14.67 toks/s, output: 153.72 toks/s]Processed prompts: 100%|██████████| 22/22 [06:42<00:00,  1.27s/it, est. speed input: 15.27 toks/s, output: 162.87 toks/s]Processed prompts: 100%|██████████| 22/22 [06:42<00:00,  1.27s/it, est. speed input: 15.27 toks/s, output: 162.87 toks/s]Processed prompts: 100%|██████████| 22/22 [06:42<00:00, 18.31s/it, est. speed input: 15.27 toks/s, output: 162.87 toks/s]
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for WMD via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 97 LLM concept pairs for VIOLENCE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 74 LLM concept pairs for SELF_HARM via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 96 LLM concept pairs for HATE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 76 LLM concept pairs for CRIME via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 110 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 70 LLM concept pairs for MISINFO via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 83 LLM concept pairs for IP via code_block parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 102 LLM concept pairs for REGULATED via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 107 LLM concept pairs for ADVICE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 77 LLM concept pairs for WMD via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 87 LLM concept pairs for VIOLENCE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 94 LLM concept pairs for HATE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 95 LLM concept pairs for CRIME via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 86 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 90 LLM concept pairs for MISINFO via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 80 LLM concept pairs for IP via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 86 LLM concept pairs for REGULATED via code_block parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for ADVICE via bracketed parser
+  WMD: 1 pairs parsed
+  VIOLENCE: 97 pairs parsed
+  SELF_HARM: 74 pairs parsed
+  SEXUAL: 1 pairs parsed
+  HATE: 96 pairs parsed
+  CRIME: 76 pairs parsed
+  PRIVACY: 110 pairs parsed
+  MISINFO: 70 pairs parsed
+  IP: 83 pairs parsed
+  REGULATED: 102 pairs parsed
+  ADVICE: 107 pairs parsed
+  WMD: 77 pairs parsed
+  VIOLENCE: 87 pairs parsed
+  SELF_HARM: 2 pairs parsed
+  SEXUAL: 1 pairs parsed
+  HATE: 94 pairs parsed
+  CRIME: 95 pairs parsed
+  PRIVACY: 86 pairs parsed
+  MISINFO: 90 pairs parsed
+  IP: 80 pairs parsed
+  REGULATED: 86 pairs parsed
+  ADVICE: 88 pairs parsed
+Repair pass: retrying 4 low-yield outputs...
+Rendering conversations:   0%|          | 0/4 [00:00<?, ?it/s]Rendering conversations: 100%|██████████| 4/4 [00:00<00:00, 377.41it/s]
+Processed prompts:   0%|          | 0/4 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:  25%|██▌       | 1/4 [00:00<00:01,  2.11it/s, est. speed input: 526.50 toks/s, output: 4.21 toks/s]Processed prompts: 100%|██████████| 4/4 [00:00<00:00,  2.11it/s, est. speed input: 2102.82 toks/s, output: 16.84 toks/s]Processed prompts: 100%|██████████| 4/4 [00:00<00:00,  8.42it/s, est. speed input: 2102.82 toks/s, output: 16.84 toks/s]
+2026-04-14 14:41:02 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for WMD
+2026-04-14 14:41:02 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SEXUAL
+2026-04-14 14:41:02 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SELF_HARM
+2026-04-14 14:41:02 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SEXUAL
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for WMD via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 97 LLM concept pairs for VIOLENCE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 74 LLM concept pairs for SELF_HARM via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 96 LLM concept pairs for HATE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 76 LLM concept pairs for CRIME via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 110 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 70 LLM concept pairs for MISINFO via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 83 LLM concept pairs for IP via code_block parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 102 LLM concept pairs for REGULATED via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 107 LLM concept pairs for ADVICE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 77 LLM concept pairs for WMD via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 87 LLM concept pairs for VIOLENCE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 94 LLM concept pairs for HATE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 95 LLM concept pairs for CRIME via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 86 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 90 LLM concept pairs for MISINFO via bracketed parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 80 LLM concept pairs for IP via full_json parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 86 LLM concept pairs for REGULATED via code_block parser
+2026-04-14 14:41:02 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for ADVICE via bracketed parser
+2026-04-14 14:41:02 [INFO] src.common.utils: Saved 1601 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs.jsonl
+2026-04-14 14:41:02 [INFO] src.common.utils: Saved 22 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs_raw_outputs.jsonl
+2026-04-14 14:41:02 [INFO] src.common.utils: Saved 4 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs_repair_outputs.jsonl
+(Worker_TP0 pid=4018696) INFO 04-14 14:41:02 [multiproc_executor.py:764] Parent process exited, terminating worker queues
+(Worker_TP1 pid=4018697) INFO 04-14 14:41:02 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP0 pid=4018696) INFO 04-14 14:41:02 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP2 pid=4018698) INFO 04-14 14:41:02 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP3 pid=4018699) INFO 04-14 14:41:02 [multiproc_executor.py:859] WorkerProc shutting down.
+  repair WMD round 1: initial=1 repaired=0
+  repair SEXUAL round 1: initial=1 repaired=0
+  repair SELF_HARM round 2: initial=2 repaired=0
+  repair SEXUAL round 2: initial=1 repaired=0
+LLM mining: 1601 total pairs
+2026-04-14 14:41:08 [INFO] src.common.utils: Saved 2359 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/all_mined_pairs.jsonl
+2026-04-14 14:41:08 [INFO] __main__: Total mined pairs: 2359 (Numberbatch: 758, LLM: 1601)
+2026-04-14 14:41:08 [INFO] __main__: ============================================================
+2026-04-14 14:41:08 [INFO] __main__: PATH 1 STEP 2: CLIP pair filtering
+2026-04-14 14:41:08 [INFO] __main__: ============================================================
+2026-04-14 14:41:15 [INFO] root: Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-14 14:41:23 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-14 14:41:30 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-14 14:41:30 [INFO] src.path5_embedding_pair.harm_vector: Built 11 harm vectors (multi-description averaged)
+2026-04-14 14:42:03 [INFO] src.path1_kg_concept.pair_filter: CLIP score distribution (individual): n=4718, min=0.402, max=0.889, mean=0.733, p25=0.701, p50=0.736, p75=0.767
+2026-04-14 14:42:03 [INFO] src.path1_kg_concept.pair_filter: CLIP score distribution (combined): n=2359, min=0.650, max=0.914, mean=0.788, p25=0.767, p50=0.788, p75=0.811
+2026-04-14 14:42:03 [INFO] src.path1_kg_concept.pair_filter: CLIP hard filter: 0 / 2359 pairs passed (0.0%, theta_safe=0.40, theta_harm=0.35)
+2026-04-14 14:42:03 [WARNING] src.path1_kg_concept.pair_filter: Hard filter pass rate 0.0% < 10% threshold. Falling back to top-3000 ranking by covertness score.
+2026-04-14 14:42:03 [INFO] src.path1_kg_concept.pair_filter: Fallback yielded 2359 pairs
+2026-04-14 14:42:03 [INFO] src.common.utils: Saved 2359 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/filtered_pairs.jsonl
+CLIP filter: 2359 / 2359 pairs passed
+2026-04-14 14:42:04 [INFO] __main__: Filtered pairs: 2359
+2026-04-14 14:42:04 [INFO] __main__: ============================================================
+2026-04-14 14:42:04 [INFO] __main__: PATH 1 STEP 3: Image generation (all-visible-GPU parallel)
+2026-04-14 14:42:04 [INFO] __main__: ============================================================
+2026-04-14 14:42:05 [INFO] __main__: Path 1 Step 3 GPU runtime: selected_gpus=5,6,7,4 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-14 14:42:05 [INFO] __main__: Path 1 Step 3 GPU inventory: GPU4 free=47.5/48.0GiB util=24% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-14 14:42:05 [INFO] src.common.utils: Saved 590 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_0.jsonl
+2026-04-14 14:42:05 [INFO] src.common.utils: Saved 590 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_1.jsonl
+2026-04-14 14:42:05 [INFO] src.common.utils: Saved 590 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_2.jsonl
+2026-04-14 14:42:05 [INFO] src.common.utils: Saved 589 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_3.jsonl
+2026-04-14 14:42:05 [INFO] __main__: Started GPU 5 PID=4058379 (~590 pairs)
+2026-04-14 14:42:05 [INFO] __main__: Started GPU 6 PID=4058380 (~590 pairs)
+2026-04-14 14:42:05 [INFO] __main__: Started GPU 7 PID=4058381 (~590 pairs)
+2026-04-14 14:42:05 [INFO] __main__: Started GPU 4 PID=4058382 (~590 pairs)
+2026-04-14 14:42:06,955 [GPU5] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-14 14:42:06,958 [GPU6] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-14 14:42:06,959 [GPU4] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-14 14:42:06,967 [GPU7] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-14 14:42:09,028 [GPU7] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-14 14:42:09,032 [GPU5] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-14 14:42:09,052 [GPU6] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-14 14:42:09,095 [GPU4] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-14 14:42:45,681 [GPU5] INFO Loaded ViT-L-14 model config.
+2026-04-14 14:42:45,824 [GPU4] INFO Loaded ViT-L-14 model config.
+2026-04-14 14:42:47,456 [GPU7] INFO Loaded ViT-L-14 model config.
+2026-04-14 14:42:48,044 [GPU6] INFO Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-14 14:42:52,286 [GPU5] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-14 14:42:52,896 [GPU5] INFO Loaded CLIP model ViT-L-14/openai on cuda
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1dcdfd8a-a1b5-412d-ac0f-86495ea9fcce)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:00,356 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 1dcdfd8a-a1b5-412d-ac0f-86495ea9fcce)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:43:00,357 [GPU4] WARNING Retrying in 1s [Retry 1/5].
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  33%|███▎      | 3/9 [00:00<00:00,  8.51it/s]'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 6e867efd-cd73-4bd9-ae01-5d97551bc42f)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:01,849 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 6e867efd-cd73-4bd9-ae01-5d97551bc42f)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:43:01,849 [GPU7] WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e87e8fe9-4676-413f-a538-6e849a2f9414)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:02,527 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e87e8fe9-4676-413f-a538-6e849a2f9414)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:43:02,536 [GPU6] WARNING Retrying in 1s [Retry 1/5].
+Loading pipeline components...:  56%|█████▌    | 5/9 [00:02<00:02,  1.80it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 18.57it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 18.51it/s]
+Loading pipeline components...:  78%|███████▊  | 7/9 [00:05<00:01,  1.06it/s]Loading pipeline components...:  89%|████████▉ | 8/9 [00:05<00:00,  1.22it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: ac1f8ad6-709e-4e1e-b5e9-9bb3eb6d376b)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:11,406 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: ac1f8ad6-709e-4e1e-b5e9-9bb3eb6d376b)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 2s [Retry 2/5].
+2026-04-14 14:43:11,406 [GPU4] WARNING Retrying in 2s [Retry 2/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7da9fb71-92f0-4030-8b05-f23cd9f22440)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:12,908 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7da9fb71-92f0-4030-8b05-f23cd9f22440)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 2s [Retry 2/5].
+2026-04-14 14:43:12,909 [GPU7] WARNING Retrying in 2s [Retry 2/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 185ff7e6-27fe-4f7e-b823-3357c29123d4)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:13,588 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 185ff7e6-27fe-4f7e-b823-3357c29123d4)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 2s [Retry 2/5].
+2026-04-14 14:43:13,588 [GPU6] WARNING Retrying in 2s [Retry 2/5].
+
+Loading checkpoint shards:  50%|█████     | 1/2 [00:07<00:07,  7.65s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:14<00:00,  7.04s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:14<00:00,  7.13s/it]
+Loading pipeline components...: 100%|██████████| 9/9 [00:20<00:00,  4.12s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:20<00:00,  2.23s/it]
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 26f8ffcd-c980-4962-9916-02183b126053)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:23,452 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 26f8ffcd-c980-4962-9916-02183b126053)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 4s [Retry 3/5].
+2026-04-14 14:43:23,452 [GPU4] WARNING Retrying in 4s [Retry 3/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 5ac745ea-ffa0-4c0f-8777-26a85dda7d3e)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:27,048 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 5ac745ea-ffa0-4c0f-8777-26a85dda7d3e)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 4s [Retry 3/5].
+2026-04-14 14:43:27,049 [GPU7] WARNING Retrying in 4s [Retry 3/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e783b670-fe8a-4f76-86a7-9f862898fee5)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:27,716 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e783b670-fe8a-4f76-86a7-9f862898fee5)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 4s [Retry 3/5].
+2026-04-14 14:43:27,716 [GPU6] WARNING Retrying in 4s [Retry 3/5].
+2026-04-14 14:43:29,138 [GPU5] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.17it/s] 50%|█████     | 2/4 [00:00<00:00,  2.78it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.50it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:43:32,466 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.160 threshold=0.260 prompt='A clear, high-quality photograph of bioproduction, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:43:35,170 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.183 threshold=0.260 prompt='A clear, high-quality photograph of bioproduction, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: f8e9e514-9d8c-4cc5-ba5b-53d08be5ff5c)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:37,496 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: f8e9e514-9d8c-4cc5-ba5b-53d08be5ff5c)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 8s [Retry 4/5].
+2026-04-14 14:43:37,496 [GPU4] WARNING Retrying in 8s [Retry 4/5].
+2026-04-14 14:43:37,837 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.142 threshold=0.260 prompt='A clear, high-quality photograph of bioproduction, well-lit, neutral background'
+2026-04-14 14:43:37,838 [GPU5] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.183 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10000/image1.png
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: a1033f26-6ac1-4948-8d1a-db4999ccf01a)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:41,104 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: a1033f26-6ac1-4948-8d1a-db4999ccf01a)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 8s [Retry 4/5].
+2026-04-14 14:43:41,104 [GPU7] WARNING Retrying in 8s [Retry 4/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7448830a-ade3-4897-b40e-784e7c8af2dc)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:41,764 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7448830a-ade3-4897-b40e-784e7c8af2dc)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 8s [Retry 4/5].
+2026-04-14 14:43:41,764 [GPU6] WARNING Retrying in 8s [Retry 4/5].
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-14 14:43:46,574 [GPU4] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-14 14:43:47,332 [GPU4] INFO Loaded CLIP model ViT-L-14/openai on cuda
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 01d0c355-5e4b-46bd-9f89-5c7289c3e25d)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:59,163 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 01d0c355-5e4b-46bd-9f89-5c7289c3e25d)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 8s [Retry 5/5].
+2026-04-14 14:43:59,164 [GPU7] WARNING Retrying in 8s [Retry 5/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e19cb2f3-276c-4715-b669-4f3c4a84151c)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:43:59,808 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: e19cb2f3-276c-4715-b669-4f3c4a84151c)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+Retrying in 8s [Retry 5/5].
+2026-04-14 14:43:59,808 [GPU6] WARNING Retrying in 8s [Retry 5/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 89b1c765-92d8-4d60-aada-db7318e6bcac)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+2026-04-14 14:44:04,440 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 89b1c765-92d8-4d60-aada-db7318e6bcac)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:44:04,440 [GPU4] WARNING Retrying in 1s [Retry 1/5].
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-14 14:44:11,177 [GPU6] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-14 14:44:11,947 [GPU6] INFO Loaded CLIP model ViT-L-14/openai on cuda
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 2b1efaa1-2f54-48d8-bffe-64fe70120af3)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+2026-04-14 14:44:15,580 [GPU4] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 2b1efaa1-2f54-48d8-bffe-64fe70120af3)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+Retrying in 2s [Retry 2/5].
+2026-04-14 14:44:15,580 [GPU4] WARNING Retrying in 2s [Retry 2/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: cdd3aaf0-4652-4b3f-99b4-bb18f8079da6)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+2026-04-14 14:44:17,214 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: cdd3aaf0-4652-4b3f-99b4-bb18f8079da6)')' thrown while requesting HEAD https://huggingface.co/timm/vit_large_patch14_clip_224.openai/resolve/main/open_clip_model.safetensors
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-14 14:44:17,217 [GPU7] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-14 14:44:17,962 [GPU7] INFO Loaded CLIP model ViT-L-14/openai on cuda
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]Loading pipeline components...:  22%|██▏       | 2/9 [00:00<00:01,  4.53it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:07<00:07,  7.28s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:13<00:00,  6.88s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:13<00:00,  6.94s/it]
+Loading pipeline components...:  33%|███▎      | 3/9 [00:14<00:35,  5.93s/it]Loading pipeline components...:  44%|████▍     | 4/9 [00:16<00:22,  4.54s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  67%|██████▋   | 6/9 [00:16<00:06,  2.28s/it]Loading pipeline components...:  89%|████████▉ | 8/9 [00:17<00:01,  1.35s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.32it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.26it/s]
+Loading pipeline components...: 100%|██████████| 9/9 [00:19<00:00,  1.71s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:19<00:00,  2.22s/it]
+2026-04-14 14:44:50,373 [GPU4] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.08it/s] 50%|█████     | 2/4 [00:00<00:00,  2.73it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.49it/s]100%|██████████| 4/4 [00:01<00:00,  2.49it/s]
+2026-04-14 14:44:53,870 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.154 threshold=0.260 prompt='A clear, high-quality photograph of pentacovalent, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:44:56,604 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.149 threshold=0.260 prompt='A clear, high-quality photograph of pentacovalent, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:44:59,314 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.135 threshold=0.260 prompt='A clear, high-quality photograph of pentacovalent, well-lit, neutral background'
+2026-04-14 14:44:59,314 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.154 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11770/image1.png
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7fa0491b-c020-461d-9780-bb392cce3cbd)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+2026-04-14 14:45:22,980 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 7fa0491b-c020-461d-9780-bb392cce3cbd)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:45:22,981 [GPU7] WARNING Retrying in 1s [Retry 1/5].
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 8d764bd0-4786-4f4c-897e-bc3897b2ec61)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+2026-04-14 14:45:34,032 [GPU7] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 8d764bd0-4786-4f4c-897e-bc3897b2ec61)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+Retrying in 2s [Retry 2/5].
+2026-04-14 14:45:34,036 [GPU7] WARNING Retrying in 2s [Retry 2/5].
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 17.00it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 16.93it/s]
+Loading pipeline components...:  11%|█         | 1/9 [00:02<00:22,  2.83s/it] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]Loading pipeline components...:  44%|████▍     | 4/9 [00:03<00:03,  1.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+Loading pipeline components...:  67%|██████▋   | 6/9 [00:03<00:01,  2.37it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A2026-04-14 14:45:41,433 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.204 threshold=0.260 prompt='A clear, high-quality photograph of peterero, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:45:44,278 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.156 threshold=0.260 prompt='A clear, high-quality photograph of peterero, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:45:46,985 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.143 threshold=0.260 prompt='A clear, high-quality photograph of peterero, well-lit, neutral background'
+2026-04-14 14:45:46,985 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.204 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11770/image2.png
+
+Loading checkpoint shards:  50%|█████     | 1/2 [00:06<00:06,  6.92s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:13<00:00,  6.64s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:13<00:00,  6.68s/it]
+Loading pipeline components...:  78%|███████▊  | 7/9 [00:16<00:07,  3.51s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  89%|████████▉ | 8/9 [00:17<00:02,  2.70s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:19<00:00,  2.55s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:19<00:00,  2.16s/it]
+2026-04-14 14:46:08,246 [GPU7] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.05it/s] 50%|█████     | 2/4 [00:00<00:00,  2.71it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]
+2026-04-14 14:46:11,659 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.243 threshold=0.260 prompt='A clear, high-quality photograph of famous retail store color scheme, well-lit, '
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:46:14,377 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.176 threshold=0.260 prompt='A clear, high-quality photograph of famous retail store color scheme, well-lit, '
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:46:17,128 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.217 threshold=0.260 prompt='A clear, high-quality photograph of famous retail store color scheme, well-lit, '
+2026-04-14 14:46:17,128 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.243 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11180/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+2026-04-14 14:46:28,605 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of admortization, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.43it/s] 50%|█████     | 2/4 [00:00<00:00,  2.96it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+2026-04-14 14:46:30,922 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of admortization, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:46:33,554 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of admortization, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:46:55,977 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.210 threshold=0.260 prompt='A clear, high-quality photograph of multiethnicity, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]  0%|          | 0/4 [00:00<?, ?it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+ 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]2026-04-14 14:46:58,710 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.205 threshold=0.260 prompt='A clear, high-quality photograph of multiethnicity, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+ 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s]2026-04-14 14:46:59,785 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.168 threshold=0.260 prompt='A clear, high-quality photograph of biohumoral, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+ 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]2026-04-14 14:47:01,344 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.223 threshold=0.260 prompt='A clear, high-quality photograph of multiethnicity, well-lit, neutral background'
+2026-04-14 14:47:01,345 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.223 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11181/image1.png
+100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:47:02,512 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.143 threshold=0.260 prompt='A clear, high-quality photograph of biohumoral, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:47:05,049 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.162 threshold=0.260 prompt='A clear, high-quality photograph of biohumoral, well-lit, neutral background'
+2026-04-14 14:47:05,049 [GPU5] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.168 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10002/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:47:14,687 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.156 threshold=0.260 prompt='A clear, high-quality photograph of counterfeits, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:47:17,137 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.128 threshold=0.260 prompt='A clear, high-quality photograph of counterfeits, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:47:19,570 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.172 threshold=0.260 prompt='A clear, high-quality photograph of counterfeits, well-lit, neutral background'
+2026-04-14 14:47:19,570 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.172 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11771/image2.png
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 54216075-02eb-4474-bed0-75676e092aac)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+2026-04-14 14:47:36,439 [GPU6] WARNING '(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 54216075-02eb-4474-bed0-75676e092aac)')' thrown while requesting HEAD https://huggingface.co/stabilityai/stable-diffusion-3.5-large-turbo/resolve/main/model_index.json
+Retrying in 1s [Retry 1/5].
+2026-04-14 14:47:36,440 [GPU6] WARNING Retrying in 1s [Retry 1/5].
+  0%|          | 0/4 [00:00<?, ?it/s]Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+ 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s]Loading pipeline components...:  22%|██▏       | 2/9 [00:00<00:01,  5.60it/s] 50%|█████     | 2/4 [00:00<00:00,  2.89it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:47:43,223 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of stalking, well-lit, neutral background'
+
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A  0%|          | 0/4 [00:00<?, ?it/s]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.55it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.48it/s]
+Loading pipeline components...:  33%|███▎      | 3/9 [00:02<00:06,  1.09s/it]  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+Loading pipeline components...:  44%|████▍     | 4/9 [00:04<00:07,  1.48s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A2026-04-14 14:47:46,049 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.215 threshold=0.260 prompt='A clear, high-quality photograph of neuromechanism, well-lit, neutral background'
+2026-04-14 14:47:46,124 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of stalking, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s]  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.43it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.38it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:47:48,723 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.214 threshold=0.260 prompt='A clear, high-quality photograph of neuromechanism, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s]2026-04-14 14:47:48,865 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.174 threshold=0.260 prompt='A clear, high-quality photograph of stalking, well-lit, neutral background'
+2026-04-14 14:47:48,865 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.174 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11181/image2.png
+ 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:47:51,502 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.216 threshold=0.260 prompt='A clear, high-quality photograph of neuromechanism, well-lit, neutral background'
+2026-04-14 14:47:51,502 [GPU5] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.216 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10003/image1.png
+
+Loading checkpoint shards:  50%|█████     | 1/2 [00:06<00:06,  6.68s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.05s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.14s/it]
+Loading pipeline components...:  67%|██████▋   | 6/9 [00:17<00:11,  3.92s/it]Loading pipeline components...:  89%|████████▉ | 8/9 [00:17<00:02,  2.33s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:17<00:00,  1.96s/it]
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:48:07,312 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.200 threshold=0.260 prompt='A clear, high-quality photograph of socioethnicity, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s]2026-04-14 14:48:07,575 [GPU6] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+ 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.12it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+ 50%|█████     | 2/4 [00:00<00:00,  2.72it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.45it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]
+2026-04-14 14:48:09,846 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.189 threshold=0.260 prompt='A clear, high-quality photograph of socioethnicity, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]2026-04-14 14:48:10,894 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.233 threshold=0.260 prompt='A clear, high-quality photograph of detonator, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+ 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-14 14:48:12,646 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.185 threshold=0.260 prompt='A clear, high-quality photograph of socioethnicity, well-lit, neutral background'
+2026-04-14 14:48:12,646 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.200 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11772/image1.png
+2026-04-14 14:48:13,798 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.232 threshold=0.260 prompt='A clear, high-quality photograph of detonator, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:48:16,564 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.208 threshold=0.260 prompt='A clear, high-quality photograph of detonator, well-lit, neutral background'
+2026-04-14 14:48:16,564 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.233 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10592/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:48:29,123 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.184 threshold=0.260 prompt='A clear, high-quality photograph of coilin, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.38it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:48:31,684 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.183 threshold=0.260 prompt='A clear, high-quality photograph of coilin, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.38it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:48:34,485 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.215 threshold=0.260 prompt='A clear, high-quality photograph of coilin, well-lit, neutral background'
+2026-04-14 14:48:34,485 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.215 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11182/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.43it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+2026-04-14 14:48:57,440 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of electrosensible, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:49:00,228 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of electrosensible, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:49:03,025 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of electrosensible, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:49:15,447 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fireworthy, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:49:17,742 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fireworthy, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:49:20,114 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fireworthy, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s]2026-04-14 14:49:42,005 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.250 threshold=0.260 prompt='A clear, high-quality photograph of cannabis leaf, well-lit, neutral background'
+ 50%|█████     | 2/4 [00:00<00:00,  2.94it/s]  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:49:44,034 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.191 threshold=0.260 prompt='A clear, high-quality photograph of payload, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s]2026-04-14 14:49:44,778 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.249 threshold=0.260 prompt='A clear, high-quality photograph of cannabis leaf, well-lit, neutral background'
+ 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.82it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-14 14:49:46,565 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of payload, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]2026-04-14 14:49:47,461 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.230 threshold=0.260 prompt='A clear, high-quality photograph of cannabis leaf, well-lit, neutral background'
+2026-04-14 14:49:47,462 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.250 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10593/image2.png
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:49:49,408 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.211 threshold=0.260 prompt='A clear, high-quality photograph of payload, well-lit, neutral background'
+2026-04-14 14:49:49,408 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.211 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11773/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:50:06,124 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.251 threshold=0.260 prompt='A clear, high-quality photograph of spicy chili pepper, well-lit, neutral backgr'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.43it/s] 50%|█████     | 2/4 [00:00<00:00,  2.96it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+2026-04-14 14:50:08,830 [GPU5] INFO Generated image accepted backend=sd35_large_turbo attempt=2 clip=0.270 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10004/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:50:12,089 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.223 threshold=0.260 prompt='A clear, high-quality photograph of data cable, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:50:14,945 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.241 threshold=0.260 prompt='A clear, high-quality photograph of data cable, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:50:17,734 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=3 clip=0.262 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11183/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:50:31,791 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of stannylidene, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:50:34,723 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of stannylidene, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:50:37,602 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of stannylidene, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:51:17,194 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of petn, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:51:19,874 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.176 threshold=0.260 prompt='A clear, high-quality photograph of petn, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:51:22,553 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.154 threshold=0.260 prompt='A clear, high-quality photograph of petn, well-lit, neutral background'
+2026-04-14 14:51:22,554 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.176 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11774/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:52:02,075 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.207 threshold=0.260 prompt='A clear, high-quality photograph of cytomechanics, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s]  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:52:04,497 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.193 threshold=0.260 prompt='A clear, high-quality photograph of cytomechanics, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s]2026-04-14 14:52:05,033 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.257 threshold=0.260 prompt='A clear, high-quality photograph of nightstand, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.38it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+  0%|          | 0/4 [00:00<?, ?it/s]2026-04-14 14:52:07,043 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.214 threshold=0.260 prompt='A clear, high-quality photograph of cytomechanics, well-lit, neutral background'
+2026-04-14 14:52:07,043 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.214 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11774/image2.png
+ 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.96it/s]2026-04-14 14:52:07,826 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.232 threshold=0.260 prompt='A clear, high-quality photograph of nightstand, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.62it/s]
+ 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]2026-04-14 14:52:09,204 [GPU5] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.283 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10006/image1.png
+100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:52:10,574 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.227 threshold=0.260 prompt='A clear, high-quality photograph of nightstand, well-lit, neutral background'
+2026-04-14 14:52:10,574 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.257 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11184/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s]  0%|          | 0/4 [00:00<?, ?it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:52:51,377 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.209 threshold=0.260 prompt='A clear, high-quality photograph of path, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s]2026-04-14 14:52:52,562 [GPU5] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.286 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10006/image2.png
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:52:54,103 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of path, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:52:56,593 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.187 threshold=0.260 prompt='A clear, high-quality photograph of path, well-lit, neutral background'
+2026-04-14 14:52:56,594 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.209 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11185/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:53:00,623 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.266 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10596/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.94it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:53:17,330 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.154 threshold=0.260 prompt='A clear, high-quality photograph of painting, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:53:19,977 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.191 threshold=0.260 prompt='A clear, high-quality photograph of painting, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:53:22,571 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.220 threshold=0.260 prompt='A clear, high-quality photograph of painting, well-lit, neutral background'
+2026-04-14 14:53:22,571 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.220 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11775/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:53:38,488 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.274 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11185/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.43it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-14 14:54:11,603 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.203 threshold=0.260 prompt='A clear, high-quality photograph of corporate logo, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+2026-04-14 14:54:14,292 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of corporate logo, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-14 14:54:17,044 [GPU4] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.186 threshold=0.260 prompt='A clear, high-quality photograph of corporate logo, well-lit, neutral background'
+2026-04-14 14:54:17,044 [GPU4] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.203 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11776/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.36it/s] 50%|█████     | 2/4 [00:00<00:00,  2.86it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.49it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]
+2026-04-14 14:54:29,181 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of backblast, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:54:31,837 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.181 threshold=0.260 prompt='A clear, high-quality photograph of backblast, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-14 14:54:34,502 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.188 threshold=0.260 prompt='A clear, high-quality photograph of backblast, well-lit, neutral background'
+2026-04-14 14:54:34,503 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.188 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10597/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-14 14:54:53,279 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.188 threshold=0.260 prompt='A clear, high-quality photograph of uranium ore, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:54:55,889 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.226 threshold=0.260 prompt='A clear, high-quality photograph of uranium ore, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.37it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.61it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]
+2026-04-14 14:54:58,416 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of uranium ore, well-lit, neutral background'
+2026-04-14 14:54:58,416 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.226 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11186/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.36it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-14 14:55:12,153 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.194 threshold=0.260 prompt='A clear, high-quality photograph of hemimembrane, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-14 14:55:14,545 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of hemimembrane, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.82it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-14 14:55:17,058 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of hemimembrane, well-lit, neutral background'
+2026-04-14 14:55:17,059 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.194 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10597/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.90it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-14 14:55:37,427 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of counterfesance, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.37it/s] 50%|█████     | 2/4 [00:00<00:00,  2.88it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.61it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]
+  0%|          | 0/4 [00:00<?, ?it/s]2026-04-14 14:55:39,935 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.144 threshold=0.260 prompt='A clear, high-quality photograph of counterfesance, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.36it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 50%|█████     | 2/4 [00:00<00:00,  2.88it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.60it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.60it/s]
+100%|██████████| 4/4 [00:01<00:00,  2.50it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]

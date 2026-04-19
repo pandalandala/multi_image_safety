@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
 OPENVERSE_API_BASE="${OPENVERSE_API_BASE:-https://api.openverse.org}"
 OPENVERSE_TOKEN_URL="${OPENVERSE_TOKEN_URL:-${OPENVERSE_API_BASE}/v1/auth_tokens/token/}"
+ENV_FILE="${OPENVERSE_ENV_FILE:-${MIS_ENV_FILE:-${PROJECT_ROOT}/.env.local}}"
 BASHRC_PATH="${BASHRC_PATH:-$HOME/.bashrc}"
+UPDATE_BASHRC="${OPENVERSE_UPDATE_BASHRC:-0}"
 
 if command -v python3 >/dev/null 2>&1; then
   PYTHON_BIN="python3"
 elif command -v python >/dev/null 2>&1; then
   PYTHON_BIN="python"
 else
-  echo "python is required to update ${BASHRC_PATH}" >&2
+  echo "python is required to update ${ENV_FILE}" >&2
   exit 1
 fi
 
@@ -19,7 +24,15 @@ if ! command -v curl >/dev/null 2>&1; then
   exit 1
 fi
 
-# Load the latest shell exports if they are not already present in this shell.
+# Load project-local secrets first because the run scripts use .env.local.
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+fi
+
+# Fall back to ~/.bashrc if needed.
 if [[ -f "$BASHRC_PATH" ]]; then
   # shellcheck disable=SC1090
   source "$BASHRC_PATH" >/dev/null 2>&1 || true
@@ -66,7 +79,32 @@ print(str(data.get("expires_in", "")).strip())
 
 export OPENVERSE_API_TOKEN="$token"
 
-"$PYTHON_BIN" - "$BASHRC_PATH" "$token" <<'PY'
+"$PYTHON_BIN" - "$ENV_FILE" "$token" <<'PY'
+from pathlib import Path
+import sys
+
+env_path = Path(sys.argv[1]).expanduser()
+token = sys.argv[2]
+line = f'OPENVERSE_API_TOKEN="{token}"'
+
+text = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
+lines = text.splitlines()
+for idx, existing in enumerate(lines):
+    stripped = existing.strip()
+    if stripped.startswith("OPENVERSE_API_TOKEN=") or stripped.startswith("export OPENVERSE_API_TOKEN="):
+        lines[idx] = line
+        break
+else:
+    if lines and lines[-1] != "":
+        lines.append("")
+    lines.append("# Openverse API credentials")
+    lines.append(line)
+
+env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+
+if [[ "$UPDATE_BASHRC" == "1" ]]; then
+  "$PYTHON_BIN" - "$BASHRC_PATH" "$token" <<'PY'
 from pathlib import Path
 import sys
 
@@ -88,9 +126,12 @@ else:
 
 bashrc.write_text("\n".join(lines) + "\n", encoding="utf-8")
 PY
+fi
 
 echo "Openverse token refreshed."
 echo "token_type=${token_type:-unknown}"
 echo "expires_in=${expires_in:-unknown}"
-echo "Updated ${BASHRC_PATH}."
-echo "Run: source ${BASHRC_PATH}"
+echo "Updated ${ENV_FILE}."
+if [[ "$UPDATE_BASHRC" == "1" ]]; then
+  echo "Updated ${BASHRC_PATH}."
+fi

@@ -28,6 +28,7 @@ from src.common.utils import (
     save_jsonl,
     DATA_DIR,
     env_flag_is_true,
+    fail_step,
     finish_step,
     get_visible_gpu_ids,
     is_step_complete,
@@ -107,12 +108,17 @@ if step_complete("step1_generate_scenes", SCENES_OUTPUT):
     logger.info("Skipping Step 1; completion marker found")
 else:
     clear_step_state(OUTPUT_DIR, "step1_generate_scenes", stale_paths=[SCENES_OUTPUT])
-    start_step(OUTPUT_DIR, "step1_generate_scenes")
+    start_step(OUTPUT_DIR, "step1_generate_scenes", cleanup_paths=[SCENES_OUTPUT])
     rc = run_worker_script(
         "run_path4_step1_worker.py",
         ["--output-dir", str(OUTPUT_DIR)],
     )
     if rc != 0:
+        fail_step(
+            OUTPUT_DIR,
+            "step1_generate_scenes",
+            error=f"Step 1 worker failed with exit code {rc}",
+        )
         raise RuntimeError("Step 1 (scene_gen) failed")
     finish_step(
         OUTPUT_DIR,
@@ -131,7 +137,7 @@ if step_complete("step2_inject_intent", INTENT_OUTPUT):
     logger.info("Skipping Step 2; completion marker found")
 else:
     clear_step_state(OUTPUT_DIR, "step2_inject_intent", stale_paths=[INTENT_OUTPUT])
-    start_step(OUTPUT_DIR, "step2_inject_intent")
+    start_step(OUTPUT_DIR, "step2_inject_intent", cleanup_paths=[INTENT_OUTPUT])
     rc = run_worker_script(
         "run_path4_step2_worker.py",
         [
@@ -144,6 +150,11 @@ else:
         ],
     )
     if rc != 0:
+        fail_step(
+            OUTPUT_DIR,
+            "step2_inject_intent",
+            error=f"Step 2 worker failed with exit code {rc}",
+        )
         raise RuntimeError("Step 2 (intent_inject) failed")
     finish_step(
         OUTPUT_DIR,
@@ -196,10 +207,16 @@ else:
             *sorted(OUTPUT_DIR.glob("_chunk_*.jsonl")),
         ],
     )
-    start_step(OUTPUT_DIR, "step3_fetch_images")
     samples = load_jsonl(INTENT_OUTPUT)
     n = len(samples)
     chunk_size = (n + num_workers - 1) // num_workers
+    chunk_output_files = [OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus]
+    chunk_files = [OUTPUT_DIR / f"_chunk_{i}.jsonl" for i in range(num_workers)]
+    start_step(
+        OUTPUT_DIR,
+        "step3_fetch_images",
+        cleanup_paths=[FINAL_OUTPUT, *chunk_output_files, *chunk_files],
+    )
     logger.info(f"Splitting {n} samples into {num_workers} chunks of ~{chunk_size}")
 
     chunk_files = []
@@ -261,6 +278,12 @@ print(f'GPU {gpu_id}: {{len(results)}}/{{len(samples)}} images fetched')
 
     save_jsonl(all_results, FINAL_OUTPUT)
     if worker_failures:
+        fail_step(
+            OUTPUT_DIR,
+            "step3_fetch_images",
+            error=f"Worker failures: {worker_failures}",
+            metadata={"records_before_failure": len(all_results), "input_records": n},
+        )
         raise RuntimeError(f"Path 4 Step 3 incomplete because workers failed: {worker_failures}")
     finish_step(
         OUTPUT_DIR,

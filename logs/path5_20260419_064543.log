@@ -1,0 +1,71 @@
+2026-04-19 06:45:43 [INFO] __main__: ============================================================
+2026-04-19 06:45:43 [INFO] __main__: PATH 5: Image Pair Mining
+2026-04-19 06:45:43 [INFO] __main__: ============================================================
+2026-04-19 06:45:45 [INFO] __main__: ============================================================
+2026-04-19 06:45:45 [INFO] __main__: PATH 5 STEP 1: Acquire images per harm category
+2026-04-19 06:45:45 [INFO] __main__: ============================================================
+2026-04-19 06:45:45 [INFO] __main__: External retrieval enabled — crawling configured image backends
+2026-04-19 06:45:45 [INFO] src.path5_embedding_pair.crawl_images: Path 5 crawl: processing 11 categories with 11 workers
+2026-04-19 06:45:46 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:46 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:48 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:48 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:48 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:48 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:52 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:52 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:52 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:45:55 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:46:00 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 06:46:18 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:21 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:24 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:25 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:25 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:28 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:28 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:29 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:31 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:34 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 06:46:44 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 07:11:48 [INFO] src.common.local_datasets: Loading Open Images class descriptions ...
+2026-04-19 07:11:48 [INFO] src.common.local_datasets: Loading Open Images annotations (this may take a moment) ...
+2026-04-19 07:13:14 [INFO] src.common.local_datasets: Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-19 07:13:17 [INFO] src.common.local_datasets: Open Images index loaded: 9900 images
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+2026-04-19 07:13:35 [INFO] root: Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 07:14:49 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:49 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:49 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:50 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 07:14:54 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:54 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:54 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:55 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:55 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 07:14:56 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 08:06:50 [INFO] src.common.local_datasets: Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 08:07:29 [INFO] src.common.local_datasets: ImageNet index loaded: 1000 synsets

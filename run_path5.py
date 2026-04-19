@@ -29,6 +29,7 @@ from src.common.utils import (
     save_jsonl,
     DATA_DIR,
     env_flag_is_true,
+    fail_step,
     finish_step,
     get_effective_tensor_parallel_size,
     is_step_complete,
@@ -36,7 +37,12 @@ from src.common.utils import (
     log_gpu_runtime_profile,
     start_step,
 )
-from src.common.image_generation import should_force_regenerate_images
+from src.common.image_generation import is_image_generation_allowed, should_force_regenerate_images
+from src.common.retrieval_queries import build_compact_retrieval_query
+from src.common.shared_reuse import (
+    load_cached_path5_pair_result,
+    save_cached_path5_pair_result,
+)
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -76,6 +82,18 @@ def _normalize_crawled_infos(items: list[dict]) -> list[dict]:
             or info.get("query", "").strip()
         )
         info["description"] = description
+        class_label = (
+            str(info.get("class_label", "")).strip()
+            or str(info.get("class", "")).strip()
+        )
+        if not class_label:
+            class_label = (
+                build_compact_retrieval_query(description, max_words=2)
+                or build_compact_retrieval_query(str(info.get("caption", "")).strip(), max_words=2)
+                or build_compact_retrieval_query(str(info.get("query", "")).strip(), max_words=2)
+            )
+        info["class_label"] = class_label
+        info["class"] = class_label
         normalized.append(info)
     return normalized
 
@@ -93,14 +111,15 @@ crawled_file = OUTPUT_DIR / "crawled_image_info.jsonl"
 crawled = []
 
 existing_count = 0
-if step_complete(
+step1_done = step_complete(
     "step1_acquire_images",
     crawled_file,
     validator=lambda: sum(
         1 for item in load_jsonl(crawled_file)
         if Path(item.get("path", "")).exists()
     ) >= 10,
-):
+)
+if step1_done:
     cached = _normalize_crawled_infos(load_jsonl(crawled_file))
     crawled = [c for c in cached if Path(c.get("path", "")).exists()]
     logger.info("Skipping Step 1; completion marker found")
@@ -126,6 +145,13 @@ elif crawled_file.exists():
         crawled = [c for c in cached if Path(c.get("path", "")).exists()]
         save_jsonl(crawled, crawled_file)
 
+if not step1_done:
+    start_step(
+        OUTPUT_DIR,
+        "step1_acquire_images",
+        cleanup_paths=[crawled_file, OUTPUT_DIR / "_t2i_generated.jsonl"],
+    )
+
 MIN_IMAGES_FOR_PATH5 = 300
 
 # Step A: Try crawl if enabled and no images yet
@@ -141,23 +167,29 @@ if not crawled and laion_enabled:
 
 # Step B: ALWAYS supplement with T2I if below threshold
 if len(crawled) < MIN_IMAGES_FOR_PATH5:
-    logger.info(
-        "Only %d images (need %d), supplementing with T2I generation",
-        len(crawled), MIN_IMAGES_FOR_PATH5,
-    )
-    image_profile = apply_gpu_runtime_profile(
-        path_name="path5",
-        task_type="image",
-        preferred_gpu_count=4,
-    )
-    log_gpu_runtime_profile(logger, image_profile, "Path 5 Step 1")
-    env = os.environ.copy()
-    env["CUDA_VISIBLE_DEVICES"] = image_profile["selected_gpu_csv"]
-    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
-    env["PYTHONPATH"] = str(PROJ)
+    if not is_image_generation_allowed("path5"):
+        logger.info(
+            "Only %d images (need %d), but T2I fallback is disabled for Path 5",
+            len(crawled), MIN_IMAGES_FOR_PATH5,
+        )
+    else:
+        logger.info(
+            "Only %d images (need %d), supplementing with T2I generation",
+            len(crawled), MIN_IMAGES_FOR_PATH5,
+        )
+        image_profile = apply_gpu_runtime_profile(
+            path_name="path5",
+            task_type="image",
+            preferred_gpu_count=4,
+        )
+        log_gpu_runtime_profile(logger, image_profile, "Path 5 Step 1")
+        env = os.environ.copy()
+        env["CUDA_VISIBLE_DEVICES"] = image_profile["selected_gpu_csv"]
+        env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+        env["PYTHONPATH"] = str(PROJ)
 
-    t2i_output_file = OUTPUT_DIR / "_t2i_generated.jsonl"
-    sdxl_code = f"""
+        t2i_output_file = OUTPUT_DIR / "_t2i_generated.jsonl"
+        sdxl_code = f"""
 import sys, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '{image_profile["selected_gpu_csv"]}'
 os.environ['HF_HOME'] = '/mnt2/xuran_hdd/cache'
@@ -170,21 +202,21 @@ paths, sources, infos = generate_images_from_queries('{OUTPUT_DIR}', max_per_cat
 save_jsonl(infos, '{t2i_output_file}')
 print(f'T2I generated {{len(infos)}} images')
 """
-    rc = subprocess.run([PYTHON, "-c", sdxl_code], env=env, cwd=str(PROJ)).returncode
-    if rc == 0 and t2i_output_file.exists():
-        t2i_images = _normalize_crawled_infos(load_jsonl(t2i_output_file))
-        # Merge T2I into crawled, dedup by description
-        existing_descs = {c.get("description", "").strip().lower() for c in crawled}
-        for img in t2i_images:
-            desc = img.get("description", "").strip().lower()
-            if desc and desc not in existing_descs:
-                crawled.append(img)
-                existing_descs.add(desc)
-        save_jsonl(crawled, crawled_file)
-        t2i_output_file.unlink(missing_ok=True)
-        logger.info(f"After T2I supplement: {len(crawled)} total images")
-    else:
-        logger.error("T2I generation subprocess failed")
+        rc = subprocess.run([PYTHON, "-c", sdxl_code], env=env, cwd=str(PROJ)).returncode
+        if rc == 0 and t2i_output_file.exists():
+            t2i_images = _normalize_crawled_infos(load_jsonl(t2i_output_file))
+            # Merge T2I into crawled, dedup by description
+            existing_descs = {c.get("description", "").strip().lower() for c in crawled}
+            for img in t2i_images:
+                desc = img.get("description", "").strip().lower()
+                if desc and desc not in existing_descs:
+                    crawled.append(img)
+                    existing_descs.add(desc)
+            save_jsonl(crawled, crawled_file)
+            t2i_output_file.unlink(missing_ok=True)
+            logger.info(f"After T2I supplement: {len(crawled)} total images")
+        else:
+            logger.error("T2I generation subprocess failed")
 
 logger.info(f"Step 1 complete: {len(crawled)} images")
 if len(crawled) >= 10 and not step_complete("step1_acquire_images", crawled_file):
@@ -196,6 +228,13 @@ if len(crawled) >= 10 and not step_complete("step1_acquire_images", crawled_file
     )
 
 if len(crawled) < 10:
+    fail_step(
+        OUTPUT_DIR,
+        "step1_acquire_images",
+        error=f"Only {len(crawled)} images collected (need at least 10)",
+        cleanup_paths=[crawled_file, OUTPUT_DIR / "_t2i_generated.jsonl"],
+        metadata={"records": len(crawled)},
+    )
     print("\n" + "=" * 80)
     print(f"✗ PATH 5 ABORTED: only {len(crawled)} images (need at least 10)")
     print("=" * 80)
@@ -224,7 +263,11 @@ clear_step_state(
     "step2_cross_pair_prompts",
     stale_paths=[output_file, OUTPUT_DIR / "_cross_pair_input.jsonl", OUTPUT_DIR / "_method_b_pairs.jsonl"],
 )
-start_step(OUTPUT_DIR, "step2_cross_pair_prompts")
+start_step(
+    OUTPUT_DIR,
+    "step2_cross_pair_prompts",
+    cleanup_paths=[output_file, OUTPUT_DIR / "_cross_pair_input.jsonl", OUTPUT_DIR / "_method_b_pairs.jsonl"],
+)
 
 # Generate candidate pairs (no GPU needed)
 from src.path3_dataset_expand.cross_pair import (
@@ -240,13 +283,24 @@ logger.info(f"Generated {len(candidate_pairs)} candidate pairs, {len(prompts)} p
 method_b_input = OUTPUT_DIR / "_cross_pair_input.jsonl"
 prompt_data = []
 prompt_idx = 0
+cached_pair_results = []
 for pair in candidate_pairs:
+    cached_pair = load_cached_path5_pair_result(pair["info1"], pair["info2"])
+    if cached_pair:
+        cached_pair_results.append(cached_pair)
+        continue
+    cls1 = pair["info1"].get("class_label", "") or pair["info1"].get("class", "")
+    cls2 = pair["info2"].get("class_label", "") or pair["info2"].get("class", "")
     desc1 = pair["info1"].get("description", "")
     desc2 = pair["info2"].get("description", "")
-    if not desc1 or not desc2:
+    if not (cls1 or desc1) or not (cls2 or desc2):
         continue
     from src.common.utils import is_english
-    if not is_english(desc1) or not is_english(desc2):
+    if desc1 and not is_english(desc1):
+        desc1 = ""
+    if desc2 and not is_english(desc2):
+        desc2 = ""
+    if not (cls1 or desc1) or not (cls2 or desc2):
         continue
     prompt_data.append({
         "prompt": prompts[prompt_idx] if prompt_idx < len(prompts) else "",
@@ -259,7 +313,9 @@ for pair in candidate_pairs:
 
 save_jsonl(prompt_data, method_b_input)
 
-results = []
+results = list(cached_pair_results)
+if cached_pair_results:
+    logger.info("Reused %d cached accepted Path 5 pairs", len(cached_pair_results))
 
 if prompt_data:
     llm_profile = apply_gpu_runtime_profile(
@@ -300,10 +356,35 @@ if prompt_data:
     ).returncode
     if rc != 0:
         logger.error("LLM cross-pairing subprocess failed")
+        fail_step(
+            OUTPUT_DIR,
+            "step2_cross_pair_prompts",
+            error=f"LLM cross-pairing subprocess failed with exit code {rc}",
+        )
         raise SystemExit(rc)
     else:
-        results = load_jsonl(output_file) if output_file.exists() else []
-        logger.info(f"LLM cross-pairing: {len(results)} samples generated")
+        new_results = load_jsonl(output_file) if output_file.exists() else []
+        logger.info(
+            "LLM cross-pairing: %d new samples generated (%d reused from cache)",
+            len(new_results),
+            len(cached_pair_results),
+        )
+        for result in new_results:
+            save_cached_path5_pair_result(
+                {
+                    "path": result.get("image1_path", ""),
+                    "class_label": result.get("image1_class", ""),
+                    "description": result.get("image1_description", result.get("image1_caption", "")),
+                },
+                {
+                    "path": result.get("image2_path", ""),
+                    "class_label": result.get("image2_class", ""),
+                    "description": result.get("image2_description", result.get("image2_caption", "")),
+                },
+                result,
+            )
+        results.extend(new_results)
+        save_jsonl(results, output_file)
         finish_step(
             OUTPUT_DIR,
             "step2_cross_pair_prompts",
@@ -315,6 +396,14 @@ if prompt_data:
         (OUTPUT_DIR / "_method_b_pairs.jsonl").unlink(missing_ok=True)
 else:
     logger.warning("No valid prompt data — skipping LLM step")
+    if results:
+        save_jsonl(results, output_file)
+        finish_step(
+            OUTPUT_DIR,
+            "step2_cross_pair_prompts",
+            expected_outputs=[output_file],
+            metadata={"records": len(results), "candidate_pairs": len(candidate_pairs)},
+        )
 
 print("\n" + "=" * 80)
 print(f"✓ PATH 5 COMPLETE: {len(results)} samples with text prompts")

@@ -4,7 +4,7 @@ Path 6: TAG+KG Fusion for Covert Toxicity
   Step 1: LLM generates concept chains (toxicity association graphs)
   Step 2: CLIP scoring and filtering of chains
   Step 3: Fuse with Path 1 KG pairs (if available)
-  Step 4: Generate images for fusion pairs (SD3.5 Large Turbo, all visible GPUs)
+  Step 4: Acquire fusion images (local datasets -> web retrieval -> T2I fallback)
   Step 5: LLM generates connecting text prompts (vLLM on all visible GPUs)
 
 Runtime estimate: ~3-4 hours
@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.common.utils import (
     apply_gpu_runtime_profile,
     clear_step_state,
+    fail_step,
     get_effective_tensor_parallel_size,
     setup_logging,
     load_config,
@@ -156,7 +157,7 @@ if step_complete("step1_generate_chains", chains_file):
     logger.info("Skipping Step 1; completion marker found")
 else:
     clear_step_state(OUTPUT_DIR, "step1_generate_chains", stale_paths=[chains_file])
-    start_step(OUTPUT_DIR, "step1_generate_chains")
+    start_step(OUTPUT_DIR, "step1_generate_chains", cleanup_paths=[chains_file])
     rc = run_subprocess(f"""
 import sys
 sys.path.insert(0, '{PROJ}')
@@ -194,6 +195,11 @@ print(f'Total chains generated: {{len(all_chains)}}')
 """, gpu_ids=all_gpu_ids)
     if rc != 0:
         logger.error("TAG chain generation failed")
+        fail_step(
+            OUTPUT_DIR,
+            "step1_generate_chains",
+            error=f"TAG chain generation subprocess failed with exit code {rc}",
+        )
         sys.exit(1)
     finish_step(
         OUTPUT_DIR,
@@ -217,7 +223,7 @@ if step_complete("step2_score_chains", scored_file):
     scored_chains = load_jsonl(scored_file)
 else:
     clear_step_state(OUTPUT_DIR, "step2_score_chains", stale_paths=[scored_file])
-    start_step(OUTPUT_DIR, "step2_score_chains")
+    start_step(OUTPUT_DIR, "step2_score_chains", cleanup_paths=[scored_file])
     rc = run_subprocess(f"""
 import sys; sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, load_jsonl, save_jsonl, load_config
@@ -237,6 +243,11 @@ print(f'Scored chains: {{len(scored)}} / {{len(chains)}} passed')
 """, gpu_ids=single_gpu_id)
     if rc != 0:
         logger.warning("CLIP scoring failed — using unscored chains with endpoint extraction")
+        fail_step(
+            OUTPUT_DIR,
+            "step2_score_chains",
+            error=f"CLIP scoring subprocess failed with exit code {rc}",
+        )
         # Fallback: just extract endpoint pairs without CLIP filtering
         from src.path6_tag_kg_fusion.tag_builder import extract_endpoint_pairs
         pairs = extract_endpoint_pairs(raw_chains)
@@ -263,7 +274,7 @@ if step_complete("step3_fuse_pairs", fusion_file):
     fused_pairs = load_jsonl(fusion_file)
 else:
     clear_step_state(OUTPUT_DIR, "step3_fuse_pairs", stale_paths=[fusion_file])
-    start_step(OUTPUT_DIR, "step3_fuse_pairs")
+    start_step(OUTPUT_DIR, "step3_fuse_pairs", cleanup_paths=[fusion_file])
     from src.path6_tag_kg_fusion.tag_builder import extract_endpoint_pairs
     from src.path6_tag_kg_fusion.fusion_mine import fuse_with_path1
 
@@ -279,9 +290,14 @@ else:
 
 logger.info(f"Fusion pairs: {len(fused_pairs)}")
 
+from src.path1_kg_concept.pair_filter import filter_pairs_for_retrieval
+retrieval_max_words = int(os.environ.get("MIS_RETRIEVAL_MAX_QUERY_WORDS", "2"))
+fused_pairs = filter_pairs_for_retrieval(fused_pairs, max_query_words=retrieval_max_words)
+logger.info(f"Retrieval-friendly fusion pairs: {len(fused_pairs)}")
+
 # ── Step 4: Generate images ─────────────────────────────────────────────────
 logger.info("=" * 60)
-logger.info("PATH 6 STEP 4: Image generation (4-GPU parallel)")
+logger.info("PATH 6 STEP 4: Image acquisition (local -> web -> T2I fallback)")
 logger.info("=" * 60)
 
 images_file = OUTPUT_DIR / "pairs_with_images.jsonl"
@@ -305,11 +321,17 @@ else:
             *sorted(OUTPUT_DIR.glob("_img_chunk_*.jsonl")),
         ],
     )
-    start_step(OUTPUT_DIR, "step4_generate_images")
     free_gpus = image_profile["selected_gpu_ids"]
     num_workers = len(free_gpus)
     n = len(fused_pairs)
     chunk_size = (n + num_workers - 1) // num_workers
+    chunk_output_files = [OUTPUT_DIR / f"pairs_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus]
+    chunk_files = [OUTPUT_DIR / f"_img_chunk_{i}.jsonl" for i in range(num_workers)]
+    start_step(
+        OUTPUT_DIR,
+        "step4_generate_images",
+        cleanup_paths=[images_file, *chunk_output_files, *chunk_files],
+    )
 
     chunk_files = []
     for i in range(num_workers):
@@ -366,6 +388,12 @@ print(f'GPU {gpu_id}: {{len(results)}}/{{len(pairs)}} images generated')
     save_jsonl(all_results, images_file)
     if worker_failures:
         logger.error("Path 6 Step 4 incomplete because workers failed: %s", worker_failures)
+        fail_step(
+            OUTPUT_DIR,
+            "step4_generate_images",
+            error=f"Worker failures: {worker_failures}",
+            metadata={"records_before_failure": len(all_results), "input_records": len(fused_pairs)},
+        )
         sys.exit(1)
     finish_step(
         OUTPUT_DIR,
@@ -399,7 +427,7 @@ else:
         llm_tensor_parallel_size,
     ) = select_llm_runtime()
     clear_step_state(OUTPUT_DIR, "step5_generate_prompts", stale_paths=[final_output])
-    start_step(OUTPUT_DIR, "step5_generate_prompts")
+    start_step(OUTPUT_DIR, "step5_generate_prompts", cleanup_paths=[final_output])
     rc = run_subprocess(f"""
 import sys, json, re
 sys.path.insert(0, '{PROJ}')
@@ -464,6 +492,11 @@ print(f'Path 6: {{len(results)}}/{{len(prompt_data)}} samples generated')
 
     if rc != 0:
         logger.error("Prompt generation + MTC scoring failed")
+        fail_step(
+            OUTPUT_DIR,
+            "step5_generate_prompts",
+            error=f"Prompt generation + MTC subprocess failed with exit code {rc}",
+        )
         sys.exit(1)
 
     final_results = load_jsonl(final_output)

@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.common.utils import (
     apply_gpu_runtime_profile,
     clear_step_state,
+    fail_step,
     finish_step,
     is_step_complete,
     jsonl_record_count,
@@ -98,7 +99,7 @@ def main() -> int:
         return 0
 
     clear_step_state(output_dir, "step2_decompose_prompts", stale_paths=[output_file])
-    start_step(output_dir, "step2_decompose_prompts")
+    start_step(output_dir, "step2_decompose_prompts", cleanup_paths=[output_file])
 
     # Prefer fork on Linux when we can keep the worker process pristine.
     attempts = ["fork", "spawn"]
@@ -109,6 +110,11 @@ def main() -> int:
         tried.append((mp_method, rc))
         if rc == 0:
             if jsonl_record_count(output_file) < 1:
+                fail_step(
+                    output_dir,
+                    "step2_decompose_prompts",
+                    error="Step 2 finished without producing decomposed prompts",
+                )
                 print("Step 2 finished without producing decomposed prompts", file=sys.stderr)
                 return 1
             finish_step(
@@ -126,6 +132,11 @@ def main() -> int:
             file=sys.stderr,
         )
 
+    fail_step(
+        output_dir,
+        "step2_decompose_prompts",
+        error=f"Step 2 failed after attempts: {tried}",
+    )
     print(f"Step 2 failed after attempts: {tried}", file=sys.stderr)
     return 1
 

@@ -9,21 +9,24 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from PIL import Image
-
-from src.common.clip_utils import (
-    retrieve_from_laion,
-    download_image_url,
-    passes_download_filter,
-)
 from src.common.utils import (
+    get_min_image_size,
     load_jsonl,
     save_jsonl,
     DATA_DIR,
 )
+from src.common.local_datasets import search_local, copy_local_image
 from src.common.image_generation import (
     generate_image,
     should_force_regenerate_images,
+)
+from src.common.retrieval_rerank import (
+    cleanup_ranked_tmp_paths,
+    download_web_results_ranked,
+    get_retrieval_clip_candidate_limit,
+    rank_local_results_by_clip,
+    retrieve_web_results_with_variants,
+    should_accept_retrieval_candidate,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,7 +54,7 @@ def _should_preserve_existing_image(
         return True
 
     acquisition = _existing_acquisition_mode(sample, image_index)
-    return acquisition in {"retrieved", "crawled"}
+    return acquisition in {"retrieved", "crawled", "local"}
 
 
 def _delete_existing_generated_image(
@@ -72,35 +75,68 @@ def retrieve_image(
     description: str,
     output_path: str | Path,
     num_results: int = 10,
-) -> bool:
-    """Retrieve an image from LAION-5B and save it locally."""
-    results = retrieve_from_laion(description, num_results=num_results)
-    if not results:
-        return False
-
+) -> tuple[bool, str]:
+    """Search local datasets first, then web retrieval, and report the source."""
     output_path = Path(output_path)
+    min_w, min_h = get_min_image_size()
+
+    local_results = search_local(
+        description,
+        num_results=max(num_results, get_retrieval_clip_candidate_limit()),
+        min_width=min_w,
+        min_height=min_h,
+    )
+    ranked_local = rank_local_results_by_clip(
+        description,
+        local_results,
+        min_width=min_w,
+        min_height=min_h,
+    )
+    if ranked_local:
+        best_local = ranked_local[0]
+        best_local_score = float(best_local.get("clip_score", float("-inf")))
+        if should_accept_retrieval_candidate(best_local_score, "local"):
+            if copy_local_image(best_local["path"], output_path):
+                return True, "local"
+        else:
+            logger.debug(
+                "Best local image for %r scored %.3f, below threshold; continuing to web retrieval",
+                description,
+                best_local_score,
+            )
+
+    results = retrieve_web_results_with_variants(
+        description,
+        num_results=max(num_results, get_retrieval_clip_candidate_limit()),
+        min_width=min_w,
+        min_height=min_h,
+    )
+    if not results:
+        return False, ""
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    for result in results:
-        url = result.get("url", "")
-        if not url:
-            continue
-        try:
-            download_image_url(url, output_path)
-            # Verify the image is valid
-            img = Image.open(output_path)
-            img.verify()
-            if not passes_download_filter(output_path, min_width=512, min_height=512):
-                if output_path.exists():
-                    output_path.unlink()
-                continue
-            return True
-        except Exception:
-            if output_path.exists():
-                output_path.unlink()
-            continue
-
-    return False
+    ranked_web = download_web_results_ranked(
+        description,
+        results,
+        output_path.parent / ".retrieval_tmp",
+        min_width=min_w,
+        min_height=min_h,
+    )
+    if ranked_web:
+        best_web = ranked_web[0]
+        best_web_score = float(best_web.get("clip_score", float("-inf")))
+        if should_accept_retrieval_candidate(best_web_score, "web"):
+            best_tmp = Path(best_web["tmp_path"])
+            output_path.unlink(missing_ok=True)
+            best_tmp.replace(output_path)
+            cleanup_ranked_tmp_paths(ranked_web, keep=1)
+            return True, "retrieved"
+        logger.debug(
+            "Best web image for %r scored %.3f, below threshold; falling back to generation",
+            description,
+            best_web_score,
+        )
+        cleanup_ranked_tmp_paths(ranked_web, keep=0)
+    return False, ""
 
 
 def acquire_single_image(
@@ -109,20 +145,16 @@ def acquire_single_image(
     *,
     prefer_generation: bool = True,
 ) -> tuple[bool, str]:
-    """Acquire one image and report whether it came from generation or retrieval."""
+    """Acquire one image via local datasets, then web retrieval, then T2I generation."""
     if not _has_valid_description(description):
         logger.warning("Skipping image acquisition for empty description at %s", output_path)
         return False, ""
-    if prefer_generation:
-        if generate_image(description, output_path):
-            return True, "generated"
-        if retrieve_image(description, output_path):
-            return True, "retrieved"
-    else:
-        if retrieve_image(description, output_path):
-            return True, "retrieved"
-        if generate_image(description, output_path):
-            return True, "generated"
+
+    retrieved, source = retrieve_image(description, output_path)
+    if retrieved:
+        return True, source
+    if generate_image(description, output_path):
+        return True, "generated"
     return False, ""
 
 

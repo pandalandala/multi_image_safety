@@ -34,6 +34,24 @@ def should_force_regenerate_images() -> bool:
     return os.environ.get("MIS_FORCE_REGENERATE_IMAGES", "").strip() == "1"
 
 
+def is_image_generation_allowed(path_name: str | None = None) -> bool:
+    """Return whether T2I fallback is allowed for the given path.
+
+    Precedence:
+      1. MIS_PATH{N}_ALLOW_IMAGE_GENERATION
+      2. MIS_ALLOW_IMAGE_GENERATION
+      3. default True
+    """
+    if path_name:
+        normalized = str(path_name).strip().lower().replace("-", "_")
+        specific_name = f"MIS_{normalized.upper()}_ALLOW_IMAGE_GENERATION"
+        if specific_name in os.environ:
+            return os.environ[specific_name].strip().lower() not in {"0", "false", "no", "off"}
+    if "MIS_ALLOW_IMAGE_GENERATION" in os.environ:
+        return os.environ["MIS_ALLOW_IMAGE_GENERATION"].strip().lower() not in {"0", "false", "no", "off"}
+    return True
+
+
 def _torch_dtype(dtype_name: str | None) -> torch.dtype:
     """Map config strings to torch dtypes."""
     name = (dtype_name or "float16").strip().lower()
@@ -257,8 +275,8 @@ def generate_image(
     scale = float(guidance_scale if guidance_scale is not None else backend_cfg.get("guidance_scale", 7.5))
     negative_prompt = root_cfg.get("negative_prompt", "")
     max_sequence_length = backend_cfg.get("max_sequence_length", root_cfg.get("max_sequence_length"))
-    min_width = int(root_cfg.get("min_width", 512))
-    min_height = int(root_cfg.get("min_height", 512))
+    min_width = int(root_cfg.get("min_width", 256))
+    min_height = int(root_cfg.get("min_height", 256))
     max_attempts, clip_threshold, keep_best = _get_retry_config(root_cfg, backend_name)
 
     best_tmp: Path | None = None

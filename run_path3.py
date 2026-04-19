@@ -29,6 +29,7 @@ from src.common.utils import (
     apply_gpu_runtime_profile,
     clear_step_state,
     env_flag_is_true,
+    fail_step,
     finish_step,
     get_effective_tensor_parallel_size,
     get_visible_gpu_csv,
@@ -265,7 +266,11 @@ def _run_method_a(images_with_desc: list[dict]) -> list[dict]:
     input_file = OUTPUT_DIR / "_method_a_input.jsonl"
     temp_output = OUTPUT_DIR / "_method_a_new.jsonl"
     clear_step_state(OUTPUT_DIR, "step2_method_a_decompose", stale_paths=[input_file, temp_output])
-    start_step(OUTPUT_DIR, "step2_method_a_decompose")
+    start_step(
+        OUTPUT_DIR,
+        "step2_method_a_decompose",
+        cleanup_paths=[input_file, temp_output, method_a_output],
+    )
     save_jsonl(pending_inputs, input_file)
 
     result = _run_worker_script(
@@ -288,6 +293,11 @@ def _run_method_a(images_with_desc: list[dict]) -> list[dict]:
     input_file.unlink(missing_ok=True)
     if result != 0:
         logger.warning("Method A subprocess failed — continuing with existing Method A results")
+        fail_step(
+            OUTPUT_DIR,
+            "step2_method_a_decompose",
+            error=f"Method A worker failed with exit code {result}",
+        )
         temp_output.unlink(missing_ok=True)
         return existing_results
 
@@ -357,7 +367,11 @@ def _run_method_b(all_image_infos: list[dict]) -> list[dict]:
         "step3_method_b_cross_pair",
         stale_paths=[method_b_input, temp_output, OUTPUT_DIR / "_method_b_pairs.jsonl"],
     )
-    start_step(OUTPUT_DIR, "step3_method_b_cross_pair")
+    start_step(
+        OUTPUT_DIR,
+        "step3_method_b_cross_pair",
+        cleanup_paths=[method_b_input, temp_output, OUTPUT_DIR / "_method_b_pairs.jsonl", method_b_output],
+    )
     save_jsonl(pending_prompt_data, method_b_input)
 
     result = _run_worker_script(
@@ -380,6 +394,11 @@ def _run_method_b(all_image_infos: list[dict]) -> list[dict]:
     method_b_input.unlink(missing_ok=True)
     if result != 0:
         logger.warning("Method B subprocess failed — continuing with existing Method B results")
+        fail_step(
+            OUTPUT_DIR,
+            "step3_method_b_cross_pair",
+            error=f"Method B worker failed with exit code {result}",
+        )
         temp_output.unlink(missing_ok=True)
         return existing_results
 
@@ -414,8 +433,8 @@ def main() -> None:
         logger.info("Skipping Path 3 Step 1; completion marker found: %s", all_infos_file)
         all_image_infos = _load_existing_jsonl(all_infos_file)
     else:
-        clear_step_state(OUTPUT_DIR, "step1_collect_image_pool")
-        start_step(OUTPUT_DIR, "step1_collect_image_pool")
+        clear_step_state(OUTPUT_DIR, "step1_collect_image_pool", stale_paths=[all_infos_file])
+        start_step(OUTPUT_DIR, "step1_collect_image_pool", cleanup_paths=[all_infos_file])
         from src.path3_dataset_expand.expand import collect_all_data
 
         images_with_desc, _, _, all_image_infos = collect_all_data(
@@ -455,7 +474,11 @@ def main() -> None:
 
         temp_info_file = OUTPUT_DIR / "_t2i_generated_infos.jsonl"
         clear_step_state(OUTPUT_DIR, "step1_5_t2i_fallback", stale_paths=[temp_info_file])
-        start_step(OUTPUT_DIR, "step1_5_t2i_fallback")
+        start_step(
+            OUTPUT_DIR,
+            "step1_5_t2i_fallback",
+            cleanup_paths=[temp_info_file],
+        )
         code = f"""
 import sys, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '{ALL_GPU_IDS}'
@@ -495,6 +518,11 @@ print(f'T2I fallback: {{len(infos)}} images generated')
             )
         else:
             logger.warning("T2I fallback subprocess failed")
+            fail_step(
+                OUTPUT_DIR,
+                "step1_5_t2i_fallback",
+                error=f"T2I fallback subprocess failed with exit code {rc}",
+            )
 
     method_a_results = _run_method_a(images_with_desc)
     method_b_results = _run_method_b(all_image_infos)
@@ -502,7 +530,7 @@ print(f'T2I fallback: {{len(infos)}} images generated')
     all_results = method_a_results + method_b_results
     merged_output = OUTPUT_DIR / "cross_paired_samples.jsonl"
     clear_step_state(OUTPUT_DIR, "step4_merge_output", stale_paths=[merged_output])
-    start_step(OUTPUT_DIR, "step4_merge_output")
+    start_step(OUTPUT_DIR, "step4_merge_output", cleanup_paths=[merged_output])
     save_jsonl(all_results, merged_output)
     finish_step(
         OUTPUT_DIR,

@@ -22,6 +22,7 @@ from src.common.utils import (
     apply_gpu_runtime_profile,
     clear_step_state,
     env_flag_is_true,
+    fail_step,
     finish_step,
     get_visible_gpu_ids,
     is_step_complete,
@@ -92,15 +93,26 @@ def main() -> None:
             *sorted(OUTPUT_DIR.glob("_p3img_chunk_*.jsonl")),
         ],
     )
-    start_step(OUTPUT_DIR, "step5_method_a_acquire_images")
 
     for i, sample in enumerate(samples):
         sample["sample_id_global"] = 3000 + i  # Path 3 ID range: 3000+
 
     free_gpus = get_visible_gpu_ids(max_gpus=None)
+    chunk_output_files = [OUTPUT_DIR / f"method_a_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus]
+    chunk_state_files = [OUTPUT_DIR / f"_p3img_chunk_{i}.jsonl" for i in range(len(free_gpus))]
+    start_step(
+        OUTPUT_DIR,
+        "step5_method_a_acquire_images",
+        cleanup_paths=[METHOD_A_WITH_IMAGES, MERGED_OUTPUT, *chunk_output_files, *chunk_state_files],
+    )
     logger.info(f"Using visible GPUs for Method A image acquisition: {free_gpus}")
     if not free_gpus:
         logger.error("No GPUs configured for Method A image acquisition!")
+        fail_step(
+            OUTPUT_DIR,
+            "step5_method_a_acquire_images",
+            error="No GPUs configured for Method A image acquisition",
+        )
         sys.exit(1)
 
     num_workers = len(free_gpus)
@@ -180,6 +192,12 @@ print(f'GPU {gpu_id}: DONE — {{len(results)}}/{{len(samples)}} succeeded')
     save_jsonl(method_a_results, METHOD_A_WITH_IMAGES)
     if worker_failures:
         logger.error("Path 3 image acquisition incomplete because workers failed: %s", worker_failures)
+        fail_step(
+            OUTPUT_DIR,
+            "step5_method_a_acquire_images",
+            error=f"Worker failures: {worker_failures}",
+            metadata={"records_before_failure": len(method_a_results), "input_records": n},
+        )
         sys.exit(1)
     logger.info(f"Method A with images: {len(method_a_results)}/{n}")
 

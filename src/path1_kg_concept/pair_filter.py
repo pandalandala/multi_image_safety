@@ -12,6 +12,10 @@ import logging
 import numpy as np
 
 from src.common.clip_utils import encode_text, cosine_similarity
+from src.common.retrieval_queries import (
+    build_compact_retrieval_query,
+    is_retrieval_friendly_query,
+)
 from src.path5_embedding_pair.harm_vector import build_harm_vectors
 
 logger = logging.getLogger(__name__)
@@ -124,3 +128,40 @@ def rank_pairs_by_covertness(pairs: list[dict]) -> list[dict]:
         pair["covertness_rank"] = combined - avg_individual
     pairs.sort(key=lambda p: -p.get("covertness_rank", 0))
     return pairs
+
+
+def filter_pairs_for_retrieval(
+    pairs: list[dict],
+    *,
+    max_query_words: int = 2,
+) -> list[dict]:
+    """Keep only pairs whose concepts look simple enough for image retrieval."""
+    kept: list[dict] = []
+    rejected_examples: list[str] = []
+
+    for pair in pairs:
+        concept1 = str(pair.get("concept1", "")).strip()
+        concept2 = str(pair.get("concept2", "")).strip()
+        query1 = build_compact_retrieval_query(concept1, max_words=max_query_words)
+        query2 = build_compact_retrieval_query(concept2, max_words=max_query_words)
+
+        if not is_retrieval_friendly_query(concept1, max_words=max_query_words):
+            if len(rejected_examples) < 8:
+                rejected_examples.append(f"{concept1!r} + {concept2!r} (bad concept1 query={query1!r})")
+            continue
+        if not is_retrieval_friendly_query(concept2, max_words=max_query_words):
+            if len(rejected_examples) < 8:
+                rejected_examples.append(f"{concept1!r} + {concept2!r} (bad concept2 query={query2!r})")
+            continue
+
+        pair["concept1_query"] = query1
+        pair["concept2_query"] = query2
+        kept.append(pair)
+
+    logger.info(
+        "Retrieval-friendly filter: kept %d / %d pairs (max_query_words=%d)",
+        len(kept), len(pairs), max_query_words,
+    )
+    if rejected_examples:
+        logger.info("Sample retrieval-filter rejects: %s", "; ".join(rejected_examples))
+    return kept

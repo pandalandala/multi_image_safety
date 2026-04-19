@@ -1,0 +1,92 @@
+2026-04-19 16:27:51 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-19 16:27:51 [INFO] __main__: Path 6 LLM GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: Skipping Step 1; completion marker found
+2026-04-19 16:27:51 [INFO] __main__: Raw chains: 1057
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: PATH 6 STEP 2: CLIP chain scoring
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: Skipping Step 2; completion marker found
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: PATH 6 STEP 3: Fusion with Path 1 KG pairs
+2026-04-19 16:27:51 [INFO] __main__: ============================================================
+2026-04-19 16:27:51 [INFO] __main__: Skipping Step 3; completion marker found
+2026-04-19 16:27:51 [INFO] __main__: Fusion pairs: 798
+2026-04-19 16:27:53 [INFO] src.path1_kg_concept.pair_filter: Retrieval-friendly filter: kept 502 / 798 pairs (max_query_words=2)
+2026-04-19 16:27:53 [INFO] src.path1_kg_concept.pair_filter: Sample retrieval-filter rejects: 'coffee shop' + 'session hijacking' (bad concept2 query='session hijacking'); 'home renovation' + 'counterfeit fabric' (bad concept1 query='home renovation'); 'public transit app' + 'digital segregation' (bad concept2 query='digital segregation'); 'library card' + 'contraband list' (bad concept2 query='contraband list'); 'fishing trip' + 'collision' (bad concept2 query='collision'); 'home renovation' + 'theft ring' (bad concept1 query='home renovation'); 'carpool group' + 'abduction risk' (bad concept2 query='abduction risk'); 'wedding dance' + 'ID check' (bad concept2 query='id check')
+2026-04-19 16:27:53 [INFO] __main__: Retrieval-friendly fusion pairs: 502
+2026-04-19 16:27:53 [INFO] __main__: ============================================================
+2026-04-19 16:27:53 [INFO] __main__: PATH 6 STEP 4: Image acquisition (local -> web -> T2I fallback)
+2026-04-19 16:27:53 [INFO] __main__: ============================================================
+2026-04-19 16:27:53 [INFO] __main__: Path 6 Step 4 GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-19 16:27:53 [INFO] __main__: Path 6 Step 4 GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-19 16:27:53 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_0.jsonl
+2026-04-19 16:27:53 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_1.jsonl
+2026-04-19 16:27:53 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_2.jsonl
+2026-04-19 16:27:53 [INFO] src.common.utils: Saved 124 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_3.jsonl
+2026-04-19 16:27:53 [INFO] __main__: Started GPU 4 PID=1529615 (~126 pairs)
+2026-04-19 16:27:53 [INFO] __main__: Started GPU 5 PID=1529616 (~126 pairs)
+2026-04-19 16:27:53 [INFO] __main__: Started GPU 6 PID=1529617 (~126 pairs)
+2026-04-19 16:27:53 [INFO] __main__: Started GPU 7 PID=1529618 (~126 pairs)
+2026-04-19 16:27:55,579 [GPU7] INFO Retrieval phase: fetching 233 fusion concept images with 8 worker threads
+2026-04-19 16:27:55,593 [GPU4] INFO Retrieval phase: fetching 234 fusion concept images with 8 worker threads
+2026-04-19 16:27:55,629 [GPU5] INFO Retrieval phase: fetching 238 fusion concept images with 8 worker threads
+2026-04-19 16:27:55,632 [GPU6] INFO Retrieval phase: fetching 231 fusion concept images with 8 worker threads
+2026-04-19 16:27:56,465 [GPU4] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 16:27:56,527 [GPU7] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 16:27:56,567 [GPU5] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 16:27:56,579 [GPU6] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 16:27:57,455 [GPU4] INFO MSCOCO JSON parsed: images=118287 annotations=591753 elapsed=1.0s
+2026-04-19 16:27:57,521 [GPU7] INFO MSCOCO JSON parsed: images=118287 annotations=591753 elapsed=1.0s
+2026-04-19 16:27:57,586 [GPU5] INFO MSCOCO JSON parsed: images=118287 annotations=591753 elapsed=1.0s
+2026-04-19 16:27:57,589 [GPU6] INFO MSCOCO JSON parsed: images=118287 annotations=591753 elapsed=1.0s
+2026-04-19 16:27:57,733 [GPU4] INFO MSCOCO image map: 25000/118287 (21.1%) elapsed=0.3s rate=90135 items/s
+2026-04-19 16:27:57,806 [GPU5] INFO MSCOCO image map: 25000/118287 (21.1%) elapsed=0.2s rate=114252 items/s
+2026-04-19 16:27:57,806 [GPU7] INFO MSCOCO image map: 25000/118287 (21.1%) elapsed=0.3s rate=87633 items/s
+2026-04-19 16:27:57,852 [GPU6] INFO MSCOCO image map: 25000/118287 (21.1%) elapsed=0.3s rate=95132 items/s
+2026-04-19 16:27:57,859 [GPU4] INFO MSCOCO image map: 50000/118287 (42.3%) elapsed=0.4s rate=123766 items/s
+2026-04-19 16:27:57,946 [GPU7] INFO MSCOCO image map: 50000/118287 (42.3%) elapsed=0.4s rate=117747 items/s
+2026-04-19 16:27:57,950 [GPU5] INFO MSCOCO image map: 50000/118287 (42.3%) elapsed=0.4s rate=137801 items/s
+2026-04-19 16:27:57,981 [GPU6] INFO MSCOCO image map: 50000/118287 (42.3%) elapsed=0.4s rate=127622 items/s
+2026-04-19 16:27:58,094 [GPU4] INFO MSCOCO image map: 75000/118287 (63.4%) elapsed=0.6s rate=117465 items/s
+2026-04-19 16:27:58,167 [GPU5] INFO MSCOCO image map: 75000/118287 (63.4%) elapsed=0.6s rate=129272 items/s
+2026-04-19 16:27:58,196 [GPU7] INFO MSCOCO image map: 75000/118287 (63.4%) elapsed=0.7s rate=111118 items/s
+2026-04-19 16:27:58,215 [GPU6] INFO MSCOCO image map: 75000/118287 (63.4%) elapsed=0.6s rate=119918 items/s
+2026-04-19 16:27:58,220 [GPU4] INFO MSCOCO image map: 100000/118287 (84.5%) elapsed=0.8s rate=130869 items/s
+2026-04-19 16:27:58,294 [GPU5] INFO MSCOCO image map: 100000/118287 (84.5%) elapsed=0.7s rate=141436 items/s
+2026-04-19 16:27:58,338 [GPU7] INFO MSCOCO image map: 100000/118287 (84.5%) elapsed=0.8s rate=122461 items/s
+2026-04-19 16:27:58,341 [GPU6] INFO MSCOCO image map: 100000/118287 (84.5%) elapsed=0.8s rate=133072 items/s
+2026-04-19 16:27:58,442 [GPU4] INFO MSCOCO image map: 118287/118287 (100.0%) elapsed=1.0s rate=119903 items/s
+2026-04-19 16:27:58,502 [GPU5] INFO MSCOCO image map: 118287/118287 (100.0%) elapsed=0.9s rate=129314 items/s
+2026-04-19 16:27:58,532 [GPU4] INFO MSCOCO caption attach: 100000/591753 (16.9%) elapsed=0.1s rate=1118848 items/s
+2026-04-19 16:27:58,555 [GPU6] INFO MSCOCO image map: 118287/118287 (100.0%) elapsed=1.0s rate=122415 items/s
+2026-04-19 16:27:58,592 [GPU5] INFO MSCOCO caption attach: 100000/591753 (16.9%) elapsed=0.1s rate=1104087 items/s
+2026-04-19 16:27:58,620 [GPU4] INFO MSCOCO caption attach: 200000/591753 (33.8%) elapsed=0.2s rate=1123552 items/s
+2026-04-19 16:27:58,636 [GPU7] INFO MSCOCO image map: 118287/118287 (100.0%) elapsed=1.1s rate=106087 items/s
+2026-04-19 16:27:58,649 [GPU6] INFO MSCOCO caption attach: 100000/591753 (16.9%) elapsed=0.1s rate=1070954 items/s
+2026-04-19 16:27:58,685 [GPU5] INFO MSCOCO caption attach: 200000/591753 (33.8%) elapsed=0.2s rate=1089109 items/s
+2026-04-19 16:27:58,712 [GPU4] INFO MSCOCO caption attach: 300000/591753 (50.7%) elapsed=0.3s rate=1113260 items/s
+2026-04-19 16:27:58,743 [GPU6] INFO MSCOCO caption attach: 200000/591753 (33.8%) elapsed=0.2s rate=1068588 items/s
+2026-04-19 16:27:58,756 [GPU7] INFO MSCOCO caption attach: 100000/591753 (16.9%) elapsed=0.1s rate=834121 items/s
+2026-04-19 16:27:58,778 [GPU5] INFO MSCOCO caption attach: 300000/591753 (50.7%) elapsed=0.3s rate=1088097 items/s
+2026-04-19 16:27:58,802 [GPU4] INFO MSCOCO caption attach: 400000/591753 (67.6%) elapsed=0.4s rate=1111499 items/s
+2026-04-19 16:27:58,835 [GPU6] INFO MSCOCO caption attach: 300000/591753 (50.7%) elapsed=0.3s rate=1071970 items/s
+2026-04-19 16:27:58,881 [GPU7] INFO MSCOCO caption attach: 200000/591753 (33.8%) elapsed=0.2s rate=817288 items/s
+2026-04-19 16:27:58,903 [GPU5] INFO MSCOCO caption attach: 400000/591753 (67.6%) elapsed=0.4s rate=996323 items/s
+2026-04-19 16:27:58,929 [GPU6] INFO MSCOCO caption attach: 400000/591753 (67.6%) elapsed=0.4s rate=1071872 items/s
+2026-04-19 16:27:58,935 [GPU4] INFO MSCOCO caption attach: 500000/591753 (84.5%) elapsed=0.5s rate=1014683 items/s
+2026-04-19 16:27:59,006 [GPU7] INFO MSCOCO caption attach: 300000/591753 (50.7%) elapsed=0.4s rate=811623 items/s
+2026-04-19 16:27:59,007 [GPU5] INFO MSCOCO caption attach: 500000/591753 (84.5%) elapsed=0.5s rate=991030 items/s
+2026-04-19 16:27:59,019 [GPU6] INFO MSCOCO caption attach: 500000/591753 (84.5%) elapsed=0.5s rate=1078787 items/s
+2026-04-19 16:27:59,030 [GPU4] INFO MSCOCO caption attach: 591753/591753 (100.0%) elapsed=0.6s rate=1006822 items/s
+2026-04-19 16:27:59,038 [GPU4] INFO MSCOCO index loaded: 118287 images, 591753 captions total_elapsed=2.6s
+2026-04-19 16:27:59,086 [GPU5] INFO MSCOCO caption attach: 591753/591753 (100.0%) elapsed=0.6s rate=1012541 items/s
+2026-04-19 16:27:59,095 [GPU5] INFO MSCOCO index loaded: 118287 images, 591753 captions total_elapsed=2.5s
+2026-04-19 16:27:59,097 [GPU6] INFO MSCOCO caption attach: 591753/591753 (100.0%) elapsed=0.5s rate=1093268 items/s
+2026-04-19 16:27:59,106 [GPU6] INFO MSCOCO index loaded: 118287 images, 591753 captions total_elapsed=2.5s
+2026-04-19 16:27:59,126 [GPU7] INFO MSCOCO caption attach: 400000/591753 (67.6%) elapsed=0.5s rate=816617 items/s
+2026-04-19 16:27:59,209 [GPU7] INFO MSCOCO caption attach: 500000/591753 (84.5%) elapsed=0.6s rate=873452 items/s
+2026-04-19 16:27:59,286 [GPU7] INFO MSCOCO caption attach: 591753/591753 (100.0%) elapsed=0.6s rate=910608 items/s
+2026-04-19 16:27:59,298 [GPU7] INFO MSCOCO index loaded: 118287 images, 591753 captions total_elapsed=2.8s

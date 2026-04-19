@@ -18,7 +18,7 @@ os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import setup_logging
-from src.common.utils import clear_step_state, finish_step, is_step_complete, jsonl_record_count, start_step
+from src.common.utils import clear_step_state, fail_step, finish_step, is_step_complete, jsonl_record_count, start_step
 from src.path2_prompt_decompose.validate import run
 
 if __name__ == "__main__":
@@ -38,12 +38,19 @@ if __name__ == "__main__":
         raise SystemExit(0)
 
     clear_step_state(output_dir, "step4_validate_samples", stale_paths=[output_file])
-    start_step(output_dir, "step4_validate_samples")
+    start_step(output_dir, "step4_validate_samples", cleanup_paths=[output_file])
     print("\n" + "="*80)
     print("Step 4: Validating single-image safety (NSFW check)")
     print("="*80 + "\n")
 
     results = run(nsfw_threshold=0.5)
+    if jsonl_record_count(output_file) < 1:
+        fail_step(
+            output_dir,
+            "step4_validate_samples",
+            error="Validation finished without producing validated samples",
+        )
+        raise SystemExit(1)
     finish_step(
         output_dir,
         "step4_validate_samples",

@@ -1,10 +1,24 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+PROJECT_ROOT="/mnt/hdd/xuran/multi_image_safety"
+LOG_DIR="$PROJECT_ROOT/logs"
+TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
+LOG_FILE="$LOG_DIR/path4_${TIMESTAMP}.log"
+
+mkdir -p "$LOG_DIR"
+
+# shellcheck disable=SC1091
+source "$PROJECT_ROOT/scripts/_load_local_env.sh"
+
 export HF_HOME="${HF_HOME:-/mnt2/xuran_hdd/cache}"
-export MIS_GPU_CANDIDATES="${MIS_GPU_CANDIDATES:-${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}}"
-unset CUDA_VISIBLE_DEVICES
-export PYTHONPATH="/mnt/hdd/xuran/multi_image_safety:$PYTHONPATH"
+export PYTHONPATH="$PROJECT_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
 echo "Running Path 4: Scenario Construction"
-echo "GPU candidates: ${MIS_GPU_CANDIDATES}"
-python -m src.pipeline.run_path 4 "$@"
+echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-<not set>}"
+echo "MIS_GPU_CANDIDATES: ${MIS_GPU_CANDIDATES:-<not set>}"
+echo "PEXELS_API_KEY: ${PEXELS_API_KEY:+<set>}"
+echo "PIXABAY_API_KEY: ${PIXABAY_API_KEY:+<set>}"
+echo "Log file: ${LOG_FILE}"
+
+python -m src.pipeline.run_path 4 "$@" 2>&1 | tee "$LOG_FILE"

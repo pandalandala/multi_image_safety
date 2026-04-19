@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+import threading
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -21,6 +22,7 @@ _clip_model = None
 _clip_preprocess = None
 _clip_tokenizer = None
 _nsfw_pipeline = None
+_clip_model_lock = threading.Lock()
 
 DEFAULT_CLIP_RETRIEVAL_URL = "https://knn.laion.ai/knn-service"
 DEFAULT_OPENVERSE_API_URL = "https://api.openverse.org/v1/images/"
@@ -72,6 +74,44 @@ DEFAULT_HTTP_HEADERS = {
     "User-Agent": "multi-image-safety-research/0.1 (non-commercial research use)",
 }
 
+# ── Cross-process rate limiter for web API backends ───────────────────────
+# Uses a shared lock file so parallel GPU workers don't flood the API.
+import fcntl
+import time as _time_mod
+
+_RATE_LIMIT_DIR = Path("/tmp/mis_ratelimits")
+_RATE_LIMIT_DIR.mkdir(exist_ok=True)
+
+# Per-backend minimum intervals (seconds between consecutive requests)
+_BACKEND_MIN_INTERVALS: dict[str, float] = {
+    "wikimedia_commons": 1.5,  # Wikimedia is very strict on anonymous rate limits
+    "openverse": 0.5,
+    "pexels": 0.2,
+    "pixabay": 0.2,
+}
+
+
+def _backend_rate_limit(backend: str) -> None:
+    """Block until enough time has passed since the last request to *backend*."""
+    interval = _BACKEND_MIN_INTERVALS.get(backend, 0.0)
+    if interval <= 0:
+        return
+    lock_path = _RATE_LIMIT_DIR / f"{backend}.lock"
+    lock_path.touch(exist_ok=True)
+    with open(lock_path, "r+") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            last_ts = float(f.read().strip())
+        except (ValueError, OSError):
+            last_ts = 0.0
+        wait = interval - (_time_mod.time() - last_ts)
+        if wait > 0:
+            _time_mod.sleep(wait)
+        f.seek(0)
+        f.truncate()
+        f.write(str(_time_mod.time()))
+        fcntl.flock(f, fcntl.LOCK_UN)
+
 
 class ImageSourceError(RuntimeError):
     """Raised when a configured image backend cannot be queried safely."""
@@ -89,21 +129,24 @@ def load_clip_model(
     global _clip_model, _clip_preprocess, _clip_tokenizer
     if _clip_model is not None:
         return _clip_model, _clip_preprocess, _clip_tokenizer
+    with _clip_model_lock:
+        if _clip_model is not None:
+            return _clip_model, _clip_preprocess, _clip_tokenizer
 
-    import open_clip
+        import open_clip
 
-    device = _get_device()
-    model, _, preprocess = open_clip.create_model_and_transforms(
-        model_name, pretrained=pretrained, device=device
-    )
-    tokenizer = open_clip.get_tokenizer(model_name)
-    model.eval()
+        device = _get_device()
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            model_name, pretrained=pretrained, device=device
+        )
+        tokenizer = open_clip.get_tokenizer(model_name)
+        model.eval()
 
-    _clip_model = model
-    _clip_preprocess = preprocess
-    _clip_tokenizer = tokenizer
-    logger.info(f"Loaded CLIP model {model_name}/{pretrained} on {device}")
-    return model, preprocess, tokenizer
+        _clip_model = model
+        _clip_preprocess = preprocess
+        _clip_tokenizer = tokenizer
+        logger.info(f"Loaded CLIP model {model_name}/{pretrained} on {device}")
+        return model, preprocess, tokenizer
 
 
 def encode_image(image_path: str | Path, normalize: bool = True) -> np.ndarray:
@@ -448,8 +491,8 @@ def download_image_url(url: str, output_path: str | Path, timeout: int = 30) -> 
 
 def passes_download_filter(
     image_path: str | Path,
-    min_width: int = 512,
-    min_height: int = 512,
+    min_width: int = 256,
+    min_height: int = 256,
 ) -> bool:
     """Reject obviously low-quality non-photo assets after download."""
     try:
@@ -617,21 +660,36 @@ def _retrieve_from_wikimedia_commons(
         + urllib.parse.urlencode(params)
     )
 
-    try:
-        request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        detail = _format_http_error(e)
-        logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
-        if _strict_backend_errors_enabled():
-            _raise_image_source_error("wikimedia_commons", query_text, detail)
-        return []
-    except Exception as e:
-        detail = str(e)
-        logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
-        if _strict_backend_errors_enabled():
-            _raise_image_source_error("wikimedia_commons", query_text, detail)
+    max_retries = 3
+    data = None
+    for attempt in range(max_retries):
+        _backend_rate_limit("wikimedia_commons")
+        try:
+            request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.loads(response.read().decode("utf-8"))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < max_retries - 1:
+                wait = 3 * (attempt + 1)
+                logger.warning(
+                    "Wikimedia 429 for '%s' (attempt %d/%d), retrying in %ds",
+                    query_text, attempt + 1, max_retries, wait,
+                )
+                _time_mod.sleep(wait)
+                continue
+            detail = _format_http_error(e)
+            logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+            if _strict_backend_errors_enabled():
+                _raise_image_source_error("wikimedia_commons", query_text, detail)
+            return []
+        except Exception as e:
+            detail = str(e)
+            logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+            if _strict_backend_errors_enabled():
+                _raise_image_source_error("wikimedia_commons", query_text, detail)
+            return []
+    if data is None:
         return []
 
     pages = data.get("query", {}).get("pages", [])
@@ -698,6 +756,65 @@ def _retrieve_from_wikimedia_commons(
     return results
 
 
+_openverse_token_cache: dict[str, float | str] = {}
+
+
+def _refresh_openverse_token() -> str:
+    """Refresh the Openverse OAuth token using client credentials.
+
+    Returns the new token, or "" if refresh is not possible.
+    Updates the OPENVERSE_API_TOKEN env var so subsequent calls pick it up.
+    """
+    client_id = os.environ.get("OPENVERSE_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("OPENVERSE_CLIENT_SECRET", "").strip()
+    if not client_id or not client_secret:
+        return ""
+
+    try:
+        body = urllib.parse.urlencode({
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        }).encode("utf-8")
+        request = urllib.request.Request(
+            "https://api.openverse.org/v1/auth_tokens/token/",
+            data=body,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        new_token = data.get("access_token", "")
+        expires_in = int(data.get("expires_in", 43200))
+        if new_token:
+            os.environ["OPENVERSE_API_TOKEN"] = new_token
+            _openverse_token_cache["token"] = new_token
+            _openverse_token_cache["expires_at"] = _time_mod.time() + expires_in - 60
+            logger.info("Openverse token refreshed, expires in %ds", expires_in)
+            return new_token
+    except Exception as e:
+        logger.warning("Failed to refresh Openverse token: %s", e)
+    return ""
+
+
+def _get_openverse_token() -> str:
+    """Get a valid Openverse token, refreshing if expired."""
+    cached = _openverse_token_cache.get("token", "")
+    expires_at = float(_openverse_token_cache.get("expires_at", 0))
+    if cached and _time_mod.time() < expires_at:
+        return str(cached)
+    # Try env var first
+    env_token = os.environ.get("OPENVERSE_API_TOKEN", "").strip()
+    if env_token and not cached:
+        # First use — trust the env var, set a 12h expiry guess
+        _openverse_token_cache["token"] = env_token
+        _openverse_token_cache["expires_at"] = _time_mod.time() + 43200 - 60
+        return env_token
+    # Token expired or missing — try refresh
+    refreshed = _refresh_openverse_token()
+    return refreshed or env_token
+
+
 def _retrieve_from_openverse(
     query_text: str,
     num_results: int,
@@ -727,11 +844,7 @@ def _retrieve_from_openverse(
     url = base_url.rstrip("?") + "?" + urllib.parse.urlencode(params)
 
     headers = dict(DEFAULT_HTTP_HEADERS)
-    ov_token = _get_backend_env(
-        "openverse",
-        "api_token_env",
-        required=_strict_backend_errors_enabled() and _require_backend_credentials(),
-    )
+    ov_token = _get_openverse_token()
     if ov_token:
         headers["Authorization"] = f"Bearer {ov_token}"
 
@@ -739,17 +852,24 @@ def _retrieve_from_openverse(
     data = None
     max_retries = 3
     for attempt in range(max_retries):
+        _backend_rate_limit("openverse")
         try:
             request = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(request, timeout=30) as response:
                 data = json.loads(response.read().decode("utf-8"))
             break
         except urllib.error.HTTPError as e:
-            if e.code in (403, 429):
+            if e.code in (401, 403, 429):
+                # Try refreshing the token on auth errors
+                if e.code in (401, 403) and attempt == 0:
+                    refreshed = _refresh_openverse_token()
+                    if refreshed:
+                        headers["Authorization"] = f"Bearer {refreshed}"
+                        logger.info("Openverse token refreshed after %d, retrying", e.code)
+                        continue
                 wait = 2 ** (attempt + 1)
                 logger.warning(
-                    "Openverse API %d for '%s' (attempt %d/%d), retrying in %ds. "
-                    "Tip: set OPENVERSE_API_TOKEN for authenticated access.",
+                    "Openverse API %d for '%s' (attempt %d/%d), retrying in %ds",
                     e.code, query_text, attempt + 1, max_retries, wait,
                 )
                 _time.sleep(wait)
@@ -1056,6 +1176,7 @@ def _retrieve_from_pexels(
     headers = dict(DEFAULT_HTTP_HEADERS)
     headers["Authorization"] = api_key
 
+    _backend_rate_limit("pexels")
     try:
         request = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(request, timeout=30) as response:
@@ -1134,6 +1255,7 @@ def _retrieve_from_pixabay(
     })
     url = f"https://pixabay.com/api/?{params}"
 
+    _backend_rate_limit("pixabay")
     try:
         request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
         with urllib.request.urlopen(request, timeout=30) as response:
@@ -1255,8 +1377,8 @@ def retrieve_from_laion(
     query_text: str,
     num_results: int = 40,
     aesthetic_score_min: float = 5.0,
-    min_width: int = 512,
-    min_height: int = 512,
+    min_width: int = 256,
+    min_height: int = 256,
 ) -> list[dict]:
     """
     Retrieve images from the configured external image backend.

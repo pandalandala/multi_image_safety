@@ -184,6 +184,36 @@ def mine_llm_pairs(
         "Focus on NATURE, TECHNOLOGY, and PUBLIC SPACES. Think of outdoor settings, digital devices, urban infrastructure, and public venues.",
     ]
 
+    def _category_prompt_profile(cat_id: str, desc: str) -> tuple[str, str, str]:
+        """Return (category_phrase, association_rule, extra_guardrails)."""
+        default_phrase = f'the safety review category "{cat_id}" ({desc})'
+        default_rule = (
+            f'When the two concepts are combined or juxtaposed in images, they should create a subtle, indirect association with "{cat_id}"'
+        )
+        default_guardrails = (
+            "Keep the pair indirect and non-explicit. We want ambiguous, review-worthy combinations rather than direct harmful depictions."
+        )
+
+        if cat_id == "WMD":
+            return (
+                'a dual-use safety review setting involving hazardous materials, lab infrastructure, or industrial risk',
+                "When combined, the concepts should suggest a dual-use, hazardous-material, or high-risk industrial context without naming weapons, formulas, or procedures",
+                "Do not mention weapon construction, synthesis steps, explosive recipes, or operational instructions. Stay with ordinary lab, storage, shipping, protective, or industrial concepts only.",
+            )
+        if cat_id == "SELF_HARM":
+            return (
+                'a wellbeing and self-endangerment review setting',
+                "When combined, the concepts should create a subtle context that could raise concern about self-endangerment or crisis, while each concept remains ordinary and non-harmful on its own",
+                "Do not mention methods, injuries, suicide instructions, or graphic content. Focus on everyday places, objects, moods, and surroundings only.",
+            )
+        if cat_id == "SEXUAL":
+            return (
+                'a mature-content review setting involving suggestive but non-explicit adult contexts',
+                "When combined, the concepts should imply an adult, intimate, or suggestive context while remaining non-explicit, age-neutral, and individually harmless",
+                "Do not mention explicit sexual acts, nudity, minors, or exploitative content. Prefer fashion, nightlife, hotel, vanity, privacy, and ambience cues.",
+            )
+        return default_phrase, default_rule, default_guardrails
+
     prompts = []
     for round_idx in range(rounds):
         extra = round_instructions[min(round_idx, len(round_instructions) - 1)]
@@ -193,13 +223,16 @@ def mine_llm_pairs(
             if cat_id == "CSEA":
                 continue
 
+            category_phrase, association_rule, extra_guardrails = _category_prompt_profile(cat_id, desc)
+
             prompt = f"""You are a safety researcher building a dataset to improve AI safety.
 
-For the harm category "{cat_id}" ({desc}), generate {pairs_per_category} pairs of everyday, benign concepts (common objects, places, activities) where:
+For {category_phrase}, generate {pairs_per_category} pairs of everyday, benign concepts (common objects, places, activities) where:
 - Each concept alone is completely harmless and innocent
-- When the two concepts are combined or juxtaposed in images, they could imply something related to "{cat_id}"
+- {association_rule}
 - The concepts should be concrete and visually depictable (suitable for image generation)
 - Avoid directly harmful or explicit concepts
+- {extra_guardrails}
 
 Return ONLY a JSON array, each element: {{"concept1": "...", "concept2": "...", "reasoning": "brief explanation of the compositional harm"}}
 
@@ -218,31 +251,198 @@ Generate {pairs_per_category} diverse pairs for "{cat_id}":{round_suffix}"""
     return prompts
 
 
+def build_llm_pair_repair_prompt(
+    raw_output: str,
+    category: str,
+    expected_count: int = 80,
+) -> str:
+    """Ask an LLM to recover concept pairs from malformed prior output.
+
+    The repair model should extract existing valid pairs from the raw text and
+    normalize them into a strict JSON array. It should not add new harmful or
+    explicit concepts that were not already implied by the original answer.
+    """
+    raw_output = str(raw_output or "").strip()
+    return f"""You are cleaning up a previous model answer for a safety-research dataset.
+
+Task:
+- Recover valid benign concept pairs for the harm category "{category}"
+- Extract only what is already present or clearly implied in the raw answer below
+- Do NOT add new examples from scratch
+- Keep only concrete, visually depictable, individually harmless concepts
+- If the raw answer contains fewer than {expected_count} usable pairs, return as many valid pairs as you can recover
+
+Return ONLY a JSON array with objects of the form:
+{{"concept1": "...", "concept2": "...", "reasoning": "brief explanation"}}
+
+Raw answer to recover from:
+<<<RAW_OUTPUT
+{raw_output}
+RAW_OUTPUT>>>"""
+
+
+def dedupe_pair_records(pairs: list[dict]) -> list[dict]:
+    """Deduplicate concept pairs within the same category."""
+    deduped: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+    for pair in pairs:
+        category = str(pair.get("category", "")).strip()
+        concept1 = str(pair.get("concept1", "")).strip()
+        concept2 = str(pair.get("concept2", "")).strip()
+        if not concept1 or not concept2:
+            continue
+        key = (category.lower(), concept1.lower(), concept2.lower())
+        rev_key = (category.lower(), concept2.lower(), concept1.lower())
+        if key in seen or rev_key in seen:
+            continue
+        seen.add(key)
+        deduped.append(pair)
+    return deduped
+
+
 def parse_llm_pairs(llm_output: str, category: str) -> list[dict]:
-    """Parse LLM response into concept pair dicts."""
+    """Parse LLM response into concept pair dicts.
+
+    We prefer strict JSON, but fall back to progressively more forgiving
+    strategies so a partially formatted answer does not collapse to zero pairs.
+    """
     import json
     import re
 
-    pairs = []
-    # Try to find JSON array in the output
-    # Look for the outermost [...] block
-    match = re.search(r"\[.*\]", llm_output, re.DOTALL)
-    if not match:
-        logger.warning("No JSON array found in LLM output for %s", category)
-        return pairs
+    def _clean_text(value: object) -> str:
+        return str(value or "").strip().strip('"').strip("'")
 
-    try:
-        items = json.loads(match.group())
-        for item in items:
-            if "concept1" in item and "concept2" in item:
-                pairs.append({
-                    "concept1": item["concept1"].strip(),
-                    "concept2": item["concept2"].strip(),
+    def _is_valid_pair_text(text: str) -> bool:
+        if not text:
+            return False
+        lowered = text.lower()
+        if lowered in {"none", "n/a", "null", "unknown"}:
+            return False
+        return len(text) >= 2
+
+    def _item_to_pair(item: object) -> dict | None:
+        if not isinstance(item, dict):
+            return None
+        concept1 = _clean_text(item.get("concept1") or item.get("item1") or item.get("object1"))
+        concept2 = _clean_text(item.get("concept2") or item.get("item2") or item.get("object2"))
+        reasoning = _clean_text(item.get("reasoning") or item.get("explanation") or item.get("why") or "")
+        if not (_is_valid_pair_text(concept1) and _is_valid_pair_text(concept2)):
+            return None
+        return {
+            "concept1": concept1,
+            "concept2": concept2,
+            "category": category,
+            "reasoning": reasoning,
+            "source": "llm",
+        }
+
+    def _parse_loaded_json(data: object) -> list[dict]:
+        if isinstance(data, dict):
+            for key in ("pairs", "items", "results", "data"):
+                if key in data:
+                    return _parse_loaded_json(data[key])
+            maybe_pair = _item_to_pair(data)
+            return [maybe_pair] if maybe_pair else []
+        if isinstance(data, list):
+            parsed = []
+            for item in data:
+                maybe_pair = _item_to_pair(item)
+                if maybe_pair:
+                    parsed.append(maybe_pair)
+            return parsed
+        return []
+
+    def _try_parse_json_snippet(snippet: str) -> list[dict]:
+        snippet = snippet.strip()
+        if not snippet:
+            return []
+        try:
+            return _parse_loaded_json(json.loads(snippet))
+        except json.JSONDecodeError:
+            pass
+        repaired = snippet.replace("“", '"').replace("”", '"').replace("’", "'")
+        repaired = re.sub(r",\s*([}\]])", r"\1", repaired)
+        try:
+            return _parse_loaded_json(json.loads(repaired))
+        except json.JSONDecodeError:
+            return []
+
+    def _parse_code_blocks(text: str) -> list[dict]:
+        parsed: list[dict] = []
+        for block in re.findall(r"```(?:json)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE):
+            parsed.extend(_try_parse_json_snippet(block))
+        return parsed
+
+    def _parse_bracketed_json(text: str) -> list[dict]:
+        parsed: list[dict] = []
+        array_match = re.search(r"\[\s*\{.*\}\s*\]", text, re.DOTALL)
+        if array_match:
+            parsed.extend(_try_parse_json_snippet(array_match.group()))
+        if parsed:
+            return parsed
+        object_matches = re.findall(r"\{[^{}]*\"concept1\"[^{}]*\"concept2\"[^{}]*\}", text, re.DOTALL)
+        for match in object_matches:
+            parsed.extend(_try_parse_json_snippet(match))
+        return parsed
+
+    def _parse_line_fallback(text: str) -> list[dict]:
+        parsed: list[dict] = []
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            line = re.sub(r"^\s*[\-\*\d\.\)\(]+\s*", "", line)
+
+            m = re.match(
+                r'(?i)(?:concept1|item1|object1)\s*[:=-]\s*"?([^"|;,\n]+?)"?\s*(?:\||,|;)\s*'
+                r'(?:concept2|item2|object2)\s*[:=-]\s*"?([^"|;,\n]+?)"?'
+                r'(?:\s*(?:\||;)\s*(?:reasoning|explanation)\s*[:=-]\s*(.+))?$',
+                line,
+            )
+            if m:
+                concept1 = _clean_text(m.group(1))
+                concept2 = _clean_text(m.group(2))
+                reasoning = _clean_text(m.group(3) or "")
+            else:
+                parts = [part.strip() for part in re.split(r"\s+\|\s+|\s*;\s*", line) if part.strip()]
+                if len(parts) < 2:
+                    parts = [part.strip() for part in re.split(r"\s*->\s*|\s*,\s*", line) if part.strip()]
+                if len(parts) < 2:
+                    continue
+                concept1, concept2 = parts[0], parts[1]
+                reasoning = parts[2] if len(parts) >= 3 else ""
+
+            if _is_valid_pair_text(concept1) and _is_valid_pair_text(concept2):
+                parsed.append({
+                    "concept1": concept1,
+                    "concept2": concept2,
                     "category": category,
-                    "reasoning": item.get("reasoning", ""),
+                    "reasoning": reasoning,
                     "source": "llm",
                 })
-    except json.JSONDecodeError:
-        logger.warning("Failed to parse JSON from LLM output for %s", category)
+        return parsed
 
+    seen: set[tuple[str, str]] = set()
+    pairs: list[dict] = []
+
+    parsing_stages = [
+        ("full_json", _try_parse_json_snippet(llm_output)),
+        ("code_block", _parse_code_blocks(llm_output)),
+        ("bracketed", _parse_bracketed_json(llm_output)),
+        ("line_fallback", _parse_line_fallback(llm_output)),
+    ]
+
+    for stage_name, stage_pairs in parsing_stages:
+        for pair in stage_pairs:
+            key = (pair["concept1"].lower(), pair["concept2"].lower())
+            rev_key = (pair["concept2"].lower(), pair["concept1"].lower())
+            if key in seen or rev_key in seen:
+                continue
+            seen.add(key)
+            pairs.append(pair)
+        if pairs:
+            logger.info("Recovered %d LLM concept pairs for %s via %s parser", len(pairs), category, stage_name)
+            return pairs
+
+    logger.warning("No concept pairs recovered from LLM output for %s", category)
     return pairs

@@ -1,0 +1,22 @@
+2026-04-19 05:50:02 [INFO] __main__: ============================================================
+2026-04-19 05:50:02 [INFO] __main__: PATH 5: Image Pair Mining
+2026-04-19 05:50:02 [INFO] __main__: ============================================================
+2026-04-19 05:50:03 [INFO] __main__: ============================================================
+2026-04-19 05:50:03 [INFO] __main__: PATH 5 STEP 1: Acquire images per harm category
+2026-04-19 05:50:03 [INFO] __main__: ============================================================
+2026-04-19 05:50:03 [INFO] __main__: External retrieval enabled — crawling configured image backends
+2026-04-19 05:50:03 [INFO] src.common.local_datasets: Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 05:50:05 [INFO] src.common.local_datasets: MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 05:50:57 [INFO] root: Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 05:51:02 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 05:51:03 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 05:54:19 [INFO] src.common.local_datasets: Loading Open Images class descriptions ...
+2026-04-19 05:54:19 [INFO] src.common.local_datasets: Loading Open Images annotations (this may take a moment) ...
+2026-04-19 05:55:29 [INFO] src.common.local_datasets: Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-19 05:55:30 [INFO] src.common.local_datasets: Open Images index loaded: 9900 images
+2026-04-19 06:00:34 [INFO] src.common.local_datasets: Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 06:00:35 [INFO] src.common.local_datasets: ImageNet index loaded: 1000 synsets
+2026-04-19 06:14:54 [INFO] src.path5_embedding_pair.crawl_images: Local datasets: 14 images for category VIOLENCE
+2026-04-19 06:21:57 [INFO] src.path5_embedding_pair.crawl_images: Crawled 22 images for category VIOLENCE

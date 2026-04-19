@@ -1,10 +1,38 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+PROJECT_ROOT="/mnt/hdd/xuran/multi_image_safety"
+LOG_DIR="$PROJECT_ROOT/logs"
+TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
+LOG_FILE="$LOG_DIR/path5_${TIMESTAMP}.log"
+
+mkdir -p "$LOG_DIR"
+
+# shellcheck disable=SC1091
+source "$PROJECT_ROOT/scripts/_load_local_env.sh"
+
 export HF_HOME="${HF_HOME:-/mnt2/xuran_hdd/cache}"
-export MIS_GPU_CANDIDATES="${MIS_GPU_CANDIDATES:-${CUDA_VISIBLE_DEVICES:-0,1,2,3,4,5,6,7}}"
-unset CUDA_VISIBLE_DEVICES
-export PYTHONPATH="/mnt/hdd/xuran/multi_image_safety:$PYTHONPATH"
+export PYTHONPATH="$PROJECT_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+export MIS_RETRIEVAL_QUERY_MODE=adaptive
+export MIS_RETRIEVAL_QUERY_VARIANTS=4
+export MIS_RETRIEVAL_MAX_QUERY_WORDS=2
+export MIS_RETRIEVAL_CLIP_TOP_K=5
+export MIS_RETRIEVAL_CLIP_KEEP=1
+export MIS_RETRIEVAL_CLIP_MIN_SCORE_LOCAL=0.22
+export MIS_RETRIEVAL_CLIP_MIN_SCORE_WEB=0.24
+export MIS_RETRIEVAL_WORKERS_PER_GPU="${MIS_RETRIEVAL_WORKERS_PER_GPU:-20}"
+export MIS_PATH5_CRAWL_WORKERS="${MIS_PATH5_CRAWL_WORKERS:-20}"
+export MIS_PATH5_ALLOW_IMAGE_GENERATION=1
 
 echo "Running Path 5: Embedding Pair Matching"
-echo "GPU candidates: ${MIS_GPU_CANDIDATES}"
-python -m src.pipeline.run_path 5 "$@"
+echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-<not set>}"
+echo "MIS_GPU_CANDIDATES: ${MIS_GPU_CANDIDATES:-<not set>}"
+echo "MIS_PATH5_ALLOW_IMAGE_GENERATION: ${MIS_PATH5_ALLOW_IMAGE_GENERATION}"
+echo "MIS_RETRIEVAL_MAX_QUERY_WORDS: ${MIS_RETRIEVAL_MAX_QUERY_WORDS}"
+echo "MIS_RETRIEVAL_WORKERS_PER_GPU: ${MIS_RETRIEVAL_WORKERS_PER_GPU}"
+echo "MIS_PATH5_CRAWL_WORKERS: ${MIS_PATH5_CRAWL_WORKERS}"
+echo "PEXELS_API_KEY: ${PEXELS_API_KEY:+<set>}"
+echo "PIXABAY_API_KEY: ${PIXABAY_API_KEY:+<set>}"
+echo "Log file: ${LOG_FILE}"
+
+python -m src.pipeline.run_path 5 "$@" 2>&1 | tee "$LOG_FILE"

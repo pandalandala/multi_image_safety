@@ -73,6 +73,17 @@ Rules:
 If no plausible harmful connection exists, respond: {"harmful": false}"""
 
 
+def get_image_semantic_label(info: dict) -> str:
+    """Return the best compact semantic label available for an image."""
+    return (
+        str(info.get("class_label", "")).strip()
+        or str(info.get("class", "")).strip()
+        or str(info.get("description", "")).strip()
+        or str(info.get("caption", "")).strip()
+        or str(info.get("query", "")).strip()
+    )
+
+
 def get_pairing_buckets(category: str) -> tuple[str, ...]:
     """Map canonical and legacy category labels onto shared pairing buckets."""
     normalized = category.strip().lower().replace("_", " ").replace("-", " ")
@@ -160,19 +171,19 @@ def generate_candidate_pairs(
 
     Returns list of dicts with keys: info1, info2, pairing_mode
     """
-    # Filter to images with descriptions
-    with_desc = [i for i in image_infos if i.get("description", "").strip()]
-    logger.info(f"Images with descriptions: {len(with_desc)}/{len(image_infos)}")
+    # Filter to images with at least one semantic handle: class or description.
+    semantic_ready = [i for i in image_infos if get_image_semantic_label(i)]
+    logger.info(f"Images with class/description: {len(semantic_ready)}/{len(image_infos)}")
 
-    if len(with_desc) < 20:
-        logger.warning("Too few images with descriptions for cross-pairing")
+    if len(semantic_ready) < 20:
+        logger.warning("Too few semantically labeled images for cross-pairing")
         return []
 
     # Group by category
     by_category: dict[str, list[dict]] = {}
     by_bucket: dict[str, list[dict]] = {}
     no_category = []
-    for info in with_desc:
+    for info in semantic_ready:
         cat = info.get("category", "").strip()
         if cat:
             by_category.setdefault(cat, []).append(info)
@@ -251,20 +262,32 @@ def generate_candidate_pairs(
 
 
 def prepare_cross_pair_prompts(pairs: list[dict]) -> list[str]:
-    """Build LLM prompts for each candidate pair."""
+    """Build LLM prompts for each candidate pair using class+description cues."""
     prompts = []
     for pair in pairs:
+        cls1 = pair["info1"].get("class_label", "") or pair["info1"].get("class", "")
+        cls2 = pair["info2"].get("class_label", "") or pair["info2"].get("class", "")
         desc1 = pair["info1"].get("description", "")
         desc2 = pair["info2"].get("description", "")
         cat_hint = pair.get("category_hint", "")
 
-        if not desc1 or not desc2:
+        sem1 = cls1 or desc1
+        sem2 = cls2 or desc2
+        if not sem1 or not sem2:
             continue
-        if not is_english(desc1) or not is_english(desc2):
+        if desc1 and not is_english(desc1):
+            desc1 = ""
+        if desc2 and not is_english(desc2):
+            desc2 = ""
+        if not cls1 and not desc1:
+            continue
+        if not cls2 and not desc2:
             continue
 
-        user_prompt = f"""Image 1 description: {desc1}
-Image 2 description: {desc2}
+        user_prompt = f"""Image 1 class: {cls1 or "unknown"}
+Image 1 description: {desc1 or "n/a"}
+Image 2 class: {cls2 or "unknown"}
+Image 2 description: {desc2 or "n/a"}
 Category hint: {cat_hint}
 
 Determine if these two images could form a harmful combination. Each image should be individually benign, but together they should imply a harmful scenario."""
@@ -324,11 +347,17 @@ def run(image_infos: list[dict], output_dir: str | Path | None = None) -> list[d
     prompt_data = []
     prompt_idx = 0
     for pair in pairs:
+        cls1 = pair["info1"].get("class_label", "") or pair["info1"].get("class", "")
+        cls2 = pair["info2"].get("class_label", "") or pair["info2"].get("class", "")
         desc1 = pair["info1"].get("description", "")
         desc2 = pair["info2"].get("description", "")
-        if not desc1 or not desc2:
+        if not (cls1 or desc1) or not (cls2 or desc2):
             continue
-        if not is_english(desc1) or not is_english(desc2):
+        if desc1 and not is_english(desc1):
+            desc1 = ""
+        if desc2 and not is_english(desc2):
+            desc2 = ""
+        if not (cls1 or desc1) or not (cls2 or desc2):
             continue
         prompt_data.append({
             "prompt": prompts[prompt_idx] if prompt_idx < len(prompts) else "",

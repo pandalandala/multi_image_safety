@@ -1,7 +1,9 @@
 """Step 3: Fetch images for intent-injected scenarios.
 
-Uses mixed approach: external retrieval for realistic scenes and the shared
-configurable T2I backend for specific objects/compositions.
+Acquisition order now follows the project-wide policy:
+  1. Local datasets (MSCOCO -> Open Images -> ImageNet)
+  2. External retrieval backends
+  3. T2I generation as the last resort
 """
 
 import logging
@@ -13,7 +15,7 @@ from src.common.clip_utils import (
     passes_download_filter,
 )
 from src.common.image_generation import should_force_regenerate_images
-from src.common.utils import load_jsonl, save_jsonl, DATA_DIR
+from src.common.utils import get_min_image_size, load_jsonl, save_jsonl, DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ def fetch_image_for_description(
     output_path: Path,
     prefer_retrieval: bool = False,
 ) -> bool:
-    """Fetch a single image, trying generation first (LAION is offline)."""
+    """Fetch a single image with local-dataset reuse before retrieval / T2I."""
     if prefer_retrieval:
         if _try_retrieval(description, output_path):
             return True
@@ -47,7 +49,8 @@ def _try_retrieval(description: str, output_path: Path) -> bool:
             download_image_url(url, output_path)
             img = Image.open(output_path)
             img.verify()
-            if not passes_download_filter(output_path, min_width=512, min_height=512):
+            min_w, min_h = get_min_image_size()
+            if not passes_download_filter(output_path, min_width=min_w, min_height=min_h):
                 if output_path.exists():
                     output_path.unlink()
                 continue

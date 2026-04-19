@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.common.utils import (
     DATA_DIR,
     apply_gpu_runtime_profile,
+    fail_step,
     get_visible_gpu_ids,
     load_jsonl,
     log_gpu_runtime_profile,
@@ -65,13 +66,24 @@ clear_step_state(
         *sorted(OUTPUT_DIR.glob("_step3_chunk_*.jsonl")),
     ],
 )
-start_step(OUTPUT_DIR, "step3_acquire_images")
 
 # ── Use all visible GPUs ──────────────────────────────────────────────────────
 free_gpus = get_visible_gpu_ids(max_gpus=None)
+chunk_output_files = [OUTPUT_DIR / f"samples_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus]
+chunk_state_files = [OUTPUT_DIR / f"_step3_chunk_{i}.jsonl" for i in range(len(free_gpus))]
+start_step(
+    OUTPUT_DIR,
+    "step3_acquire_images",
+    cleanup_paths=[FINAL_OUTPUT, *chunk_output_files, *chunk_state_files],
+)
 logger.info(f"Using visible GPUs for image acquisition: {free_gpus}")
 if not free_gpus:
     logger.error("No GPUs configured for image acquisition!")
+    fail_step(
+        OUTPUT_DIR,
+        "step3_acquire_images",
+        error="No GPUs configured for image acquisition",
+    )
     sys.exit(1)
 
 logger.info("Pre-caching active T2I model before spawning GPU workers")
@@ -168,6 +180,12 @@ for _, chunk_out, _ in procs:
 all_results.sort(key=lambda x: x.get("sample_id_global", 0))
 save_jsonl(all_results, FINAL_OUTPUT)
 if worker_failures:
+    fail_step(
+        OUTPUT_DIR,
+        "step3_acquire_images",
+        error=f"Worker failures: {worker_failures}",
+        metadata={"records_before_failure": len(all_results), "input_records": n},
+    )
     print(f"Step 3 incomplete because workers failed: {worker_failures}", file=sys.stderr)
     raise SystemExit(1)
 finish_step(

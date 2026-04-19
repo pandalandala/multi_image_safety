@@ -14,9 +14,11 @@ from src.common.utils import (
     apply_path2_runtime_defaults,
     clear_step_state,
     env_flag_is_true,
+    fail_step,
     finish_step,
     is_step_complete,
     jsonl_record_count,
+    load_jsonl,
     log_gpu_runtime_profile,
     start_step,
     setup_logging,
@@ -70,12 +72,17 @@ def run(use_api: bool = False) -> None:
         logger.info("[Step 1/4] Skipping prompt collection; completion marker found")
     else:
         clear_step_state(output_dir, "step1_collect_prompts", stale_paths=[step1_output])
-        start_step(output_dir, "step1_collect_prompts")
+        start_step(output_dir, "step1_collect_prompts", cleanup_paths=[step1_output])
         logger.info("[Step 1/4] Collecting malicious prompts...")
         from src.path2_prompt_decompose.collect_prompts import run as collect
 
         prompts = collect()
         if jsonl_record_count(step1_output) < 1:
+            fail_step(
+                output_dir,
+                "step1_collect_prompts",
+                error="Path 2 Step 1 did not produce collected prompts",
+            )
             raise RuntimeError("Path 2 Step 1 did not produce collected prompts")
         finish_step(
             output_dir,
@@ -105,8 +112,20 @@ def run(use_api: bool = False) -> None:
             cwd=str(PROJECT_ROOT),
         ).returncode
         if rc != 0:
+            fail_step(
+                output_dir,
+                "step2_decompose_prompts",
+                error=f"Path 2 Step 2 launcher failed with exit code {rc}",
+                cleanup_paths=[step2_output],
+            )
             raise RuntimeError(f"Path 2 Step 2 launcher failed with exit code {rc}")
         if jsonl_record_count(step2_output) < 1:
+            fail_step(
+                output_dir,
+                "step2_decompose_prompts",
+                error="Path 2 Step 2 did not produce decomposed prompts",
+                cleanup_paths=[step2_output],
+            )
             raise RuntimeError("Path 2 Step 2 did not produce decomposed prompts")
         logger.info("[Step 2/4] Decomposed prompts saved: %d", len(load_jsonl(step2_output)))
 
@@ -121,12 +140,17 @@ def run(use_api: bool = False) -> None:
         log_gpu_runtime_profile(logger, image_profile, "Path 2 Step 3")
         stale_outputs = [step3_output, *sorted(output_dir.glob("samples_with_images_gpu*.jsonl")), *sorted(output_dir.glob("_step3_chunk_*.jsonl"))]
         clear_step_state(output_dir, "step3_acquire_images", stale_paths=stale_outputs)
-        start_step(output_dir, "step3_acquire_images")
+        start_step(output_dir, "step3_acquire_images", cleanup_paths=stale_outputs)
         logger.info("[Step 3/4] Acquiring images...")
         from src.path2_prompt_decompose.acquire_images import run as acquire
 
         acquired = acquire(prefer_generation=True)
         if jsonl_record_count(step3_output) < 1:
+            fail_step(
+                output_dir,
+                "step3_acquire_images",
+                error="Path 2 Step 3 did not produce image-backed samples",
+            )
             raise RuntimeError("Path 2 Step 3 did not produce image-backed samples")
         finish_step(
             output_dir,
@@ -139,12 +163,17 @@ def run(use_api: bool = False) -> None:
         logger.info("[Step 4/4] Skipping validation; completion marker found")
     else:
         clear_step_state(output_dir, "step4_validate_samples", stale_paths=[step4_output])
-        start_step(output_dir, "step4_validate_samples")
+        start_step(output_dir, "step4_validate_samples", cleanup_paths=[step4_output])
         logger.info("[Step 4/4] Validating samples...")
         from src.path2_prompt_decompose.validate import run as validate
 
         validated = validate()
         if jsonl_record_count(step4_output) < 1:
+            fail_step(
+                output_dir,
+                "step4_validate_samples",
+                error="Path 2 Step 4 did not produce validated samples",
+            )
             raise RuntimeError("Path 2 Step 4 did not produce validated samples")
         finish_step(
             output_dir,

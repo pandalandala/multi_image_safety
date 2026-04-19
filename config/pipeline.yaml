@@ -1,16 +1,13 @@
-# Global pipeline configuration
 project:
-  name: "multi_image_safety"
-  root: "/mnt/hdd/xuran/multi_image_safety"
+  name: multi_image_safety
+  root: /mnt/hdd/xuran/multi_image_safety
   target_samples: 10000
-  oversample_ratio: 1.5  # Generate 15k, QC down to 10k
-
-# LLM configuration (hybrid: local bulk + API quality review)
+  oversample_ratio: 1.5
 llm:
   local:
-    model_name: "Qwen/Qwen3.5-27B"
-    model_path: "Qwen/Qwen3.5-27B"
-    backend: "vllm"
+    model_name: Qwen/Qwen3.5-27B
+    model_path: Qwen/Qwen3.5-27B
+    backend: vllm
     tensor_parallel_size: 4
     max_model_len: 4096
     temperature: 0.7
@@ -18,31 +15,27 @@ llm:
     max_tokens: 2048
     gpu_memory_utilization: 0.68
   api:
-    # For quality review and validation
-    provider: "openai"  # or "anthropic", "deepseek"
-    model: "gpt-4o"
-    api_key_env: "OPENAI_API_KEY"  # Read from environment variable
+    provider: openai
+    model: gpt-4o
+    api_key_env: OPENAI_API_KEY
     temperature: 0.3
     max_tokens: 2048
     rate_limit_rpm: 500
-  # Which LLM to use for each task
   routing:
-    prompt_decomposition: "local"     # Path 2: bulk decomposition
-    scene_generation: "local"         # Path 4: scene generation
-    intent_injection: "local"         # Path 4: intent injection
-    prompt_generation: "local"        # Path 5: prompt generation
-    quality_review: "api"             # QC: use API for accuracy
-    safety_cot_generation: "local"    # CoT label generation
-    element_decompose: "api"          # Path 3: needs strong reasoning
-
-# Image generation (T2I)
+    prompt_decomposition: local
+    scene_generation: local
+    intent_injection: local
+    prompt_generation: local
+    quality_review: api
+    safety_cot_generation: local
+    element_decompose: api
 image_generation:
-  backend: "sd35_large_turbo"
-  device: "cuda"
+  backend: sd35_large_turbo
+  device: cuda
   width: 1024
   height: 1024
-  negative_prompt: "low quality, blurry, distorted, watermark, text overlay"
-  safety_checker: true  # Keep enabled - component images should be benign
+  negative_prompt: low quality, blurry, distorted, watermark, text overlay
+  safety_checker: true
   quality_retry:
     enabled: true
     retry_on_low_clip: true
@@ -59,111 +52,107 @@ image_generation:
     keep_best_if_below_threshold: true
   backends:
     sdxl:
-      pipeline: "sdxl"
-      model: "stabilityai/stable-diffusion-xl-base-1.0"
-      torch_dtype: "float16"
-      variant: "fp16"
+      pipeline: sdxl
+      model: stabilityai/stable-diffusion-xl-base-1.0
+      torch_dtype: float16
+      variant: fp16
       use_safetensors: true
       num_inference_steps: 30
       guidance_scale: 7.5
     sd35_medium:
-      pipeline: "sd3"
-      model: "stabilityai/stable-diffusion-3.5-medium"
-      torch_dtype: "bfloat16"
+      pipeline: sd3
+      model: stabilityai/stable-diffusion-3.5-medium
+      torch_dtype: bfloat16
       num_inference_steps: 28
       guidance_scale: 4.5
       max_sequence_length: 256
     sd35_large_turbo:
-      pipeline: "sd3"
-      model: "stabilityai/stable-diffusion-3.5-large-turbo"
-      torch_dtype: "bfloat16"
+      pipeline: sd3
+      model: stabilityai/stable-diffusion-3.5-large-turbo
+      torch_dtype: bfloat16
       num_inference_steps: 4
       guidance_scale: 0.0
       max_sequence_length: 256
-
-# CLIP configuration
 clip:
-  model_name: "ViT-L-14"
-  pretrained: "openai"
-  device: "cuda"
+  model_name: ViT-L-14
+  pretrained: openai
+  device: cuda
   batch_size: 64
-  # Thresholds for embedding pair matching
-  theta_safe: 0.40       # Individual image-harm similarity must be below this
-  theta_harm: 0.35       # Combined image pair-harm similarity must be above this (Path 5)
-  theta_harm_path3: 0.28 # Relaxed threshold for Path 3 (more diverse image pool)
-  nsfw_threshold: 0.5    # NSFW classifier threshold
-
-# External image retrieval backends (used by Path 3/5 when enabled)
+  theta_safe: 0.4
+  theta_harm: 0.35
+  theta_harm_path3: 0.28
+  nsfw_threshold: 0.5
 laion:
   enabled: true
-  backend: "multi"  # "multi", "wikimedia_commons", "openverse", "nasa_images", "metmuseum", or "clip-retrieval"
-  backends: ["wikimedia_commons", "openverse", "pexels", "pixabay"]
-  index_url: "https://knn.laion.ai/knn-service"  # used only by clip-retrieval backend
+  backend: multi
+  backends:
+  - wikimedia_commons
+  - pexels
+  - pixabay
+  index_url: https://knn.laion.ai/knn-service
   num_results: 40
   aesthetic_score_min: 5.0
-  min_width: 512
-  min_height: 512
+  min_width: 256
+  min_height: 256
   deduplicate: true
   safety_filter: true
   fail_on_backend_error: true
   require_backend_credentials: true
   pexels:
-    api_key_env: "PEXELS_API_KEY"
+    api_key_env: PEXELS_API_KEY
   pixabay:
-    api_key_env: "PIXABAY_API_KEY"
+    api_key_env: PIXABAY_API_KEY
   openverse:
-    api_token_env: "OPENVERSE_API_TOKEN"
-    api_url: "https://api.openverse.org/v1/images/"
+    api_token_env: OPENVERSE_API_TOKEN
+    api_url: https://api.openverse.org/v1/images/
     page_size: 20
-    allowed_sources: ["flickr"]
-    allowed_licenses: ["by", "by-sa", "cc0", "pdm"]
+    allowed_sources:
+    - flickr
+    allowed_licenses:
+    - by
+    - by-sa
+    - cc0
+    - pdm
     exclude_mature: true
   nasa_images:
-    api_url: "https://images-api.nasa.gov"
+    api_url: https://images-api.nasa.gov
     page_size: 60
   metmuseum:
-    api_url: "https://collectionapi.metmuseum.org/public/collection/v1"
+    api_url: https://collectionapi.metmuseum.org/public/collection/v1
     max_object_fetch: 60
-
-# Quality control
 quality:
-  # Layer 1: Single image safety
   safety_check:
-    nsfw_model: "Falconsai/nsfw_image_detection"
+    nsfw_model: Falconsai/nsfw_image_detection
     nsfw_threshold: 0.5
-    llama_guard_model: "meta-llama/Llama-Guard-4-12B"
-  # Layer 2: Compositional harm verification
+    llama_guard_model: meta-llama/Llama-Guard-4-12B
   composition_verify:
     require_dual_model_agreement: true
-    models: ["llama_guard", "gpt4o"]
+    models:
+    - llama_guard
+    - gpt4o
     min_agreement: 2
-  # Layer 3: Covertness scoring (TAGs-inspired MTC)
   covertness:
-    score_range: [1, 5]
+    score_range:
+    - 1
+    - 5
     difficulty_thresholds:
       easy: 2
       medium: 3
       hard: 4
-  # Layer 4: Human review
   human_review:
-    sample_rate: 0.12  # 12% random sample
-    target_alpha: 0.80  # Krippendorff's alpha target
-
-# Deduplication
+    sample_rate: 0.12
+    target_alpha: 0.8
 dedup:
   sha256: true
   phash:
     enabled: true
-    threshold: 8  # Hamming distance threshold
+    threshold: 8
   semantic:
     enabled: true
-    model: "clip"
+    model: clip
     similarity_threshold: 0.92
-    num_clusters: 500  # For SemDeDup k-means
-
-# Distribution balance
+    num_clusters: 500
 balance:
-  # Target distribution across categories (approximate)
   category_weights:
     VIOLENCE: 0.12
     SELF_HARM: 0.08
@@ -171,45 +160,66 @@ balance:
     HATE: 0.08
     CRIME: 0.12
     PRIVACY: 0.08
-    MISINFO: 0.10
+    MISINFO: 0.1
     WMD: 0.06
     CSEA: 0.04
     IP: 0.06
     REGULATED: 0.08
-    ADVICE: 0.10
-  # Target distribution across patterns
+    ADVICE: 0.1
   pattern_weights:
-    A: 0.40
+    A: 0.4
     B: 0.15
     C: 0.25
-    D: 0.20
-
-# Path-specific settings
+    D: 0.2
 paths:
   path1:
     target_samples: 2000
     oversample: 6000
-    image_source: "retrieval_first"  # Retrieve real images; T2I fallback
+    image_source: retrieval_first
   path2:
     target_samples: 3000
     oversample: 4500
-    image_source: "generated"  # Primarily T2I
+    image_source: generated
   path3:
     target_samples: 2500
     oversample: 3750
-    image_source: "existing_dataset"
+    image_source: existing_dataset
   path4:
     target_samples: 2000
     oversample: 3000
-    image_source: "mixed"  # LAION retrieval + T2I
+    image_source: mixed
   path5:
     target_samples: 3000
     oversample: 5000
-    image_source: "laion_retrieval"
+    image_source: laion_retrieval
   path6:
     target_samples: 1500
     oversample: 2500
-    image_source: "retrieval_first"  # Retrieve real images; T2I fallback
-
-# Huggingface cache
-hf_home: "/mnt2/xuran_hdd/cache"
+    image_source: retrieval_first
+local_datasets:
+  enabled: true
+  root: /mnt2/xuran_hdd/cache/datasets
+  search_order:
+  - mscoco
+  - open_images
+  - imagenet
+  - recap_imagenet
+  - recap_cc12m
+  mscoco:
+    enabled: true
+    images_dir: coco/train2017
+    annotations: coco/annotations/captions_train2017.json
+  open_images:
+    enabled: true
+    images_dir: open_images/train
+    labels_csv: open_images/oidv7-class-descriptions.csv
+    annotations_csv: open_images/oidv7-train-annotations-human-imagelabels.csv
+  imagenet:
+    enabled: true
+    images_dir: imagenet/ILSVRC/Data/CLS-LOC/train
+    synsets_file: imagenet/LOC_synset_mapping.txt
+  cc12m_imagenet_recap:
+    enabled: true
+    metadata: CC12M_and_Imagenet21K_Recap/metadata.jsonl
+    index_db: CC12M_and_Imagenet21K_Recap/metadata_search.sqlite3
+hf_home: /mnt2/xuran_hdd/cache

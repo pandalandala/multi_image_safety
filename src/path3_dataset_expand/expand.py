@@ -271,7 +271,7 @@ def generate_images_from_queries(
 
     output_dir = Path(output_dir)
     force_regenerate = should_force_regenerate_images()
-    gpu_ids = get_visible_gpu_ids()
+    gpu_ids = get_visible_gpu_ids(max_gpus=None)
     if not gpu_ids:
         raise RuntimeError("No GPUs visible for T2I fallback generation")
     categories = [cat for cat in CATEGORY_QUERIES.keys() if cat != "CSEA"]

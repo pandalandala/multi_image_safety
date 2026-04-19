@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/multi_image_safety/run_path1.py", line 136, in <module>
+    ) = select_llm_runtime()
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/run_path1.py", line 106, in select_llm_runtime
+    profile = apply_gpu_runtime_profile(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/utils.py", line 502, in apply_gpu_runtime_profile
+    profile = select_gpu_runtime_profile(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/utils.py", line 484, in select_gpu_runtime_profile
+    raise RuntimeError(
+RuntimeError: No llm GPU profile for path1 satisfied free-memory constraints. Attempts: 4gpu@util=0.68: eligible=0, 2gpu@util=0.55: eligible=0, 1gpu@util=0.40: eligible=0. Inventory: GPU4 free=16.0/48.0GiB util=76% procs=1; GPU5 free=18.5/48.0GiB util=2% procs=1; GPU6 free=17.2/48.0GiB util=0% procs=1; GPU7 free=16.6/48.0GiB util=12% procs=1

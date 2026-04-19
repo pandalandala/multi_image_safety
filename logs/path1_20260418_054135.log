@@ -1,0 +1,566 @@
+2026-04-18 05:41:36 [INFO] __main__: Path 1 LLM GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-18 05:41:36 [INFO] __main__: Path 1 LLM GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-18 05:41:36 [INFO] __main__: ============================================================
+2026-04-18 05:41:36 [INFO] __main__: PATH 1 STEP 1a: Numberbatch concept pair mining
+2026-04-18 05:41:36 [INFO] __main__: ============================================================
+2026-04-18 05:41:36 [INFO] src.path1_kg_concept.concept_mine: Numberbatch already cached at /mnt/hdd/xuran/cache/conceptnet/numberbatch-en-19.08.txt.gz
+2026-04-18 05:41:36 [INFO] src.path1_kg_concept.concept_mine: Loading Numberbatch embeddings ...
+2026-04-18 05:42:18 [INFO] src.path1_kg_concept.concept_mine: Loaded 516782 Numberbatch embeddings (dim=300)
+2026-04-18 05:42:22 [INFO] src.path1_kg_concept.concept_mine: Category WMD: 344918 safe candidates from 18 seeds
+2026-04-18 05:42:25 [INFO] src.path1_kg_concept.concept_mine: Category WMD: found 360 Numberbatch pairs
+2026-04-18 05:42:28 [INFO] src.path1_kg_concept.concept_mine: Category VIOLENCE: 346634 safe candidates from 15 seeds
+2026-04-18 05:42:31 [INFO] src.path1_kg_concept.concept_mine: Category VIOLENCE: found 36 Numberbatch pairs
+2026-04-18 05:42:34 [INFO] src.path1_kg_concept.concept_mine: Category SELF_HARM: 346191 safe candidates from 15 seeds
+2026-04-18 05:42:37 [INFO] src.path1_kg_concept.concept_mine: Category SELF_HARM: found 71 Numberbatch pairs
+2026-04-18 05:42:40 [INFO] src.path1_kg_concept.concept_mine: Category SEXUAL: 346474 safe candidates from 16 seeds
+2026-04-18 05:42:43 [INFO] src.path1_kg_concept.concept_mine: Category SEXUAL: found 26 Numberbatch pairs
+2026-04-18 05:42:47 [INFO] src.path1_kg_concept.concept_mine: Category HATE: 346671 safe candidates from 14 seeds
+2026-04-18 05:42:49 [INFO] src.path1_kg_concept.concept_mine: Category HATE: found 18 Numberbatch pairs
+2026-04-18 05:42:53 [INFO] src.path1_kg_concept.concept_mine: Category CRIME: 346466 safe candidates from 15 seeds
+2026-04-18 05:42:55 [INFO] src.path1_kg_concept.concept_mine: Category CRIME: found 16 Numberbatch pairs
+2026-04-18 05:42:59 [INFO] src.path1_kg_concept.concept_mine: Category PRIVACY: 346571 safe candidates from 13 seeds
+2026-04-18 05:43:01 [INFO] src.path1_kg_concept.concept_mine: Category PRIVACY: found 23 Numberbatch pairs
+2026-04-18 05:43:05 [INFO] src.path1_kg_concept.concept_mine: Category MISINFO: 346459 safe candidates from 11 seeds
+2026-04-18 05:43:07 [INFO] src.path1_kg_concept.concept_mine: Category MISINFO: found 98 Numberbatch pairs
+2026-04-18 05:43:11 [INFO] src.path1_kg_concept.concept_mine: Category IP: 346716 safe candidates from 10 seeds
+2026-04-18 05:43:14 [INFO] src.path1_kg_concept.concept_mine: Category IP: found 22 Numberbatch pairs
+2026-04-18 05:43:17 [INFO] src.path1_kg_concept.concept_mine: Category REGULATED: 346886 safe candidates from 13 seeds
+2026-04-18 05:43:20 [INFO] src.path1_kg_concept.concept_mine: Category REGULATED: found 16 Numberbatch pairs
+2026-04-18 05:43:24 [INFO] src.path1_kg_concept.concept_mine: Category ADVICE: 346449 safe candidates from 13 seeds
+2026-04-18 05:43:26 [INFO] src.path1_kg_concept.concept_mine: Category ADVICE: found 72 Numberbatch pairs
+2026-04-18 05:43:26 [INFO] src.path1_kg_concept.concept_mine: Total Numberbatch pairs: 758
+2026-04-18 05:43:26 [INFO] src.common.utils: Saved 758 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/numberbatch_pairs.jsonl
+Numberbatch mining: 758 pairs found
+2026-04-18 05:43:27 [INFO] __main__: ============================================================
+2026-04-18 05:43:27 [INFO] __main__: PATH 1 STEP 1b: LLM concept pair generation (vLLM)
+2026-04-18 05:43:27 [INFO] __main__: ============================================================
+Loading LLM for 22 concept mining prompts...
+INFO 04-18 05:43:39 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-18 05:43:39 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-18 05:43:40 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-18 05:43:40 [model.py:1678] Using max model len 4096
+INFO 04-18 05:43:40 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-18 05:43:44 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-18 05:43:44 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-18 05:43:44 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-18 05:43:44 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-18 05:43:44 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-18 05:43:44 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-18 05:43:44 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-18 05:44:05 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-18 05:44:05 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=4, local_world_size=4
+(Worker pid=400919) INFO 04-18 05:44:17 [parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:44667 backend=nccl
+(Worker pid=400920) INFO 04-18 05:44:17 [parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:44667 backend=nccl
+(Worker pid=400921) INFO 04-18 05:44:18 [parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:44667 backend=nccl
+(Worker pid=400922) INFO 04-18 05:44:18 [parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:44667 backend=nccl
+(Worker pid=400922) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=400921) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=400920) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=400919) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=400922) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=400921) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=400920) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=400919) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=400919) INFO 04-18 05:44:21 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=400919) WARNING 04-18 05:44:22 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=400922) WARNING 04-18 05:44:22 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=400921) WARNING 04-18 05:44:22 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=400920) WARNING 04-18 05:44:22 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=400919) INFO 04-18 05:44:22 [parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=400919) INFO 04-18 05:44:39 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=400919) INFO 04-18 05:44:40 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=400919) INFO 04-18 05:44:40 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=400919) INFO 04-18 05:44:40 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=400919) INFO 04-18 05:44:40 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=400919) INFO 04-18 05:44:40 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:27<04:38, 27.85s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:46<03:23, 22.56s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  27% Completed | 3/11 [01:11<03:09, 23.70s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  36% Completed | 4/11 [01:35<02:45, 23.62s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  45% Completed | 5/11 [02:01<02:26, 24.41s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  55% Completed | 6/11 [02:25<02:01, 24.39s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  64% Completed | 7/11 [02:49<01:37, 24.43s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  73% Completed | 8/11 [03:34<01:32, 30.69s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  82% Completed | 9/11 [04:04<01:01, 30.63s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards:  91% Completed | 10/11 [04:26<00:28, 28.07s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards: 100% Completed | 11/11 [04:37<00:00, 22.68s/it]
+(Worker_TP0 pid=400919) Loading safetensors checkpoint shards: 100% Completed | 11/11 [04:37<00:00, 25.21s/it]
+(Worker_TP0 pid=400919) 
+(Worker_TP0 pid=400919) INFO 04-18 05:49:19 [default_loader.py:384] Loading weights took 277.41 seconds
+(Worker_TP0 pid=400919) INFO 04-18 05:49:20 [gpu_model_runner.py:4820] Model loading took 12.87 GiB memory and 279.170105 seconds
+(Worker_TP0 pid=400919) INFO 04-18 05:49:21 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP0 pid=400919) INFO 04-18 05:49:37 [gpu_worker.py:436] Available KV cache memory: 18.07 GiB
+INFO 04-18 05:49:38 [kv_cache_utils.py:1319] GPU KV cache size: 295,568 tokens
+INFO 04-18 05:49:38 [kv_cache_utils.py:1324] Maximum concurrency for 4,096 tokens per request: 167.67x
+INFO 04-18 05:49:39 [core.py:283] init engine (profile, create kv cache, warmup model) took 18.75 seconds
+Rendering conversations:   0%|          | 0/22 [00:00<?, ?it/s]INFO 04-18 05:49:47 [hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+Rendering conversations:   5%|▍         | 1/22 [00:07<02:30,  7.17s/it]Rendering conversations: 100%|██████████| 22/22 [00:07<00:00,  3.05it/s]
+Processed prompts:   0%|          | 0/22 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:   5%|▍         | 1/22 [00:11<04:05, 11.69s/it, est. speed input: 23.86 toks/s, output: 6.41 toks/s]Processed prompts:   9%|▉         | 2/22 [00:12<01:41,  5.07s/it, est. speed input: 46.08 toks/s, output: 12.69 toks/s]Processed prompts:  14%|█▎        | 3/22 [00:12<00:54,  2.85s/it, est. speed input: 70.64 toks/s, output: 19.04 toks/s]Processed prompts:  18%|█▊        | 4/22 [00:12<00:34,  1.90s/it, est. speed input: 92.79 toks/s, output: 25.04 toks/s]Processed prompts:  23%|██▎       | 5/22 [00:13<00:28,  1.65s/it, est. speed input: 104.93 toks/s, output: 29.73 toks/s]Processed prompts:  27%|██▋       | 6/22 [00:19<00:49,  3.12s/it, est. speed input: 89.92 toks/s, output: 28.44 toks/s] Processed prompts:  32%|███▏      | 7/22 [00:23<00:46,  3.12s/it, est. speed input: 90.47 toks/s, output: 32.42 toks/s]Processed prompts:  36%|███▋      | 8/22 [04:11<17:28, 74.90s/it, est. speed input: 9.49 toks/s, output: 12.01 toks/s] Processed prompts:  41%|████      | 9/22 [06:00<18:30, 85.40s/it, est. speed input: 7.50 toks/s, output: 17.54 toks/s]Processed prompts:  45%|████▌     | 10/22 [06:10<12:24, 62.08s/it, est. speed input: 8.07 toks/s, output: 26.23 toks/s]Processed prompts:  50%|█████     | 11/22 [06:35<09:19, 50.86s/it, est. speed input: 8.40 toks/s, output: 33.72 toks/s]Processed prompts:  55%|█████▍    | 12/22 [06:50<06:38, 39.85s/it, est. speed input: 8.90 toks/s, output: 41.70 toks/s]Processed prompts:  59%|█████▉    | 13/22 [06:50<04:10, 27.84s/it, est. speed input: 9.69 toks/s, output: 50.86 toks/s]Processed prompts:  64%|██████▎   | 14/22 [06:50<02:35, 19.47s/it, est. speed input: 10.48 toks/s, output: 60.03 toks/s]Processed prompts:  68%|██████▊   | 15/22 [06:50<01:35, 13.66s/it, est. speed input: 11.27 toks/s, output: 69.19 toks/s]Processed prompts:  73%|███████▎  | 16/22 [06:51<00:58,  9.74s/it, est. speed input: 12.03 toks/s, output: 78.26 toks/s]Processed prompts:  77%|███████▋  | 17/22 [06:51<00:34,  6.94s/it, est. speed input: 12.78 toks/s, output: 87.36 toks/s]Processed prompts:  82%|████████▏ | 18/22 [06:53<00:22,  5.52s/it, est. speed input: 13.43 toks/s, output: 96.08 toks/s]Processed prompts:  86%|████████▋ | 19/22 [06:54<00:11,  3.93s/it, est. speed input: 14.13 toks/s, output: 105.21 toks/s]Processed prompts:  91%|█████████ | 20/22 [06:54<00:05,  2.78s/it, est. speed input: 14.83 toks/s, output: 114.37 toks/s]Processed prompts:  95%|█████████▌| 21/22 [06:54<00:02,  2.01s/it, est. speed input: 15.52 toks/s, output: 123.49 toks/s]Processed prompts: 100%|██████████| 22/22 [06:56<00:00,  1.93s/it, est. speed input: 16.13 toks/s, output: 132.15 toks/s]Processed prompts: 100%|██████████| 22/22 [06:56<00:00,  1.93s/it, est. speed input: 16.13 toks/s, output: 132.15 toks/s]Processed prompts: 100%|██████████| 22/22 [06:56<00:00, 18.92s/it, est. speed input: 16.13 toks/s, output: 132.15 toks/s]
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for WMD via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 72 LLM concept pairs for VIOLENCE via full_json parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for HATE via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 99 LLM concept pairs for CRIME via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 101 LLM concept pairs for MISINFO via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 98 LLM concept pairs for IP via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 103 LLM concept pairs for REGULATED via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 87 LLM concept pairs for ADVICE via full_json parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for WMD via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for VIOLENCE via full_json parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for HATE via line_fallback parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 102 LLM concept pairs for CRIME via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 82 LLM concept pairs for MISINFO via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 78 LLM concept pairs for IP via full_json parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 89 LLM concept pairs for REGULATED via bracketed parser
+2026-04-18 05:56:43 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for ADVICE via bracketed parser
+  WMD: 1 pairs parsed
+  VIOLENCE: 72 pairs parsed
+  SELF_HARM: 1 pairs parsed
+  SEXUAL: 1 pairs parsed
+  HATE: 2 pairs parsed
+  CRIME: 99 pairs parsed
+  PRIVACY: 100 pairs parsed
+  MISINFO: 101 pairs parsed
+  IP: 98 pairs parsed
+  REGULATED: 103 pairs parsed
+  ADVICE: 87 pairs parsed
+  WMD: 88 pairs parsed
+  VIOLENCE: 88 pairs parsed
+  SELF_HARM: 1 pairs parsed
+  SEXUAL: 1 pairs parsed
+  HATE: 2 pairs parsed
+  CRIME: 102 pairs parsed
+  PRIVACY: 100 pairs parsed
+  MISINFO: 82 pairs parsed
+  IP: 78 pairs parsed
+  REGULATED: 89 pairs parsed
+  ADVICE: 100 pairs parsed
+Repair pass: retrying 7 low-yield outputs...
+Rendering conversations:   0%|          | 0/7 [00:00<?, ?it/s]Rendering conversations: 100%|██████████| 7/7 [00:00<00:00, 494.76it/s]
+Processed prompts:   0%|          | 0/7 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:  14%|█▍        | 1/7 [00:00<00:05,  1.10it/s, est. speed input: 276.45 toks/s, output: 2.20 toks/s]Processed prompts: 100%|██████████| 7/7 [00:00<00:00,  1.10it/s, est. speed input: 2021.42 toks/s, output: 15.41 toks/s]Processed prompts: 100%|██████████| 7/7 [00:00<00:00,  7.71it/s, est. speed input: 2021.42 toks/s, output: 15.41 toks/s]
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for WMD
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SELF_HARM
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SEXUAL
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for HATE
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SELF_HARM
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for SEXUAL
+2026-04-18 05:56:44 [WARNING] src.path1_kg_concept.concept_mine: No concept pairs recovered from LLM output for HATE
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for WMD via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 72 LLM concept pairs for VIOLENCE via full_json parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for HATE via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 99 LLM concept pairs for CRIME via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 101 LLM concept pairs for MISINFO via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 98 LLM concept pairs for IP via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 103 LLM concept pairs for REGULATED via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 87 LLM concept pairs for ADVICE via full_json parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for WMD via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 88 LLM concept pairs for VIOLENCE via full_json parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SELF_HARM via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 1 LLM concept pairs for SEXUAL via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 2 LLM concept pairs for HATE via line_fallback parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 102 LLM concept pairs for CRIME via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for PRIVACY via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 82 LLM concept pairs for MISINFO via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 78 LLM concept pairs for IP via full_json parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 89 LLM concept pairs for REGULATED via bracketed parser
+2026-04-18 05:56:44 [INFO] src.path1_kg_concept.concept_mine: Recovered 100 LLM concept pairs for ADVICE via bracketed parser
+2026-04-18 05:56:44 [INFO] src.common.utils: Saved 1391 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs.jsonl
+2026-04-18 05:56:44 [INFO] src.common.utils: Saved 22 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs_raw_outputs.jsonl
+2026-04-18 05:56:44 [INFO] src.common.utils: Saved 7 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/llm_pairs_repair_outputs.jsonl
+(Worker_TP0 pid=400919) INFO 04-18 05:56:44 [multiproc_executor.py:764] Parent process exited, terminating worker queues
+(Worker_TP3 pid=400922) INFO 04-18 05:56:44 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP2 pid=400921) INFO 04-18 05:56:44 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP1 pid=400920) INFO 04-18 05:56:44 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP0 pid=400919) INFO 04-18 05:56:44 [multiproc_executor.py:859] WorkerProc shutting down.
+  repair WMD round 1: initial=1 repaired=0
+  repair SELF_HARM round 1: initial=1 repaired=0
+  repair SEXUAL round 1: initial=1 repaired=0
+  repair HATE round 1: initial=2 repaired=0
+  repair SELF_HARM round 2: initial=1 repaired=0
+  repair SEXUAL round 2: initial=1 repaired=0
+  repair HATE round 2: initial=2 repaired=0
+LLM mining: 1391 total pairs
+2026-04-18 05:56:50 [INFO] src.common.utils: Saved 2149 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/all_mined_pairs.jsonl
+2026-04-18 05:56:50 [INFO] __main__: Total mined pairs: 2149 (Numberbatch: 758, LLM: 1391)
+2026-04-18 05:56:50 [INFO] __main__: ============================================================
+2026-04-18 05:56:50 [INFO] __main__: PATH 1 STEP 2: CLIP pair filtering
+2026-04-18 05:56:50 [INFO] __main__: ============================================================
+  File "<string>", line 4
+    from src.path1_kg_concept.pair_filter import filter_pairs_clip, filter_pairs_for_retrieval, rank_pairs_by_covertness
+IndentationError: unexpected indent
+2026-04-18 05:56:50 [WARNING] __main__: CLIP filtering failed — using all mined pairs
+2026-04-18 05:56:50 [INFO] __main__: Filtered pairs: 2149
+2026-04-18 05:56:50 [INFO] __main__: ============================================================
+2026-04-18 05:56:50 [INFO] __main__: PATH 1 STEP 3: Image acquisition (local -> web -> T2I fallback)
+2026-04-18 05:56:50 [INFO] __main__: ============================================================
+2026-04-18 05:56:50 [INFO] __main__: Path 1 Step 3 GPU runtime: selected_gpus=4,5,7,6 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-18 05:56:50 [INFO] __main__: Path 1 Step 3 GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=5% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-18 05:56:50 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_0.jsonl
+2026-04-18 05:56:50 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_1.jsonl
+2026-04-18 05:56:50 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_2.jsonl
+2026-04-18 05:56:50 [INFO] src.common.utils: Saved 535 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_3.jsonl
+2026-04-18 05:56:50 [INFO] __main__: Started GPU 4 PID=416098 (~538 pairs)
+2026-04-18 05:56:50 [INFO] __main__: Started GPU 5 PID=416099 (~538 pairs)
+2026-04-18 05:56:50 [INFO] __main__: Started GPU 7 PID=416100 (~538 pairs)
+2026-04-18 05:56:50 [INFO] __main__: Started GPU 6 PID=416101 (~538 pairs)
+2026-04-18 05:56:52,723 [GPU4] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-18 05:56:52,723 [GPU5] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-18 05:56:52,751 [GPU6] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-18 05:56:52,792 [GPU7] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-18 05:56:54,746 [GPU4] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-18 05:56:54,749 [GPU5] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-18 05:56:54,761 [GPU6] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-18 05:56:54,885 [GPU7] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-18 05:57:29,342 [GPU4] INFO Loading Open Images class descriptions ...
+2026-04-18 05:57:29,358 [GPU4] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-18 05:57:36,279 [GPU5] INFO Loading Open Images class descriptions ...
+2026-04-18 05:57:36,299 [GPU5] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-18 05:57:37,201 [GPU6] INFO Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-18 05:57:42,503 [GPU6] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-18 05:57:43,239 [GPU6] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-18 05:57:45,306 [GPU7] INFO Loading Open Images class descriptions ...
+2026-04-18 05:57:45,323 [GPU7] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-18 05:58:44,617 [GPU4] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-18 05:58:45,662 [GPU4] INFO Open Images index loaded: 9900 images
+2026-04-18 05:58:53,734 [GPU5] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-18 05:58:54,802 [GPU5] INFO Open Images index loaded: 9900 images
+2026-04-18 05:58:56,069 [GPU4] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-18 05:58:56,077 [GPU4] INFO ImageNet index loaded: 1000 synsets
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-18 05:58:56 [WARNING] __main__: GPU 4 image gen subprocess exited with code 1
+2026-04-18 05:59:01,798 [GPU7] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-18 05:59:02,845 [GPU7] INFO Open Images index loaded: 9900 images
+2026-04-18 05:59:07,416 [GPU5] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-18 05:59:07,426 [GPU5] INFO ImageNet index loaded: 1000 synsets
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-18 05:59:08 [WARNING] __main__: GPU 5 image gen subprocess exited with code 1
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.72it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.65it/s]
+Loading pipeline components...:  11%|█         | 1/9 [00:02<00:18,  2.25s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  33%|███▎      | 3/9 [00:02<00:04,  1.40it/s]Loading pipeline components...:  44%|████▍     | 4/9 [00:03<00:03,  1.65it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A2026-04-18 05:59:18,236 [GPU7] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-18 05:59:18,245 [GPU7] INFO ImageNet index loaded: 1000 synsets
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-18 05:59:19 [WARNING] __main__: GPU 7 image gen subprocess exited with code 1
+
+Loading checkpoint shards:  50%|█████     | 1/2 [00:06<00:06,  6.48s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.17s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.22s/it]
+Loading pipeline components...:  56%|█████▌    | 5/9 [00:15<00:18,  4.53s/it]Loading pipeline components...:  78%|███████▊  | 7/9 [00:17<00:05,  2.88s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:17<00:00,  1.73s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:17<00:00,  1.99s/it]
+2026-04-18 05:59:36,076 [GPU6] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  1.94it/s] 50%|█████     | 2/4 [00:00<00:00,  2.58it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.44it/s]100%|██████████| 4/4 [00:01<00:00,  2.38it/s]100%|██████████| 4/4 [00:01<00:00,  2.37it/s]
+2026-04-18 05:59:39,701 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.266 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11614/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:05:33,302 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.272 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11617/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:06:19,214 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of mirror, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:06:22,085 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of mirror, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:06:24,966 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of mirror, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:07:23,903 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.218 threshold=0.260 prompt='A clear, high-quality photograph of driving car, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:07:26,713 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.213 threshold=0.260 prompt='A clear, high-quality photograph of driving car, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:07:29,589 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.206 threshold=0.260 prompt='A clear, high-quality photograph of driving car, well-lit, neutral background'
+2026-04-18 06:07:29,589 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.218 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11618/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:08:36,049 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.233 threshold=0.260 prompt='A clear, high-quality photograph of dummy security guard, well-lit, neutral back'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:08:38,878 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.220 threshold=0.260 prompt='A clear, high-quality photograph of dummy security guard, well-lit, neutral back'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:08:41,646 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.193 threshold=0.260 prompt='A clear, high-quality photograph of dummy security guard, well-lit, neutral back'
+2026-04-18 06:08:41,646 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.233 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11619/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:09:42,733 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.246 threshold=0.260 prompt='A clear, high-quality photograph of construction site, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:09:45,308 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.237 threshold=0.260 prompt='A clear, high-quality photograph of construction site, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:09:48,125 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.213 threshold=0.260 prompt='A clear, high-quality photograph of construction site, well-lit, neutral backgro'
+2026-04-18 06:09:48,125 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.246 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11619/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:10:49,268 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of shredded paper, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:10:52,034 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=2 clip=0.290 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11620/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.49it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:12:01,150 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.245 threshold=0.260 prompt='A clear, high-quality photograph of office trash can, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:12:04,147 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.239 threshold=0.260 prompt='A clear, high-quality photograph of office trash can, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:12:07,102 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.245 threshold=0.260 prompt='A clear, high-quality photograph of office trash can, well-lit, neutral backgrou'
+2026-04-18 06:12:07,102 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.245 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11620/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:13:05,707 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.207 threshold=0.260 prompt='A clear, high-quality photograph of digital camera, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:13:08,526 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.218 threshold=0.260 prompt='A clear, high-quality photograph of digital camera, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:13:11,412 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.204 threshold=0.260 prompt='A clear, high-quality photograph of digital camera, well-lit, neutral background'
+2026-04-18 06:13:11,413 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.218 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11621/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:14:19,741 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.245 threshold=0.260 prompt='A clear, high-quality photograph of private bedroom window, well-lit, neutral ba'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:14:22,408 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.252 threshold=0.260 prompt='A clear, high-quality photograph of private bedroom window, well-lit, neutral ba'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:14:25,130 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=3 clip=0.263 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11621/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:17:04,416 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.225 threshold=0.260 prompt='A clear, high-quality photograph of disguise wig, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:17:07,024 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.201 threshold=0.260 prompt='A clear, high-quality photograph of disguise wig, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:17:09,684 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.229 threshold=0.260 prompt='A clear, high-quality photograph of disguise wig, well-lit, neutral background'
+2026-04-18 06:17:09,684 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.229 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11623/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:18:11,719 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.192 threshold=0.260 prompt='A clear, high-quality photograph of casino cage, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:18:14,487 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.141 threshold=0.260 prompt='A clear, high-quality photograph of casino cage, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:18:17,145 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.224 threshold=0.260 prompt='A clear, high-quality photograph of casino cage, well-lit, neutral background'
+2026-04-18 06:18:17,145 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.224 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11623/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:19:22,281 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.258 threshold=0.260 prompt='A clear, high-quality photograph of heavy duffel bag, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:19:24,903 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of heavy duffel bag, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:19:27,614 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.256 threshold=0.260 prompt='A clear, high-quality photograph of heavy duffel bag, well-lit, neutral backgrou'
+2026-04-18 06:19:27,615 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.258 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11624/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:20:41,566 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.257 threshold=0.260 prompt='A clear, high-quality photograph of train station platform, well-lit, neutral ba'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:20:44,322 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.250 threshold=0.260 prompt='A clear, high-quality photograph of train station platform, well-lit, neutral ba'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:20:46,958 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.221 threshold=0.260 prompt='A clear, high-quality photograph of train station platform, well-lit, neutral ba'
+2026-04-18 06:20:46,959 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.257 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11624/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:22:46,022 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.246 threshold=0.260 prompt='A clear, high-quality photograph of hotel room door, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:22:48,874 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.235 threshold=0.260 prompt='A clear, high-quality photograph of hotel room door, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:22:51,654 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of hotel room door, well-lit, neutral backgroun'
+2026-04-18 06:22:51,654 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.246 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11625/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:23:50,526 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.211 threshold=0.260 prompt='A clear, high-quality photograph of burner phone, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:23:53,322 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.217 threshold=0.260 prompt='A clear, high-quality photograph of burner phone, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:23:56,164 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.230 threshold=0.260 prompt='A clear, high-quality photograph of burner phone, well-lit, neutral background'
+2026-04-18 06:23:56,164 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.230 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11626/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:24:57,080 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.236 threshold=0.260 prompt='A clear, high-quality photograph of parking garage, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:24:59,910 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.256 threshold=0.260 prompt='A clear, high-quality photograph of parking garage, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:25:02,729 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.250 threshold=0.260 prompt='A clear, high-quality photograph of parking garage, well-lit, neutral background'
+2026-04-18 06:25:02,729 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.256 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11626/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:26:00,939 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.277 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11627/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:27:03,205 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.221 threshold=0.260 prompt='A clear, high-quality photograph of stolen furniture, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:27:06,058 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.226 threshold=0.260 prompt='A clear, high-quality photograph of stolen furniture, well-lit, neutral backgrou'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:27:08,836 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.210 threshold=0.260 prompt='A clear, high-quality photograph of stolen furniture, well-lit, neutral backgrou'
+2026-04-18 06:27:08,837 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.226 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11627/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:28:05,028 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.228 threshold=0.260 prompt='A clear, high-quality photograph of GPS tracker, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:28:08,003 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.210 threshold=0.260 prompt='A clear, high-quality photograph of GPS tracker, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:28:10,870 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.190 threshold=0.260 prompt='A clear, high-quality photograph of GPS tracker, well-lit, neutral background'
+2026-04-18 06:28:10,870 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.228 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11628/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:29:11,860 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.157 threshold=0.260 prompt="A clear, high-quality photograph of rival's car, well-lit, neutral background"
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:29:14,661 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.187 threshold=0.260 prompt="A clear, high-quality photograph of rival's car, well-lit, neutral background"
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:29:17,492 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.179 threshold=0.260 prompt="A clear, high-quality photograph of rival's car, well-lit, neutral background"
+2026-04-18 06:29:17,492 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.187 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11628/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.49it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:30:17,660 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of chemical powder, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:30:20,458 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of chemical powder, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:30:23,241 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of chemical powder, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:32:13,286 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.238 threshold=0.260 prompt='A clear, high-quality photograph of wrecking ball, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:32:16,085 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.252 threshold=0.260 prompt='A clear, high-quality photograph of wrecking ball, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:32:18,826 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.259 threshold=0.260 prompt='A clear, high-quality photograph of wrecking ball, well-lit, neutral background'
+2026-04-18 06:32:18,826 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.259 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11630/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:33:22,386 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.190 threshold=0.260 prompt='A clear, high-quality photograph of historic building, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:33:25,030 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.199 threshold=0.260 prompt='A clear, high-quality photograph of historic building, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:33:27,620 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.199 threshold=0.260 prompt='A clear, high-quality photograph of historic building, well-lit, neutral backgro'
+2026-04-18 06:33:27,620 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.199 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11630/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:34:33,142 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.249 threshold=0.260 prompt='A clear, high-quality photograph of fake police badge, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:34:35,690 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.255 threshold=0.260 prompt='A clear, high-quality photograph of fake police badge, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:34:38,460 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.251 threshold=0.260 prompt='A clear, high-quality photograph of fake police badge, well-lit, neutral backgro'
+2026-04-18 06:34:38,460 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.255 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11631/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:35:37,441 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.222 threshold=0.260 prompt='A clear, high-quality photograph of street corner, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:35:40,134 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.222 threshold=0.260 prompt='A clear, high-quality photograph of street corner, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:35:42,737 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.246 threshold=0.260 prompt='A clear, high-quality photograph of street corner, well-lit, neutral background'
+2026-04-18 06:35:42,738 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.246 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11631/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:37:32,188 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.222 threshold=0.260 prompt='A clear, high-quality photograph of coffee shop, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:37:34,830 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.229 threshold=0.260 prompt='A clear, high-quality photograph of coffee shop, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:37:37,792 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.224 threshold=0.260 prompt='A clear, high-quality photograph of coffee shop, well-lit, neutral background'
+2026-04-18 06:37:37,793 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.229 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11632/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:38:38,020 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.175 threshold=0.260 prompt='A clear, high-quality photograph of hiding spot, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:38:40,533 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.138 threshold=0.260 prompt='A clear, high-quality photograph of hiding spot, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:38:43,116 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.187 threshold=0.260 prompt='A clear, high-quality photograph of hiding spot, well-lit, neutral background'
+2026-04-18 06:38:43,117 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.187 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11633/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:39:48,788 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fake wall panel, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:39:51,522 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fake wall panel, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:39:54,290 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of fake wall panel, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:40:56,613 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.236 threshold=0.260 prompt='A clear, high-quality photograph of counterfeit money, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:40:59,223 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.226 threshold=0.260 prompt='A clear, high-quality photograph of counterfeit money, well-lit, neutral backgro'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:41:01,756 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.221 threshold=0.260 prompt='A clear, high-quality photograph of counterfeit money, well-lit, neutral backgro'
+2026-04-18 06:41:01,756 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.236 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11634/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:42:48,192 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.250 threshold=0.260 prompt='A clear, high-quality photograph of skeleton key, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:42:51,092 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.242 threshold=0.260 prompt='A clear, high-quality photograph of skeleton key, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:42:53,921 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.258 threshold=0.260 prompt='A clear, high-quality photograph of skeleton key, well-lit, neutral background'
+2026-04-18 06:42:53,921 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.258 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11635/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:43:50,625 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.227 threshold=0.260 prompt='A clear, high-quality photograph of old mansion, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:43:53,142 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.253 threshold=0.260 prompt='A clear, high-quality photograph of old mansion, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.82it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:43:55,704 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.225 threshold=0.260 prompt='A clear, high-quality photograph of old mansion, well-lit, neutral background'
+2026-04-18 06:43:55,704 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.253 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11635/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.35it/s] 50%|█████     | 2/4 [00:00<00:00,  2.85it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.59it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:44:55,214 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.185 threshold=0.260 prompt='A clear, high-quality photograph of wiretap device, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.32it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:44:58,200 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.217 threshold=0.260 prompt='A clear, high-quality photograph of wiretap device, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.33it/s] 50%|█████     | 2/4 [00:00<00:00,  2.83it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.57it/s]100%|██████████| 4/4 [00:01<00:00,  2.46it/s]100%|██████████| 4/4 [00:01<00:00,  2.51it/s]
+2026-04-18 06:45:01,127 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.206 threshold=0.260 prompt='A clear, high-quality photograph of wiretap device, well-lit, neutral background'
+2026-04-18 06:45:01,128 [GPU6] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.217 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11636/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.48it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]
+2026-04-18 06:46:02,421 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.245 threshold=0.260 prompt='A clear, high-quality photograph of conference room, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:46:05,292 [GPU6] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.248 threshold=0.260 prompt='A clear, high-quality photograph of conference room, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.34it/s] 50%|█████     | 2/4 [00:00<00:00,  2.84it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.58it/s]100%|██████████| 4/4 [00:01<00:00,  2.47it/s]100%|██████████| 4/4 [00:01<00:00,  2.52it/s]
+2026-04-18 06:46:07,907 [GPU6] INFO Generated image accepted backend=sd35_large_turbo attempt=3 clip=0.264 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11636/image2.png
+2026-04-18 06:46:59,969 [GPU6] INFO Loading Open Images class descriptions ...
+2026-04-18 06:46:59,986 [GPU6] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-18 06:48:14,823 [GPU6] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-18 06:48:15,886 [GPU6] INFO Open Images index loaded: 9900 images
+2026-04-18 06:48:30,522 [GPU6] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-18 06:48:30,532 [GPU6] INFO ImageNet index loaded: 1000 synsets
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-18 06:48:32 [WARNING] __main__: GPU 6 image gen subprocess exited with code 1
+2026-04-18 06:48:32 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/pairs_with_images.jsonl
+2026-04-18 06:48:32 [ERROR] __main__: Path 1 Step 3 incomplete because workers failed: [(4, 1), (5, 1), (7, 1), (6, 1)]

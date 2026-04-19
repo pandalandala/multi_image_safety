@@ -1,0 +1,219 @@
+2026-04-19 12:01:41 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-19 12:01:41 [INFO] __main__: Path 6 LLM GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-19 12:01:41 [INFO] __main__: ============================================================
+2026-04-19 12:01:41 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-19 12:01:41 [INFO] __main__: ============================================================
+Loading LLM for 44 TAG chain prompts...
+INFO 04-19 12:01:49 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-19 12:01:49 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-19 12:01:51 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-19 12:01:51 [model.py:1678] Using max model len 4096
+INFO 04-19 12:01:51 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-19 12:01:53 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-19 12:01:53 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-19 12:01:53 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-19 12:01:53 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-19 12:01:53 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-19 12:01:53 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-19 12:01:53 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-19 12:02:11 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-19 12:02:11 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=4, local_world_size=4
+(Worker pid=1356967) INFO 04-19 12:02:24 [parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:51741 backend=nccl
+(Worker pid=1357046) INFO 04-19 12:02:24 [parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:51741 backend=nccl
+(Worker pid=1356968) INFO 04-19 12:02:24 [parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:51741 backend=nccl
+(Worker pid=1357047) INFO 04-19 12:02:24 [parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:51741 backend=nccl
+(Worker pid=1356968) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1356968) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1357046) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1356967) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1357047) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1357046) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1356967) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1357047) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1356967) INFO 04-19 12:02:26 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=1356967) WARNING 04-19 12:02:26 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=1357046) WARNING 04-19 12:02:26 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=1357047) WARNING 04-19 12:02:26 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=1356968) WARNING 04-19 12:02:26 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=1356967) INFO 04-19 12:02:26 [parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:42 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:43 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:43 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:43 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:43 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=1356967) INFO 04-19 12:02:43 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:19<03:17, 19.74s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:32<02:22, 15.89s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:43<01:46, 13.34s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:59<01:40, 14.37s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  45% Completed | 5/11 [01:13<01:26, 14.34s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  55% Completed | 6/11 [01:33<01:21, 16.36s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  64% Completed | 7/11 [01:50<01:05, 16.46s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  73% Completed | 8/11 [02:10<00:53, 17.74s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  82% Completed | 9/11 [02:35<00:39, 19.94s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards:  91% Completed | 10/11 [02:49<00:17, 17.94s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards: 100% Completed | 11/11 [02:55<00:00, 14.51s/it]
+(Worker_TP0 pid=1356967) Loading safetensors checkpoint shards: 100% Completed | 11/11 [02:55<00:00, 15.99s/it]
+(Worker_TP0 pid=1356967) 
+(Worker_TP0 pid=1356967) INFO 04-19 12:05:41 [default_loader.py:384] Loading weights took 175.94 seconds
+(Worker_TP0 pid=1356967) INFO 04-19 12:05:42 [gpu_model_runner.py:4820] Model loading took 12.87 GiB memory and 177.676371 seconds
+(Worker_TP0 pid=1356967) INFO 04-19 12:06:49 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP0 pid=1356967) INFO 04-19 12:07:04 [gpu_worker.py:436] Available KV cache memory: 18.07 GiB
+INFO 04-19 12:07:04 [kv_cache_utils.py:1319] GPU KV cache size: 295,568 tokens
+INFO 04-19 12:07:04 [kv_cache_utils.py:1324] Maximum concurrency for 4,096 tokens per request: 167.67x
+INFO 04-19 12:07:05 [core.py:283] init engine (profile, create kv cache, warmup model) took 16.87 seconds
+Rendering conversations:   0%|          | 0/44 [00:00<?, ?it/s]INFO 04-19 12:07:12 [hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+Rendering conversations:   2%|▏         | 1/44 [00:06<04:48,  6.71s/it]Rendering conversations: 100%|██████████| 44/44 [00:06<00:00,  6.50it/s]
+Processed prompts:   0%|          | 0/44 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:   2%|▏         | 1/44 [00:14<10:09, 14.19s/it, est. speed input: 23.41 toks/s, output: 5.01 toks/s]Processed prompts:   5%|▍         | 2/44 [00:14<04:16,  6.11s/it, est. speed input: 45.34 toks/s, output: 9.90 toks/s]Processed prompts:   7%|▋         | 3/44 [00:14<02:18,  3.37s/it, est. speed input: 67.09 toks/s, output: 14.98 toks/s]Processed prompts:   9%|▉         | 4/44 [00:16<01:41,  2.55s/it, est. speed input: 82.20 toks/s, output: 19.26 toks/s]Processed prompts:  11%|█▏        | 5/44 [00:17<01:20,  2.06s/it, est. speed input: 95.55 toks/s, output: 23.68 toks/s]Processed prompts:  14%|█▎        | 6/44 [00:17<00:54,  1.43s/it, est. speed input: 111.68 toks/s, output: 29.18 toks/s]Processed prompts:  16%|█▌        | 7/44 [00:18<00:47,  1.28s/it, est. speed input: 123.77 toks/s, output: 33.56 toks/s]Processed prompts:  18%|█▊        | 8/44 [00:18<00:36,  1.01s/it, est. speed input: 138.86 toks/s, output: 38.79 toks/s]Processed prompts:  20%|██        | 9/44 [00:19<00:27,  1.26it/s, est. speed input: 153.72 toks/s, output: 44.18 toks/s]Processed prompts:  23%|██▎       | 10/44 [00:19<00:21,  1.61it/s, est. speed input: 168.91 toks/s, output: 49.76 toks/s]Processed prompts:  25%|██▌       | 11/44 [00:19<00:15,  2.16it/s, est. speed input: 183.35 toks/s, output: 55.63 toks/s]Processed prompts:  27%|██▋       | 12/44 [00:19<00:12,  2.57it/s, est. speed input: 196.67 toks/s, output: 61.20 toks/s]Processed prompts:  30%|██▉       | 13/44 [00:20<00:16,  1.87it/s, est. speed input: 204.30 toks/s, output: 64.93 toks/s]Processed prompts:  32%|███▏      | 14/44 [00:20<00:12,  2.42it/s, est. speed input: 218.85 toks/s, output: 70.78 toks/s]Processed prompts:  34%|███▍      | 15/44 [00:22<00:26,  1.11it/s, est. speed input: 213.78 toks/s, output: 71.01 toks/s]Processed prompts:  36%|███▋      | 16/44 [00:26<00:48,  1.72s/it, est. speed input: 195.88 toks/s, output: 68.25 toks/s]Processed prompts:  39%|███▊      | 17/44 [00:29<00:56,  2.10s/it, est. speed input: 187.22 toks/s, output: 68.54 toks/s]Processed prompts:  41%|████      | 18/44 [04:01<28:12, 65.08s/it, est. speed input: 24.04 toks/s, output: 17.29 toks/s] Processed prompts:  43%|████▎     | 19/44 [04:11<20:14, 48.58s/it, est. speed input: 24.24 toks/s, output: 25.54 toks/s]Processed prompts:  45%|████▌     | 20/44 [04:24<15:11, 37.99s/it, est. speed input: 24.30 toks/s, output: 33.24 toks/s]Processed prompts:  48%|████▊     | 21/44 [04:24<10:13, 26.68s/it, est. speed input: 25.49 toks/s, output: 42.17 toks/s]Processed prompts:  50%|█████     | 22/44 [04:27<07:06, 19.37s/it, est. speed input: 26.43 toks/s, output: 50.79 toks/s]Processed prompts:  52%|█████▏    | 23/44 [04:30<05:03, 14.45s/it, est. speed input: 27.36 toks/s, output: 59.21 toks/s]Processed prompts:  55%|█████▍    | 24/44 [04:31<03:30, 10.53s/it, est. speed input: 28.33 toks/s, output: 67.91 toks/s]Processed prompts:  57%|█████▋    | 25/44 [04:32<02:27,  7.76s/it, est. speed input: 29.39 toks/s, output: 76.57 toks/s]Processed prompts:  59%|█████▉    | 26/44 [04:33<01:41,  5.63s/it, est. speed input: 30.52 toks/s, output: 85.38 toks/s]Processed prompts:  61%|██████▏   | 27/44 [04:38<01:34,  5.57s/it, est. speed input: 31.05 toks/s, output: 92.71 toks/s]Processed prompts:  64%|██████▎   | 28/44 [04:43<01:23,  5.22s/it, est. speed input: 31.75 toks/s, output: 100.28 toks/s]Processed prompts:  66%|██████▌   | 29/44 [04:44<00:59,  4.00s/it, est. speed input: 32.77 toks/s, output: 108.88 toks/s]Processed prompts:  68%|██████▊   | 30/44 [04:46<00:47,  3.36s/it, est. speed input: 33.68 toks/s, output: 117.18 toks/s]Processed prompts:  73%|███████▎  | 32/44 [04:48<00:28,  2.34s/it, est. speed input: 35.59 toks/s, output: 134.20 toks/s]Processed prompts:  75%|███████▌  | 33/44 [04:52<00:30,  2.78s/it, est. speed input: 36.20 toks/s, output: 141.33 toks/s]Processed prompts:  77%|███████▋  | 34/44 [04:53<00:21,  2.16s/it, est. speed input: 37.27 toks/s, output: 150.15 toks/s]Processed prompts:  80%|███████▉  | 35/44 [04:53<00:14,  1.60s/it, est. speed input: 38.36 toks/s, output: 159.12 toks/s]Processed prompts:  82%|████████▏ | 36/44 [04:53<00:09,  1.24s/it, est. speed input: 39.44 toks/s, output: 167.98 toks/s]Processed prompts:  84%|████████▍ | 37/44 [04:55<00:09,  1.38s/it, est. speed input: 40.33 toks/s, output: 176.01 toks/s]Processed prompts:  86%|████████▋ | 38/44 [04:56<00:07,  1.29s/it, est. speed input: 41.15 toks/s, output: 184.40 toks/s]Processed prompts:  89%|████████▊ | 39/44 [04:57<00:06,  1.28s/it, est. speed input: 42.00 toks/s, output: 192.66 toks/s]Processed prompts:  91%|█████████ | 40/44 [04:59<00:06,  1.54s/it, est. speed input: 42.75 toks/s, output: 200.31 toks/s]Processed prompts:  93%|█████████▎| 41/44 [05:11<00:13,  4.44s/it, est. speed input: 42.18 toks/s, output: 202.06 toks/s]Processed prompts:  98%|█████████▊| 43/44 [05:11<00:02,  2.45s/it, est. speed input: 44.27 toks/s, output: 220.02 toks/s]Processed prompts: 100%|██████████| 44/44 [05:28<00:00,  6.16s/it, est. speed input: 42.92 toks/s, output: 217.41 toks/s]Processed prompts: 100%|██████████| 44/44 [05:28<00:00,  6.16s/it, est. speed input: 42.92 toks/s, output: 217.41 toks/s]Processed prompts: 100%|██████████| 44/44 [05:28<00:00,  7.47s/it, est. speed input: 42.92 toks/s, output: 217.41 toks/s]
+2026-04-19 12:12:41 [INFO] src.common.utils: Saved 1057 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/raw_chains.jsonl
+(Worker_TP0 pid=1356967) INFO 04-19 12:12:41 [multiproc_executor.py:764] Parent process exited, terminating worker queues
+(Worker_TP3 pid=1357047) INFO 04-19 12:12:41 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP2 pid=1357046) INFO 04-19 12:12:41 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP0 pid=1356967) INFO 04-19 12:12:41 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP1 pid=1356968) INFO 04-19 12:12:41 [multiproc_executor.py:859] WorkerProc shutting down.
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 43 chains parsed
+  PRIVACY: 43 chains parsed
+  MISINFO: 42 chains parsed
+  IP: 43 chains parsed
+  REGULATED: 42 chains parsed
+  ADVICE: 43 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 41 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 42 chains parsed
+  PRIVACY: 42 chains parsed
+  MISINFO: 44 chains parsed
+  IP: 42 chains parsed
+  REGULATED: 43 chains parsed
+  ADVICE: 42 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 42 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 41 chains parsed
+  MISINFO: 44 chains parsed
+  IP: 42 chains parsed
+  REGULATED: 42 chains parsed
+  ADVICE: 41 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 41 chains parsed
+  CRIME: 43 chains parsed
+  PRIVACY: 42 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 43 chains parsed
+  REGULATED: 43 chains parsed
+  ADVICE: 41 chains parsed
+Total chains generated: 1057
+2026-04-19 12:12:46 [INFO] __main__: Raw chains: 1057
+2026-04-19 12:12:46 [INFO] __main__: ============================================================
+2026-04-19 12:12:46 [INFO] __main__: PATH 6 STEP 2: CLIP chain scoring
+2026-04-19 12:12:46 [INFO] __main__: ============================================================
+2026-04-19 12:12:55 [INFO] root: Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 12:13:00 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 12:13:05 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 12:13:06 [INFO] src.path5_embedding_pair.harm_vector: Built 11 harm vectors (multi-description averaged)
+2026-04-19 12:13:21 [INFO] src.path6_tag_kg_fusion.tag_builder: CLIP score distribution (endpoint): n=2114, min=0.509, max=0.897, mean=0.762, p25=0.732, p50=0.764, p75=0.797
+2026-04-19 12:13:21 [INFO] src.path6_tag_kg_fusion.tag_builder: CLIP score distribution (combined): n=1057, min=0.694, max=0.889, mean=0.815, p25=0.796, p50=0.817, p75=0.837
+2026-04-19 12:13:21 [INFO] src.path6_tag_kg_fusion.tag_builder: Chain CLIP hard filter: 0 / 1057 chains passed (0.0%, theta_safe=0.40, theta_harm=0.30)
+2026-04-19 12:13:21 [WARNING] src.path6_tag_kg_fusion.tag_builder: Hard filter pass rate 0.0% < 10% threshold. Falling back to top-800 ranking by covertness score.
+2026-04-19 12:13:21 [INFO] src.path6_tag_kg_fusion.tag_builder: Fallback yielded 800 chains
+2026-04-19 12:13:21 [INFO] src.common.utils: Saved 800 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/scored_chains.jsonl
+Scored chains: 800 / 1057 passed
+2026-04-19 12:13:22 [INFO] __main__: ============================================================
+2026-04-19 12:13:22 [INFO] __main__: PATH 6 STEP 3: Fusion with Path 1 KG pairs
+2026-04-19 12:13:22 [INFO] __main__: ============================================================
+2026-04-19 12:13:24 [INFO] src.path6_tag_kg_fusion.tag_builder: Extracted 798 unique endpoint pairs from 800 chains
+2026-04-19 12:13:24 [INFO] src.path6_tag_kg_fusion.fusion_mine: No Path 1 data found at /mnt/hdd/xuran/multi_image_safety/data/raw/path1/filtered_pairs.jsonl — using TAG pairs only
+2026-04-19 12:13:24 [INFO] src.path6_tag_kg_fusion.fusion_mine: Total fused pairs: 798
+2026-04-19 12:13:24 [INFO] src.common.utils: Saved 798 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/fusion_pairs.jsonl
+2026-04-19 12:13:24 [INFO] __main__: Fusion pairs: 798
+2026-04-19 12:13:24 [INFO] src.path1_kg_concept.pair_filter: Retrieval-friendly filter: kept 502 / 798 pairs (max_query_words=2)
+2026-04-19 12:13:24 [INFO] src.path1_kg_concept.pair_filter: Sample retrieval-filter rejects: 'coffee shop' + 'session hijacking' (bad concept2 query='session hijacking'); 'home renovation' + 'counterfeit fabric' (bad concept1 query='home renovation'); 'public transit app' + 'digital segregation' (bad concept2 query='digital segregation'); 'library card' + 'contraband list' (bad concept2 query='contraband list'); 'fishing trip' + 'collision' (bad concept2 query='collision'); 'home renovation' + 'theft ring' (bad concept1 query='home renovation'); 'carpool group' + 'abduction risk' (bad concept2 query='abduction risk'); 'wedding dance' + 'ID check' (bad concept2 query='id check')
+2026-04-19 12:13:24 [INFO] __main__: Retrieval-friendly fusion pairs: 502
+2026-04-19 12:13:24 [INFO] __main__: ============================================================
+2026-04-19 12:13:24 [INFO] __main__: PATH 6 STEP 4: Image acquisition (local -> web -> T2I fallback)
+2026-04-19 12:13:24 [INFO] __main__: ============================================================
+2026-04-19 12:13:24 [INFO] __main__: Path 6 Step 4 GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-19 12:13:24 [INFO] __main__: Path 6 Step 4 GPU inventory: GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=1% procs=0
+2026-04-19 12:13:24 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_0.jsonl
+2026-04-19 12:13:24 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_1.jsonl
+2026-04-19 12:13:24 [INFO] src.common.utils: Saved 126 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_2.jsonl
+2026-04-19 12:13:24 [INFO] src.common.utils: Saved 124 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_3.jsonl
+2026-04-19 12:13:24 [INFO] __main__: Started GPU 4 PID=1378044 (~126 pairs)
+2026-04-19 12:13:24 [INFO] __main__: Started GPU 5 PID=1378045 (~126 pairs)
+2026-04-19 12:13:24 [INFO] __main__: Started GPU 6 PID=1378046 (~126 pairs)
+2026-04-19 12:13:24 [INFO] __main__: Started GPU 7 PID=1378047 (~126 pairs)
+2026-04-19 12:13:26,195 [GPU7] INFO Retrieval phase: fetching 248 fusion concept images with 8 worker threads
+2026-04-19 12:13:26,231 [GPU6] INFO Retrieval phase: fetching 252 fusion concept images with 8 worker threads
+2026-04-19 12:13:26,231 [GPU5] INFO Retrieval phase: fetching 252 fusion concept images with 8 worker threads
+2026-04-19 12:13:26,236 [GPU4] INFO Retrieval phase: fetching 252 fusion concept images with 8 worker threads
+2026-04-19 12:13:26,885 [GPU6] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 12:13:26,967 [GPU4] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 12:13:26,989 [GPU5] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 12:13:27,173 [GPU7] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-19 12:13:29,178 [GPU5] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 12:13:29,272 [GPU7] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 12:13:29,338 [GPU6] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 12:13:29,566 [GPU4] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-19 12:31:21,145 [GPU6] INFO Loading Open Images class descriptions ...
+2026-04-19 12:31:21,274 [GPU6] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-19 12:31:22,649 [GPU4] INFO Loading Open Images class descriptions ...
+2026-04-19 12:31:23,651 [GPU4] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-19 12:32:06,985 [GPU5] INFO Loading Open Images class descriptions ...
+2026-04-19 12:32:07,918 [GPU5] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-19 12:32:17,664 [GPU7] INFO Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 12:32:22,597 [GPU7] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 12:32:23,366 [GPU7] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 12:33:12,894 [GPU6] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-19 12:33:15,591 [GPU6] INFO Loaded ViT-L-14 model config.
+2026-04-19 12:33:16,744 [GPU6] INFO Open Images index loaded: 9900 images
+2026-04-19 12:33:43,553 [GPU4] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-19 12:33:46,689 [GPU4] INFO Loaded ViT-L-14 model config.
+2026-04-19 12:33:47,939 [GPU4] INFO Open Images index loaded: 9900 images
+2026-04-19 12:34:01,184 [GPU5] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-19 12:34:03,218 [GPU5] INFO Loaded ViT-L-14 model config.
+2026-04-19 12:34:04,434 [GPU5] INFO Open Images index loaded: 9900 images
+2026-04-19 12:34:21,094 [GPU5] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 12:34:21,180 [GPU5] INFO ImageNet index loaded: 1000 synsets
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 12:34:22,739 [GPU5] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 12:34:23,506 [GPU5] INFO Loaded CLIP model ViT-L-14/openai on cuda
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 12:34:33,494 [GPU6] INFO Loading pretrained ViT-L-14 weights (openai).
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-19 12:34:46,482 [GPU4] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-19 12:34:59,187 [GPU4] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 12:34:59,653 [GPU4] INFO ImageNet index loaded: 1000 synsets
+2026-04-19 12:35:00,909 [GPU4] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 12:35:12,097 [GPU6] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 12:35:14,737 [GPU6] INFO ImageNet index loaded: 1000 synsets
+2026-04-19 12:35:16,186 [GPU6] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-19 12:46:54,040 [GPU7] INFO Loading Open Images class descriptions ...
+2026-04-19 12:46:55,662 [GPU7] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-19 12:54:00,864 [GPU6] ERROR Pixabay retrieval failed for 'pregnancy test': HTTP 502: HTTP Error 502: Bad Gateway; body=<html> <head><title>502 Bad Gateway</title></head> <body> <center><h1>502 Bad Gateway</h1></center> <hr><center>nginx/1.27.2</center> </body> </html>
+2026-04-19 13:15:54,495 [GPU7] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/PIL/Image.py:3451: DecompressionBombWarning: Image size (92427563 pixels) exceeds limit of 89478485 pixels, could be decompression bomb DOS attack.
+  warnings.warn(
+2026-04-19 13:32:25,120 [GPU7] INFO Open Images index loaded: 9900 images
+2026-04-19 13:37:31,273 [GPU7] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-19 13:37:52,987 [GPU7] INFO ImageNet index loaded: 1000 synsets

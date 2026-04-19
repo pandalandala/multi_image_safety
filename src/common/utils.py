@@ -44,6 +44,25 @@ def load_prompt_sources() -> dict:
     return load_config("prompt_sources.yaml")
 
 
+_min_image_size_cache: tuple[int, int] | None = None
+
+
+def get_min_image_size() -> tuple[int, int]:
+    """Return (min_width, min_height) from pipeline.yaml → laion section."""
+    global _min_image_size_cache
+    if _min_image_size_cache is not None:
+        return _min_image_size_cache
+    try:
+        config = load_config()
+        laion_cfg = config.get("laion", {})
+        w = int(laion_cfg.get("min_width", 256))
+        h = int(laion_cfg.get("min_height", 256))
+    except Exception:
+        w, h = 256, 256
+    _min_image_size_cache = (w, h)
+    return _min_image_size_cache
+
+
 def is_english(text: str, threshold: float = 0.6) -> bool:
     """
     Lightweight English detection. Returns True if text appears to be English.
@@ -407,7 +426,7 @@ def select_gpu_runtime_profile(
         requested_tp = len(candidate_ids)
     profile_counts = [min(preferred_gpu_count, requested_tp, len(candidate_ids))]
     if mode in {"adaptive", "auto"}:
-        for count in (2, 1):
+        for count in (3, 2, 1):
             if count <= len(candidate_ids) and count not in profile_counts:
                 profile_counts.append(count)
 
@@ -417,6 +436,10 @@ def select_gpu_runtime_profile(
             gpu_util = base_gpu_util
             max_model_len = base_max_model_len
             batch_size = base_batch_size
+        elif count == 3:
+            gpu_util = min(base_gpu_util, 0.62)
+            max_model_len = min(base_max_model_len, 4096)
+            batch_size = max(16, (base_batch_size * 3) // 4)
         elif count == 2:
             gpu_util = min(base_gpu_util, 0.55)
             max_model_len = min(base_max_model_len, 3072)
@@ -558,6 +581,28 @@ def get_step_marker_path(output_dir: str | Path, step_name: str, status: str) ->
     return get_step_state_dir(output_dir) / f"{step_name}.{status}.json"
 
 
+def _normalize_step_paths(
+    paths: list[str | Path] | tuple[str | Path, ...] = (),
+) -> list[str]:
+    normalized: list[str] = []
+    for path in paths:
+        raw = str(path).strip()
+        if raw and raw not in normalized:
+            normalized.append(raw)
+    return normalized
+
+
+def _read_step_marker_payload(marker_path: str | Path) -> dict[str, Any]:
+    path = Path(marker_path)
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        logger.warning("Failed to parse step marker: %s", path, exc_info=True)
+        return {}
+
+
 def step_completion_marker_exists(output_dir: str | Path, step_name: str) -> bool:
     """Return True when a step completion marker exists."""
     return get_step_marker_path(output_dir, step_name, "done").exists()
@@ -589,16 +634,25 @@ def is_step_complete(
     return True
 
 
-def start_step(output_dir: str | Path, step_name: str, metadata: dict[str, Any] | None = None) -> Path:
+def start_step(
+    output_dir: str | Path,
+    step_name: str,
+    metadata: dict[str, Any] | None = None,
+    *,
+    cleanup_paths: list[str | Path] | tuple[str | Path, ...] = (),
+) -> Path:
     """Write a running marker for a step and clear any stale completion marker."""
     running_path = get_step_marker_path(output_dir, step_name, "running")
     done_path = get_step_marker_path(output_dir, step_name, "done")
+    failed_path = get_step_marker_path(output_dir, step_name, "failed")
     done_path.unlink(missing_ok=True)
+    failed_path.unlink(missing_ok=True)
     payload = {
         "step": step_name,
         "status": "running",
         "started_at": datetime.now(timezone.utc).isoformat(),
         "metadata": metadata or {},
+        "cleanup_paths": _normalize_step_paths(cleanup_paths),
     }
     running_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     return running_path
@@ -614,6 +668,7 @@ def finish_step(
     """Write the completion marker for a step and clear the running marker."""
     running_path = get_step_marker_path(output_dir, step_name, "running")
     done_path = get_step_marker_path(output_dir, step_name, "done")
+    failed_path = get_step_marker_path(output_dir, step_name, "failed")
     output_summaries = []
     for output in expected_outputs:
         output_path = Path(output)
@@ -631,7 +686,56 @@ def finish_step(
     }
     done_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     running_path.unlink(missing_ok=True)
+    failed_path.unlink(missing_ok=True)
     return done_path
+
+
+def fail_step(
+    output_dir: str | Path,
+    step_name: str,
+    *,
+    error: str | None = None,
+    metadata: dict[str, Any] | None = None,
+    cleanup_paths: list[str | Path] | tuple[str | Path, ...] = (),
+    auto_cleanup: bool | None = None,
+) -> Path:
+    """Record a failed step and optionally remove that step's outputs."""
+    running_path = get_step_marker_path(output_dir, step_name, "running")
+    done_path = get_step_marker_path(output_dir, step_name, "done")
+    failed_path = get_step_marker_path(output_dir, step_name, "failed")
+
+    running_payload = _read_step_marker_payload(running_path)
+    payload_cleanup_paths = running_payload.get("cleanup_paths", []) if running_payload else []
+    combined_cleanup = _normalize_step_paths(tuple(payload_cleanup_paths) + tuple(cleanup_paths))
+
+    if auto_cleanup is None:
+        auto_cleanup = _is_truthy_env(os.environ.get("MIS_AUTO_CLEAN_FAILED_STEP_OUTPUTS", "1"))
+
+    removed_paths: list[str] = []
+    if auto_cleanup:
+        for stale_path in combined_cleanup:
+            path = Path(stale_path)
+            if not path.exists():
+                continue
+            if path.is_dir():
+                shutil.rmtree(path, ignore_errors=True)
+            else:
+                path.unlink(missing_ok=True)
+            removed_paths.append(str(path))
+
+    payload = {
+        "step": step_name,
+        "status": "failed",
+        "failed_at": datetime.now(timezone.utc).isoformat(),
+        "error": error or "",
+        "cleanup_paths": combined_cleanup,
+        "removed_paths": removed_paths,
+        "metadata": metadata or {},
+    }
+    failed_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+    running_path.unlink(missing_ok=True)
+    done_path.unlink(missing_ok=True)
+    return failed_path
 
 
 def clear_step_state(
@@ -641,10 +745,22 @@ def clear_step_state(
     stale_paths: list[str | Path] | tuple[str | Path, ...] = (),
 ) -> None:
     """Remove step markers and any stale step outputs before rerunning the step."""
-    get_step_marker_path(output_dir, step_name, "running").unlink(missing_ok=True)
-    get_step_marker_path(output_dir, step_name, "done").unlink(missing_ok=True)
+    running_path = get_step_marker_path(output_dir, step_name, "running")
+    done_path = get_step_marker_path(output_dir, step_name, "done")
+    failed_path = get_step_marker_path(output_dir, step_name, "failed")
+    running_payload = _read_step_marker_payload(running_path)
+    failed_payload = _read_step_marker_payload(failed_path)
+    registered_cleanup = []
+    if running_payload:
+        registered_cleanup.extend(running_payload.get("cleanup_paths", []))
+    if failed_payload:
+        registered_cleanup.extend(failed_payload.get("cleanup_paths", []))
 
-    for stale_path in stale_paths:
+    running_path.unlink(missing_ok=True)
+    done_path.unlink(missing_ok=True)
+    failed_path.unlink(missing_ok=True)
+
+    for stale_path in _normalize_step_paths(tuple(registered_cleanup) + tuple(stale_paths)):
         path = Path(stale_path)
         if not path.exists():
             continue

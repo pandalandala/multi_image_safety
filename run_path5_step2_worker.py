@@ -70,6 +70,8 @@ def main() -> int:
                 {
                     "image1_path": item["info1"].get("path", ""),
                     "image2_path": item["info2"].get("path", ""),
+                    "image1_class": item["info1"].get("class_label", item["info1"].get("class", "")),
+                    "image2_class": item["info2"].get("class_label", item["info2"].get("class", "")),
                     "image1_caption": item["info1"].get("description", ""),
                     "image2_caption": item["info2"].get("description", ""),
                     "image1_description": item["info1"].get("description", ""),

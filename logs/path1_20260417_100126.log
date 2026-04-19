@@ -1,0 +1,275 @@
+2026-04-17 10:01:26 [INFO] __main__: Path 1 LLM GPU runtime: selected_gpus=4,5 gpu_count=2 tensor_parallel_size=2 worker_count=2 mode=adaptive fallback_mode=adaptive_llm fallback_reason=preferred 8-GPU llm profile was unavailable; using 2 GPUs with max_model_len=3072, gpu_memory_utilization=0.55, batch_size=32
+2026-04-17 10:01:26 [INFO] __main__: Path 1 LLM GPU inventory: GPU0 free=1.4/48.0GiB util=100% procs=1; GPU1 free=1.5/48.0GiB util=100% procs=1; GPU2 free=1.4/48.0GiB util=100% procs=1; GPU3 free=1.4/48.0GiB util=100% procs=1; GPU4 free=47.2/48.0GiB util=52% procs=1; GPU5 free=47.2/48.0GiB util=83% procs=1; GPU6 free=47.2/48.0GiB util=100% procs=1; GPU7 free=47.2/48.0GiB util=100% procs=1
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: PATH 1 STEP 1a: Numberbatch concept pair mining
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: Skipping Step 1a; completion marker found
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: PATH 1 STEP 1b: LLM concept pair generation (vLLM)
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: Skipping Step 1b; completion marker found
+2026-04-17 10:01:26 [INFO] src.common.utils: Saved 2149 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/all_mined_pairs.jsonl
+2026-04-17 10:01:26 [INFO] __main__: Total mined pairs: 2149 (Numberbatch: 758, LLM: 1391)
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: PATH 1 STEP 2: CLIP pair filtering
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: Skipping Step 2; completion marker found
+2026-04-17 10:01:26 [INFO] __main__: Filtered pairs: 2149
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: PATH 1 STEP 3: Image acquisition (local -> web -> T2I fallback)
+2026-04-17 10:01:26 [INFO] __main__: ============================================================
+2026-04-17 10:01:26 [INFO] __main__: Path 1 Step 3 GPU runtime: selected_gpus=4,5,6,7 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=reduced_workers fallback_reason=preferred 8 GPUs for image work, selected 4 because only 4 met the 8.0 GiB free-memory threshold
+2026-04-17 10:01:26 [INFO] __main__: Path 1 Step 3 GPU inventory: GPU0 free=1.4/48.0GiB util=100% procs=1; GPU1 free=1.5/48.0GiB util=100% procs=1; GPU2 free=1.4/48.0GiB util=100% procs=1; GPU3 free=1.4/48.0GiB util=100% procs=1; GPU4 free=47.2/48.0GiB util=0% procs=1; GPU5 free=47.2/48.0GiB util=0% procs=1; GPU6 free=47.2/48.0GiB util=28% procs=1; GPU7 free=47.2/48.0GiB util=100% procs=1
+2026-04-17 10:01:26 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_0.jsonl
+2026-04-17 10:01:26 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_1.jsonl
+2026-04-17 10:01:26 [INFO] src.common.utils: Saved 538 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_2.jsonl
+2026-04-17 10:01:26 [INFO] src.common.utils: Saved 535 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/_img_chunk_3.jsonl
+2026-04-17 10:01:26 [INFO] __main__: Started GPU 4 PID=294764 (~538 pairs)
+2026-04-17 10:01:26 [INFO] __main__: Started GPU 5 PID=294765 (~538 pairs)
+2026-04-17 10:01:26 [INFO] __main__: Started GPU 6 PID=294766 (~538 pairs)
+2026-04-17 10:01:26 [INFO] __main__: Started GPU 7 PID=294767 (~538 pairs)
+2026-04-17 10:01:28,651 [GPU7] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-17 10:01:28,655 [GPU6] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-17 10:01:28,660 [GPU5] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-17 10:01:28,757 [GPU4] INFO Loading MSCOCO caption index from /mnt2/xuran_hdd/cache/datasets/coco/annotations/captions_train2017.json ...
+2026-04-17 10:01:30,754 [GPU6] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-17 10:01:30,765 [GPU5] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-17 10:01:30,836 [GPU4] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-17 10:01:31,055 [GPU7] INFO MSCOCO index loaded: 118287 images, 591753 captions
+2026-04-17 10:02:30,498 [GPU6] INFO Loading Open Images class descriptions ...
+2026-04-17 10:02:30,544 [GPU6] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-17 10:02:34,031 [GPU4] INFO Loaded ViT-L-14 model config.
+2026-04-17 10:02:34,032 [GPU7] INFO Loaded ViT-L-14 model config.
+2026-04-17 10:02:34,956 [GPU5] INFO Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-17 10:02:38,942 [GPU7] INFO Loading pretrained ViT-L-14 weights (openai).
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-17 10:02:38,943 [GPU4] INFO Loading pretrained ViT-L-14 weights (openai).
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-17 10:02:39,872 [GPU5] INFO Loading pretrained ViT-L-14 weights (openai).
+2026-04-17 10:02:50,623 [GPU5] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-17 10:02:50,701 [GPU7] INFO Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-17 10:02:50,714 [GPU4] INFO Loaded CLIP model ViT-L-14/openai on cuda
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]Loading pipeline components...:  11%|█         | 1/9 [00:02<00:16,  2.06s/it]Loading pipeline components...:  11%|█         | 1/9 [00:02<00:16,  2.06s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  33%|███▎      | 3/9 [00:02<00:03,  1.57it/s]Loading pipeline components...:  33%|███▎      | 3/9 [00:02<00:04,  1.41it/s]Loading pipeline components...:  11%|█         | 1/9 [00:02<00:20,  2.57s/it]Loading pipeline components...:  22%|██▏       | 2/9 [00:02<00:07,  1.12s/it]Loading pipeline components...:  44%|████▍     | 4/9 [00:02<00:02,  1.78it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:14<00:14, 14.61s/it][ALoading pipeline components...:  56%|█████▌    | 5/9 [00:26<00:33,  8.28s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:23<00:00, 10.97s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:23<00:00, 11.52s/it]
+Loading pipeline components...:  44%|████▍     | 4/9 [00:27<00:46,  9.27s/it]Loading pipeline components...:  67%|██████▋   | 6/9 [00:28<00:14,  4.70s/it]Loading pipeline components...:  78%|███████▊  | 7/9 [00:28<00:07,  3.58s/it]Loading pipeline components...:  89%|████████▉ | 8/9 [00:30<00:03,  3.17s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:13<00:13, 13.67s/it][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:17<00:17, 17.87s/it][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:41<00:41, 41.80s/it][A2026-04-17 10:04:09,662 [GPU6] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+
+Loading checkpoint shards: 100%|██████████| 2/2 [00:34<00:00, 17.71s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:34<00:00, 17.11s/it]
+Loading pipeline components...: 100%|██████████| 9/9 [01:04<00:00, 11.88s/it]Loading pipeline components...: 100%|██████████| 9/9 [01:04<00:00,  7.21s/it]
+
+
+Loading checkpoint shards: 100%|██████████| 2/2 [01:02<00:00, 29.31s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [01:02<00:00, 31.18s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:38<00:00, 19.46s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:38<00:00, 19.22s/it]
+Loading pipeline components...:  33%|███▎      | 3/9 [01:05<02:54, 29.14s/it]Loading pipeline components...:  67%|██████▋   | 6/9 [01:05<00:53, 17.98s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  44%|████▍     | 4/9 [01:05<01:28, 17.75s/it]Loading pipeline components...:  78%|███████▊  | 7/9 [01:05<00:24, 12.42s/it]2026-04-17 10:04:12,159 [GPU6] INFO Open Images index loaded: 9900 images
+
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.99it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.92it/s]
+Loading pipeline components...:  56%|█████▌    | 5/9 [01:08<00:49, 12.31s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][ALoading pipeline components...:  89%|████████▉ | 8/9 [01:08<00:04,  4.86s/it]
+Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.67it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 19.61it/s]
+Loading pipeline components...:  89%|████████▉ | 8/9 [01:08<00:09,  9.46s/it]Loading pipeline components...: 100%|██████████| 9/9 [01:08<00:00,  7.60s/it]
+Loading pipeline components...: 100%|██████████| 9/9 [01:10<00:00,  7.81s/it]
+2026-04-17 10:04:30,520 [GPU6] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-17 10:04:30,552 [GPU6] INFO ImageNet index loaded: 1000 synsets
+2026-04-17 10:04:30,673 [GPU6] INFO Building recap SQLite index from /mnt2/xuran_hdd/cache/datasets/CC12M_and_Imagenet21K_Recap/metadata.jsonl ...
+2026-04-17 10:04:36,801 [GPU6] INFO Recap index build: 200000 rows inserted
+2026-04-17 10:04:44,650 [GPU6] INFO Recap index build: 400000 rows inserted
+2026-04-17 10:04:54,000 [GPU6] INFO Recap index build: 600000 rows inserted
+2026-04-17 10:05:03,092 [GPU6] INFO Recap index build: 800000 rows inserted
+2026-04-17 10:05:12,930 [GPU6] INFO Recap index build: 1000000 rows inserted
+2026-04-17 10:05:20,282 [GPU5] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+2026-04-17 10:05:20,290 [GPU4] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+2026-04-17 10:05:20,290 [GPU7] INFO Loaded T2I pipeline backend=sd35_large_turbo model=stabilityai/stable-diffusion-3.5-large-turbo
+2026-04-17 10:05:21,738 [GPU6] INFO Recap index build: 1200000 rows inserted
+  0%|          | 0/4 [00:00<?, ?it/s]  0%|          | 0/4 [00:00<?, ?it/s]  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:01<00:03,  1.02s/it] 25%|██▌       | 1/4 [00:01<00:03,  1.03s/it] 25%|██▌       | 1/4 [00:01<00:03,  1.03s/it] 50%|█████     | 2/4 [00:01<00:01,  1.69it/s] 50%|█████     | 2/4 [00:01<00:01,  1.69it/s] 50%|█████     | 2/4 [00:01<00:01,  1.68it/s] 75%|███████▌  | 3/4 [00:01<00:00,  1.96it/s] 75%|███████▌  | 3/4 [00:01<00:00,  1.96it/s] 75%|███████▌  | 3/4 [00:01<00:00,  1.95it/s]100%|██████████| 4/4 [00:02<00:00,  2.11it/s]100%|██████████| 4/4 [00:02<00:00,  1.87it/s]
+100%|██████████| 4/4 [00:02<00:00,  2.10it/s]100%|██████████| 4/4 [00:02<00:00,  1.86it/s]
+100%|██████████| 4/4 [00:02<00:00,  2.10it/s]100%|██████████| 4/4 [00:02<00:00,  1.86it/s]
+2026-04-17 10:05:25,503 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.272 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11614/image1.png
+2026-04-17 10:05:25,626 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of copyright notice symbol, well-lit, neutral b'
+  0%|          | 0/4 [00:00<?, ?it/s]2026-04-17 10:05:26,006 [GPU4] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.290 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/10000/image1.png
+ 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.67it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-17 10:05:28,320 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of copyright notice symbol, well-lit, neutral b'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.42it/s] 50%|█████     | 2/4 [00:00<00:00,  2.95it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.66it/s]100%|██████████| 4/4 [00:01<00:00,  2.56it/s]100%|██████████| 4/4 [00:01<00:00,  2.61it/s]
+2026-04-17 10:05:30,979 [GPU6] INFO Recap index build: 1400000 rows inserted
+2026-04-17 10:05:31,054 [GPU5] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of copyright notice symbol, well-lit, neutral b'
+2026-04-17 10:05:41,136 [GPU6] INFO Recap index build: 1600000 rows inserted
+2026-04-17 10:05:50,393 [GPU6] INFO Recap index build: 1800000 rows inserted
+2026-04-17 10:06:03,411 [GPU6] INFO Recap index build: 2000000 rows inserted
+2026-04-17 10:06:08,817 [GPU4] INFO Loading Open Images class descriptions ...
+2026-04-17 10:06:08,835 [GPU4] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-17 10:06:14,448 [GPU5] INFO Loading Open Images class descriptions ...
+2026-04-17 10:06:14,467 [GPU5] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-17 10:06:15,506 [GPU6] INFO Recap index build: 2200000 rows inserted
+2026-04-17 10:06:27,798 [GPU6] INFO Recap index build: 2400000 rows inserted
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:06:30,999 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of album art, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:06:33,891 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.200 threshold=0.260 prompt='A clear, high-quality photograph of album art, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-17 10:06:35,669 [GPU6] INFO Recap index build: 2600000 rows inserted
+2026-04-17 10:06:36,756 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.150 threshold=0.260 prompt='A clear, high-quality photograph of album art, well-lit, neutral background'
+2026-04-17 10:06:36,756 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.200 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11614/image2.png
+2026-04-17 10:06:46,202 [GPU6] INFO Recap index build: 2800000 rows inserted
+2026-04-17 10:06:54,367 [GPU6] INFO Recap index build: 3000000 rows inserted
+2026-04-17 10:07:05,219 [GPU6] INFO Recap index build: 3200000 rows inserted
+2026-04-17 10:07:13,210 [GPU6] INFO Recap index build: 3400000 rows inserted
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:07:23,202 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.254 threshold=0.260 prompt='A clear, high-quality photograph of rope, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s]2026-04-17 10:07:24,356 [GPU6] INFO Recap index build: 3600000 rows inserted
+ 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:07:25,728 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=2 clip=0.271 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11615/image1.png
+2026-04-17 10:07:28,031 [GPU4] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-17 10:07:29,292 [GPU4] INFO Open Images index loaded: 9900 images
+2026-04-17 10:07:33,645 [GPU5] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-17 10:07:34,717 [GPU5] INFO Open Images index loaded: 9900 images
+2026-04-17 10:07:37,663 [GPU6] INFO Recap index build: 3800000 rows inserted
+2026-04-17 10:07:42,494 [GPU4] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-17 10:07:42,503 [GPU4] INFO ImageNet index loaded: 1000 synsets
+2026-04-17 10:07:42,597 [GPU4] INFO Building recap SQLite index from /mnt2/xuran_hdd/cache/datasets/CC12M_and_Imagenet21K_Recap/metadata.jsonl ...
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 580, in _search_recap_source
+    paths = _ensure_recap_index()
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 569, in _ensure_recap_index
+    _build_recap_index(metadata_path, index_db)
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 492, in _build_recap_index
+    con.execute(
+sqlite3.OperationalError: disk I/O error
+2026-04-17 10:07:45 [WARNING] __main__: GPU 4 image gen subprocess exited with code 1
+2026-04-17 10:07:47,783 [GPU5] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-17 10:07:47,792 [GPU5] INFO ImageNet index loaded: 1000 synsets
+2026-04-17 10:07:47,885 [GPU5] INFO Building recap SQLite index from /mnt2/xuran_hdd/cache/datasets/CC12M_and_Imagenet21K_Recap/metadata.jsonl ...
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 580, in _search_recap_source
+    paths = _ensure_recap_index()
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 569, in _ensure_recap_index
+    _build_recap_index(metadata_path, index_db)
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 492, in _build_recap_index
+    con.execute(
+sqlite3.OperationalError: disk I/O error
+2026-04-17 10:07:53 [WARNING] __main__: GPU 5 image gen subprocess exited with code 1
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:08:15,222 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.206 threshold=0.260 prompt='A clear, high-quality photograph of leg, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:08:17,984 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.217 threshold=0.260 prompt='A clear, high-quality photograph of leg, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.57it/s]
+2026-04-17 10:08:20,818 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.227 threshold=0.260 prompt='A clear, high-quality photograph of leg, well-lit, neutral background'
+2026-04-17 10:08:20,818 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.227 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11615/image2.png
+2026-04-17 10:08:39,513 [GPU6] INFO Recap index build complete: 3891471 rows indexed
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-17 10:08:41 [WARNING] __main__: GPU 6 image gen subprocess exited with code 1
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:09:21,706 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.281 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11616/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:10:09,966 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.208 threshold=0.260 prompt='A clear, high-quality photograph of office, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:10:12,758 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=0.218 threshold=0.260 prompt='A clear, high-quality photograph of office, well-lit, neutral background'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.62it/s]100%|██████████| 4/4 [00:01<00:00,  2.53it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:10:15,476 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=0.191 threshold=0.260 prompt='A clear, high-quality photograph of office, well-lit, neutral background'
+2026-04-17 10:10:15,476 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.218 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11616/image2.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:11:17,740 [GPU7] INFO Generated image accepted backend=sd35_large_turbo attempt=1 clip=0.277 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11617/image1.png
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.41it/s] 50%|█████     | 2/4 [00:00<00:00,  2.93it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.65it/s]100%|██████████| 4/4 [00:01<00:00,  2.55it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:12:19,972 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=1/3 clip=0.216 threshold=0.260 prompt='A clear, high-quality photograph of activity report, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.40it/s] 50%|█████     | 2/4 [00:00<00:00,  2.92it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.64it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.59it/s]
+2026-04-17 10:12:22,575 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=2/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of activity report, well-lit, neutral backgroun'
+  0%|          | 0/4 [00:00<?, ?it/s] 25%|██▌       | 1/4 [00:00<00:01,  2.39it/s] 50%|█████     | 2/4 [00:00<00:00,  2.91it/s] 75%|███████▌  | 3/4 [00:01<00:00,  2.63it/s]100%|██████████| 4/4 [00:01<00:00,  2.54it/s]100%|██████████| 4/4 [00:01<00:00,  2.58it/s]
+2026-04-17 10:12:25,331 [GPU7] INFO Regenerating low-quality image backend=sd35_large_turbo attempt=3/3 clip=-inf threshold=0.260 prompt='A clear, high-quality photograph of activity report, well-lit, neutral backgroun'
+2026-04-17 10:12:25,331 [GPU7] WARNING Kept best generated image below CLIP threshold backend=sd35_large_turbo best_clip=0.216 path=/mnt/hdd/xuran/multi_image_safety/data/raw/path1/images/11617/image2.png
+2026-04-17 10:13:08,010 [GPU7] INFO Loading Open Images class descriptions ...
+2026-04-17 10:13:08,027 [GPU7] INFO Loading Open Images annotations (this may take a moment) ...
+2026-04-17 10:14:25,176 [GPU7] INFO Scanning Open Images image files under /mnt2/xuran_hdd/cache/datasets/open_images/train ...
+2026-04-17 10:14:26,293 [GPU7] INFO Open Images index loaded: 9900 images
+2026-04-17 10:14:38,475 [GPU7] INFO Loading ImageNet synset mapping from /mnt2/xuran_hdd/cache/datasets/imagenet/LOC_synset_mapping.txt ...
+2026-04-17 10:14:38,484 [GPU7] INFO ImageNet index loaded: 1000 synsets
+Traceback (most recent call last):
+  File "<string>", line 15, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 122, in generate_concept_images
+    src1 = _retrieve_concept_image(pair["concept1"], img1_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/image_acquire.py", line 47, in _retrieve_concept_image
+    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 754, in search_local
+    dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 710, in _search_recap_imagenet_sequential
+    return _search_recap_imagenet(query, remaining, min_width, min_height)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 649, in _search_recap_imagenet
+    return _search_recap_source(query, num_results, min_w, min_h, "imagenet")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/local_datasets.py", line 591, in _search_recap_source
+    rows = con.execute(
+           ^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: recap_fts
+2026-04-17 10:14:40 [WARNING] __main__: GPU 7 image gen subprocess exited with code 1
+2026-04-17 10:14:40 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path1/pairs_with_images.jsonl
+2026-04-17 10:14:40 [ERROR] __main__: Path 1 Step 3 incomplete because workers failed: [(4, 1), (5, 1), (6, 1), (7, 1)]

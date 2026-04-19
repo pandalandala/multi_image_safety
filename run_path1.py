@@ -3,7 +3,7 @@
 Path 1: KG Concept Pair Mining
   Step 1: Mine concept pairs from Numberbatch + LLM generation
   Step 2: CLIP-based pair filtering
-  Step 3: Generate benign images for each concept (SD3.5 Large Turbo, all visible GPUs)
+  Step 3: Acquire concept images (local datasets -> web retrieval -> T2I fallback)
   Step 4: LLM generates connecting text prompts (vLLM on all visible GPUs)
 
 Runtime estimate: ~3-4 hours
@@ -35,6 +35,7 @@ from src.common.utils import (
     save_jsonl,
     DATA_DIR,
     env_flag_is_true,
+    fail_step,
     finish_step,
     is_step_complete,
     jsonl_record_count,
@@ -183,6 +184,8 @@ logger.info("=" * 60)
 
 nb_pairs_file = OUTPUT_DIR / "numberbatch_pairs.jsonl"
 llm_pairs_file = OUTPUT_DIR / "llm_pairs.jsonl"
+llm_pairs_raw_file = OUTPUT_DIR / "llm_pairs_raw_outputs.jsonl"
+llm_pairs_repair_file = OUTPUT_DIR / "llm_pairs_repair_outputs.jsonl"
 all_mined_file = OUTPUT_DIR / "all_mined_pairs.jsonl"
 
 # Step 1a: Numberbatch mining (CPU only, no GPU needed)
@@ -190,7 +193,7 @@ if step_complete("step1a_numberbatch_pairs", nb_pairs_file):
     logger.info("Skipping Step 1a; completion marker found")
 else:
     clear_step_state(OUTPUT_DIR, "step1a_numberbatch_pairs", stale_paths=[nb_pairs_file])
-    start_step(OUTPUT_DIR, "step1a_numberbatch_pairs")
+    start_step(OUTPUT_DIR, "step1a_numberbatch_pairs", cleanup_paths=[nb_pairs_file])
     rc = run_subprocess(f"""
 import sys; sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, save_jsonl, get_category_harm_descriptions
@@ -205,6 +208,11 @@ print(f'Numberbatch mining: {{len(pairs)}} pairs found')
 """, gpu_ids="")
     if rc != 0:
         logger.warning("Numberbatch mining failed — continuing with LLM pairs only")
+        fail_step(
+            OUTPUT_DIR,
+            "step1a_numberbatch_pairs",
+            error=f"Numberbatch mining subprocess failed with exit code {rc}",
+        )
     elif jsonl_record_count(nb_pairs_file) >= 1:
         finish_step(
             OUTPUT_DIR,
@@ -221,13 +229,22 @@ logger.info("=" * 60)
 if step_complete("step1b_llm_pairs", llm_pairs_file):
     logger.info("Skipping Step 1b; completion marker found")
 else:
-    clear_step_state(OUTPUT_DIR, "step1b_llm_pairs", stale_paths=[llm_pairs_file])
-    start_step(OUTPUT_DIR, "step1b_llm_pairs")
+    clear_step_state(OUTPUT_DIR, "step1b_llm_pairs", stale_paths=[llm_pairs_file, llm_pairs_raw_file, llm_pairs_repair_file])
+    start_step(
+        OUTPUT_DIR,
+        "step1b_llm_pairs",
+        cleanup_paths=[llm_pairs_file, llm_pairs_raw_file, llm_pairs_repair_file],
+    )
     rc = run_subprocess(f"""
 import sys, json, re
 sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, save_jsonl, get_category_harm_descriptions
-from src.path1_kg_concept.concept_mine import mine_llm_pairs, parse_llm_pairs
+from src.path1_kg_concept.concept_mine import (
+    build_llm_pair_repair_prompt,
+    dedupe_pair_records,
+    mine_llm_pairs,
+    parse_llm_pairs,
+)
 from vllm import LLM, SamplingParams
 setup_logging()
 
@@ -249,17 +266,79 @@ sampling_params = SamplingParams(temperature=0.8, max_tokens=4096, top_p=0.95)
 outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
 
 all_pairs = []
+raw_records = []
+repair_jobs = []
 for item, output in zip(prompt_items, outputs):
     text = output.outputs[0].text
     pairs = parse_llm_pairs(text, item["category"])
+    raw_records.append({{
+        "category": item["category"],
+        "round": item["round"],
+        "pairs_per_category": item["pairs_per_category"],
+        "raw_output": text,
+        "parsed_pairs": len(pairs),
+    }})
     all_pairs.extend(pairs)
     print(f'  {{item["category"]}}: {{len(pairs)}} pairs parsed')
+    min_expected = max(8, item["pairs_per_category"] // 4)
+    if len(pairs) < min_expected:
+        repair_jobs.append({{
+            "item": item,
+            "raw_output": text,
+            "initial_pairs": pairs,
+        }})
+
+repair_records = []
+if repair_jobs:
+    print(f'Repair pass: retrying {{len(repair_jobs)}} low-yield outputs...')
+    repair_conversations = [[{{"role": "user", "content": build_llm_pair_repair_prompt(job["raw_output"], job["item"]["category"], job["item"]["pairs_per_category"])}}] for job in repair_jobs]
+    repair_sampling = SamplingParams(temperature=0.1, max_tokens=3072, top_p=0.9)
+    repair_outputs = llm.chat(repair_conversations, repair_sampling, chat_template_kwargs={{"enable_thinking": False}})
+    repaired_pairs = []
+    for job, repair_output in zip(repair_jobs, repair_outputs):
+        repair_text = repair_output.outputs[0].text
+        repaired = parse_llm_pairs(repair_text, job["item"]["category"])
+        chosen = repaired if len(repaired) > len(job["initial_pairs"]) else job["initial_pairs"]
+        repaired_pairs.extend(chosen)
+        repair_records.append({{
+            "category": job["item"]["category"],
+            "round": job["item"]["round"],
+            "initial_pairs": len(job["initial_pairs"]),
+            "repaired_pairs": len(repaired),
+            "used_repaired": len(repaired) > len(job["initial_pairs"]),
+            "repair_output": repair_text,
+        }})
+        print(f'  repair {{job["item"]["category"]}} round {{job["item"]["round"]}}: initial={{len(job["initial_pairs"])}} repaired={{len(repaired)}}')
+
+    # Rebuild all pairs so repaired outputs replace low-yield originals.
+    all_pairs = []
+    repaired_lookup = {{
+        (record["category"], record["round"]): record
+        for record in repair_records
+        if record["used_repaired"]
+    }}
+    for item, output in zip(prompt_items, outputs):
+        key = (item["category"], item["round"])
+        if key in repaired_lookup:
+            selected_pairs = parse_llm_pairs(repaired_lookup[key]["repair_output"], item["category"])
+        else:
+            selected_pairs = parse_llm_pairs(output.outputs[0].text, item["category"])
+        all_pairs.extend(selected_pairs)
+
+all_pairs = dedupe_pair_records(all_pairs)
 
 save_jsonl(all_pairs, '{llm_pairs_file}')
+save_jsonl(raw_records, '{llm_pairs_raw_file}')
+save_jsonl(repair_records, '{llm_pairs_repair_file}')
 print(f'LLM mining: {{len(all_pairs)}} total pairs')
 """, gpu_ids=all_gpu_ids)
     if rc != 0:
         logger.error("LLM concept mining failed")
+        fail_step(
+            OUTPUT_DIR,
+            "step1b_llm_pairs",
+            error=f"LLM concept mining subprocess failed with exit code {rc}",
+        )
         if not nb_pairs_file.exists():
             logger.error("No pairs available — aborting Path 1")
             sys.exit(1)
@@ -292,11 +371,11 @@ if step_complete("step2_filter_pairs", filtered_file):
     logger.info("Skipping Step 2; completion marker found")
 else:
     clear_step_state(OUTPUT_DIR, "step2_filter_pairs", stale_paths=[filtered_file])
-    start_step(OUTPUT_DIR, "step2_filter_pairs")
+    start_step(OUTPUT_DIR, "step2_filter_pairs", cleanup_paths=[filtered_file])
     rc = run_subprocess(f"""
 import sys; sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, load_jsonl, save_jsonl, load_config
-from src.path1_kg_concept.pair_filter import filter_pairs_clip, rank_pairs_by_covertness
+from src.path1_kg_concept.pair_filter import filter_pairs_clip, filter_pairs_for_retrieval, rank_pairs_by_covertness
 setup_logging()
 
 config = load_config()
@@ -308,11 +387,20 @@ filtered = filter_pairs_clip(
     theta_harm=clip_cfg.get("theta_harm", 0.35),
 )
 ranked = rank_pairs_by_covertness(filtered)
-save_jsonl(ranked, '{filtered_file}')
-print(f'CLIP filter: {{len(ranked)}} / {{len(pairs)}} pairs passed')
+retrieval_ready = filter_pairs_for_retrieval(
+    ranked,
+    max_query_words=int(os.environ.get("MIS_RETRIEVAL_MAX_QUERY_WORDS", "2")),
+)
+save_jsonl(retrieval_ready, '{filtered_file}')
+print(f'CLIP+retrieval filter: {{len(retrieval_ready)}} / {{len(pairs)}} pairs passed')
 """, gpu_ids=single_gpu_id)
     if rc != 0:
         logger.warning("CLIP filtering failed — using all mined pairs")
+        fail_step(
+            OUTPUT_DIR,
+            "step2_filter_pairs",
+            error=f"CLIP filtering subprocess failed with exit code {rc}",
+        )
         filtered_file = all_mined_file
     elif jsonl_record_count(filtered_file) >= 1:
         finish_step(
@@ -327,7 +415,7 @@ logger.info(f"Filtered pairs: {len(filtered_pairs)}")
 
 # ── Step 3: Generate images ─────────────────────────────────────────────────
 logger.info("=" * 60)
-logger.info("PATH 1 STEP 3: Image generation (all-visible-GPU parallel)")
+logger.info("PATH 1 STEP 3: Image acquisition (local -> web -> T2I fallback)")
 logger.info("=" * 60)
 
 images_file = OUTPUT_DIR / "pairs_with_images.jsonl"
@@ -351,11 +439,17 @@ else:
             *sorted(OUTPUT_DIR.glob("_img_chunk_*.jsonl")),
         ],
     )
-    start_step(OUTPUT_DIR, "step3_generate_images")
     free_gpus = image_profile["selected_gpu_ids"]
     num_workers = len(free_gpus)
     n = len(filtered_pairs)
     chunk_size = (n + num_workers - 1) // num_workers
+    chunk_output_files = [OUTPUT_DIR / f"pairs_with_images_gpu{gpu_id}.jsonl" for gpu_id in free_gpus]
+    chunk_files = [OUTPUT_DIR / f"_img_chunk_{i}.jsonl" for i in range(num_workers)]
+    start_step(
+        OUTPUT_DIR,
+        "step3_generate_images",
+        cleanup_paths=[images_file, *chunk_output_files, *chunk_files],
+    )
 
     chunk_files = []
     for i in range(num_workers):
@@ -412,6 +506,12 @@ print(f'GPU {gpu_id}: {{len(results)}}/{{len(pairs)}} images generated')
     save_jsonl(all_results, images_file)
     if worker_failures:
         logger.error("Path 1 Step 3 incomplete because workers failed: %s", worker_failures)
+        fail_step(
+            OUTPUT_DIR,
+            "step3_generate_images",
+            error=f"Worker failures: {worker_failures}",
+            metadata={"records_before_failure": len(all_results)},
+        )
         sys.exit(1)
     finish_step(
         OUTPUT_DIR,
@@ -468,7 +568,11 @@ else:
         "step4_generate_prompts",
         stale_paths=[pending_input, pending_output],
     )
-    start_step(OUTPUT_DIR, "step4_generate_prompts")
+    start_step(
+        OUTPUT_DIR,
+        "step4_generate_prompts",
+        cleanup_paths=[pending_input, pending_output],
+    )
     save_jsonl(pending_pairs, pending_input)
     logger.info(
         "Path 1 Step 4 will reuse %d existing prompt samples and retry %d pending image-backed pairs",
@@ -531,6 +635,11 @@ print(f'Path 1: {{len(results)}}/{{len(prompt_data)}} samples with text prompts'
 
     if rc != 0:
         logger.error("Prompt generation failed")
+        fail_step(
+            OUTPUT_DIR,
+            "step4_generate_prompts",
+            error=f"Prompt generation subprocess failed with exit code {rc}",
+        )
         sys.exit(1)
 
     new_results = load_jsonl(pending_output) if pending_output.exists() else []

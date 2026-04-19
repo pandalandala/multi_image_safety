@@ -1,22 +1,40 @@
-"""Step 1: Targeted crawling from the configured image backend.
+"""Step 1: Targeted image acquisition from local datasets + web backends.
 
 For each harm category, design "benign-adjacent" search queries that retrieve
 individually harmless images with potential for compositional harm.
+
+Acquisition order per query:
+  1. Local datasets (MSCOCO, Open Images, ImageNet)
+  2. Web backends (Wikimedia, Openverse, Pexels, Pixabay)
 """
 
+import os
 import logging
+import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Optional
-
-from PIL import Image
 
 from src.common.clip_utils import (
-    retrieve_from_laion,
-    download_image_url,
     passes_download_filter,
+)
+from src.common.local_datasets import search_local
+from src.common.retrieval_queries import build_compact_retrieval_query
+from src.common.retrieval_rerank import (
+    download_web_results_ranked,
+    get_retrieval_clip_candidate_limit,
+    get_retrieval_clip_keep_count,
+    get_retrieval_clip_min_score,
+    rank_local_results_by_clip,
+    retrieve_web_results_with_variants,
+)
+from src.common.shared_reuse import (
+    load_retrieval_cache,
+    materialize_shared_image,
+    save_retrieval_cache,
 )
 from src.common.utils import (
     get_all_categories,
+    get_min_image_size,
     is_english,
     save_jsonl,
     load_config,
@@ -24,6 +42,18 @@ from src.common.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_path5_crawl_worker_count(category_count: int) -> int:
+    """Return how many categories Path 5 should crawl in parallel."""
+    env_value = os.environ.get("MIS_PATH5_CRAWL_WORKERS", "").strip()
+    if env_value:
+        try:
+            return max(1, min(category_count, int(env_value)))
+        except ValueError:
+            logger.warning("Invalid MIS_PATH5_CRAWL_WORKERS=%r; falling back to default", env_value)
+    cpu_count = os.cpu_count() or 8
+    return max(1, min(category_count, max(4, min(12, cpu_count // 2))))
 
 # Benign-adjacent search queries organized by harm category.
 # These are intentionally photo-oriented queries for real objects/scenes, so
@@ -211,54 +241,251 @@ def crawl_for_category(
 
     all_images = []
     count = 0
+    reused_sources: set[str] = set()
+    keep_per_query = get_retrieval_clip_keep_count(default=5)
+    min_w, min_h = get_min_image_size()
 
+    # ── Phase 1: Search local datasets ─────────────────────────────
     for query in queries:
         if count >= max_total:
             break
+        retrieval_query = build_compact_retrieval_query(query) or str(query).strip()
+        accepted_cache_entries: list[dict] = []
 
-        results = retrieve_from_laion(
-            query,
-            num_results=max_per_query,
-            aesthetic_score_min=4.5,
-            min_width=512,
-            min_height=512,
+        cached_local = load_retrieval_cache(
+            retrieval_query,
+            purpose="gallery",
+            min_width=min_w,
+            min_height=min_h,
+            allowed_source_types=("local",),
         )
-
-        for result in results:
-            if count >= max_total:
+        reused_for_query = 0
+        for cached in cached_local:
+            if count >= max_total or reused_for_query >= keep_per_query:
                 break
-
-            url = result.get("url", "")
-            if not url:
+            src_path = Path(str(cached.get("path", "")).strip())
+            if not src_path.exists():
                 continue
-
-            # Skip non-English captions
-            caption = result.get("caption", "")
-            if caption and not is_english(caption):
+            src_key = str(src_path.resolve())
+            if src_key in reused_sources:
                 continue
-
             img_path = img_dir / f"{count}.png"
             try:
-                download_image_url(url, img_path)
-                img = Image.open(img_path)
-                img.verify()
-                if not passes_download_filter(img_path, min_width=512, min_height=512):
-                    if img_path.exists():
-                        img_path.unlink()
+                shutil.copy2(src_path, img_path)
+                if not passes_download_filter(img_path, min_width=min_w, min_height=min_h):
+                    img_path.unlink(missing_ok=True)
                     continue
-
                 all_images.append({
                     "path": str(img_path),
                     "category": category_id,
-                    "query": query,
+                    "class": cached.get("class_label", cached.get("class", "")),
+                    "class_label": cached.get("class_label", cached.get("class", "")),
+                    "query": retrieval_query,
+                    "caption": cached.get("caption", ""),
+                    "description": cached.get("caption", "") or retrieval_query,
+                    "url": cached.get("url", ""),
+                    "similarity": cached.get("clip_score", cached.get("score", 0)),
+                    "width": cached.get("width", 0),
+                    "height": cached.get("height", 0),
+                    "provider": cached.get("provider", "shared_cache"),
+                    "source": cached.get("provider", "shared_cache"),
+                    "license": cached.get("license", ""),
+                    "license_url": cached.get("license_url", ""),
+                    "source_page": cached.get("source_page", ""),
+                    "creator": cached.get("creator", ""),
+                    "attribution": cached.get("attribution", ""),
+                })
+                reused_sources.add(src_key)
+                reused_for_query += 1
+                count += 1
+            except Exception:
+                img_path.unlink(missing_ok=True)
+
+        local_results = search_local(retrieval_query, num_results=max(max_per_query, get_retrieval_clip_candidate_limit()),
+                                     min_width=min_w, min_height=min_h)
+        ranked_local = rank_local_results_by_clip(
+            retrieval_query,
+            local_results,
+            max_candidates=max_per_query,
+            min_width=min_w,
+            min_height=min_h,
+        )
+        local_threshold = get_retrieval_clip_min_score("local")
+        for result in ranked_local[:keep_per_query]:
+            if count >= max_total:
+                break
+            if float(result.get("clip_score", float("-inf"))) < local_threshold:
+                continue
+            src_path = Path(result["path"])
+            if not src_path.exists():
+                continue
+            img_path = img_dir / f"{count}.png"
+            try:
+                shutil.copy2(src_path, img_path)
+                if not passes_download_filter(img_path, min_width=min_w, min_height=min_h):
+                    img_path.unlink(missing_ok=True)
+                    continue
+                all_images.append({
+                    "path": str(img_path),
+                    "category": category_id,
+                    "class": result.get("class", result.get("class_label", "")),
+                    "class_label": result.get("class_label", result.get("class", "")),
+                    "query": retrieval_query,
                     "caption": result.get("caption", ""),
-                    "description": result.get("caption", "") or query,
-                    "url": url,
-                    "similarity": result.get("similarity", 0),
+                    "description": result.get("caption", "") or retrieval_query,
+                    "url": "",
+                    "similarity": result.get("clip_score", result.get("score", 0)),
+                    "width": result.get("width", 0),
+                    "height": result.get("height", 0),
+                    "provider": result.get("provider", "local"),
+                    "source": result.get("provider", "local"),
+                    "license": "",
+                    "license_url": "",
+                    "source_page": "",
+                    "creator": "",
+                    "attribution": "",
+                })
+                accepted_cache_entries.append({
+                    "path": result["path"],
+                    "source_type": "local",
+                    "provider": result.get("provider", "local"),
+                    "caption": result.get("caption", ""),
+                    "class_label": result.get("class_label", result.get("class", "")),
+                    "clip_score": result.get("clip_score", result.get("score", 0)),
+                    "width": result.get("width", 0),
+                    "height": result.get("height", 0),
+                })
+                count += 1
+            except Exception:
+                img_path.unlink(missing_ok=True)
+
+        save_retrieval_cache(
+            retrieval_query,
+            accepted_cache_entries,
+            purpose="gallery",
+            min_width=min_w,
+            min_height=min_h,
+            path_name="path5",
+        )
+
+    logger.info("Local datasets: %d images for category %s", count, category_id)
+
+    # ── Phase 2: Web retrieval for remaining quota ─────────────────
+    for query in queries:
+        if count >= max_total:
+            break
+        retrieval_query = build_compact_retrieval_query(query) or str(query).strip()
+        accepted_cache_entries: list[dict] = []
+
+        cached_web = load_retrieval_cache(
+            retrieval_query,
+            purpose="gallery",
+            min_width=min_w,
+            min_height=min_h,
+            allowed_source_types=("web",),
+        )
+        reused_for_query = 0
+        for cached in cached_web:
+            if count >= max_total or reused_for_query >= keep_per_query:
+                break
+            src_path = Path(str(cached.get("path", "")).strip())
+            if not src_path.exists():
+                continue
+            src_key = str(src_path.resolve())
+            if src_key in reused_sources:
+                continue
+            img_path = img_dir / f"{count}.png"
+            try:
+                shutil.copy2(src_path, img_path)
+                if not passes_download_filter(img_path, min_width=min_w, min_height=min_h):
+                    img_path.unlink(missing_ok=True)
+                    continue
+                all_images.append({
+                    "path": str(img_path),
+                    "category": category_id,
+                    "class": cached.get("class_label", cached.get("class", "")),
+                    "class_label": cached.get("class_label", cached.get("class", "")),
+                    "query": retrieval_query,
+                    "caption": cached.get("caption", ""),
+                    "description": cached.get("caption", "") or retrieval_query,
+                    "url": cached.get("url", ""),
+                    "similarity": cached.get("clip_score", cached.get("score", 0)),
+                    "width": cached.get("width", 0),
+                    "height": cached.get("height", 0),
+                    "provider": cached.get("provider", "shared_cache"),
+                    "source": cached.get("provider", "shared_cache"),
+                    "license": cached.get("license", ""),
+                    "license_url": cached.get("license_url", ""),
+                    "source_page": cached.get("source_page", ""),
+                    "creator": cached.get("creator", ""),
+                    "attribution": cached.get("attribution", ""),
+                })
+                reused_sources.add(src_key)
+                reused_for_query += 1
+                count += 1
+            except Exception:
+                img_path.unlink(missing_ok=True)
+
+        results = retrieve_web_results_with_variants(
+            retrieval_query,
+            num_results=max(max_per_query, get_retrieval_clip_candidate_limit()),
+            aesthetic_score_min=4.5,
+            min_width=min_w,
+            min_height=min_h,
+        )
+        ranked_web = download_web_results_ranked(
+            retrieval_query,
+            results,
+            img_dir / ".retrieval_tmp" / f"query_{count:04d}",
+            max_candidates=max_per_query,
+            min_width=min_w,
+            min_height=min_h,
+            caption_validator=is_english,
+        )
+        web_threshold = get_retrieval_clip_min_score("web")
+        kept_tmp_paths: set[str] = set()
+
+        for result in ranked_web[:keep_per_query]:
+            if count >= max_total:
+                break
+            if float(result.get("clip_score", float("-inf"))) < web_threshold:
+                continue
+            tmp_path = Path(result["tmp_path"])
+            img_path = img_dir / f"{count}.png"
+            try:
+                img_path.unlink(missing_ok=True)
+                tmp_path.replace(img_path)
+                kept_tmp_paths.add(str(img_path))
+                all_images.append({
+                    "path": str(img_path),
+                    "category": category_id,
+                    "class": result.get("class", result.get("class_label", "")),
+                    "class_label": result.get("class_label", result.get("class", "")),
+                    "query": retrieval_query,
+                    "caption": result.get("caption", ""),
+                    "description": result.get("caption", "") or retrieval_query,
+                    "url": result.get("url", ""),
+                    "similarity": result.get("clip_score", result.get("similarity", 0)),
                     "width": result.get("width", 0),
                     "height": result.get("height", 0),
                     "provider": result.get("provider", ""),
                     "source": result.get("source", ""),
+                    "license": result.get("license", ""),
+                    "license_url": result.get("license_url", ""),
+                    "source_page": result.get("source_page", ""),
+                    "creator": result.get("creator", ""),
+                    "attribution": result.get("attribution", ""),
+                })
+                accepted_cache_entries.append({
+                    "path": materialize_shared_image(img_path, source_type="web"),
+                    "source_type": "web",
+                    "provider": result.get("provider", ""),
+                    "caption": result.get("caption", ""),
+                    "class_label": result.get("class_label", result.get("class", "")),
+                    "clip_score": result.get("clip_score", result.get("similarity", 0)),
+                    "width": result.get("width", 0),
+                    "height": result.get("height", 0),
+                    "url": result.get("url", ""),
                     "license": result.get("license", ""),
                     "license_url": result.get("license_url", ""),
                     "source_page": result.get("source_page", ""),
@@ -270,6 +497,19 @@ def crawl_for_category(
                 if img_path.exists():
                     img_path.unlink()
                 continue
+        for result in ranked_web:
+            tmp_path = str(result.get("tmp_path", "")).strip()
+            if tmp_path and tmp_path not in kept_tmp_paths:
+                Path(tmp_path).unlink(missing_ok=True)
+
+        save_retrieval_cache(
+            retrieval_query,
+            accepted_cache_entries,
+            purpose="gallery",
+            min_width=min_w,
+            min_height=min_h,
+            path_name="path5",
+        )
 
     logger.info(f"Crawled {len(all_images)} images for category {category_id}")
     return all_images
@@ -289,9 +529,23 @@ def run(
         categories = list(CATEGORY_QUERIES.keys())
 
     all_images = []
-    for cat in categories:
-        images = crawl_for_category(cat, output_dir, max_total=max_per_category)
-        all_images.extend(images)
+    worker_count = _get_path5_crawl_worker_count(len(categories))
+    logger.info("Path 5 crawl: processing %d categories with %d workers", len(categories), worker_count)
+    if worker_count <= 1 or len(categories) <= 1:
+        for cat in categories:
+            images = crawl_for_category(cat, output_dir, max_total=max_per_category)
+            all_images.extend(images)
+    else:
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            futures = {
+                executor.submit(crawl_for_category, cat, output_dir, max_total=max_per_category): cat
+                for cat in categories
+            }
+            for future in as_completed(futures):
+                cat = futures[future]
+                images = future.result()
+                logger.info("Path 5 crawl complete for %s: %d images", cat, len(images))
+                all_images.extend(images)
 
     save_jsonl(all_images, output_dir / "crawled_image_info.jsonl")
     logger.info(f"Total crawled images: {len(all_images)}")
