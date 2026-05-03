@@ -71,7 +71,13 @@ NON_PHOTO_HINTS = (
     "flag",
 )
 DEFAULT_HTTP_HEADERS = {
-    "User-Agent": "multi-image-safety-research/0.1 (non-commercial research use)",
+    "User-Agent": os.environ.get(
+        "MIS_HTTP_USER_AGENT",
+        os.environ.get(
+            "MIS_WIKIMEDIA_USER_AGENT",
+            "multi-image-safety-research/0.1 (non-commercial research use; contact: unset)",
+        ),
+    ),
 }
 
 # ── Cross-process rate limiter for web API backends ───────────────────────
@@ -81,14 +87,56 @@ import time as _time_mod
 
 _RATE_LIMIT_DIR = Path("/tmp/mis_ratelimits")
 _RATE_LIMIT_DIR.mkdir(exist_ok=True)
+_BACKEND_SESSION_ID = os.environ.setdefault(
+    "MIS_BACKEND_SESSION_ID",
+    f"{int(_time_mod.time())}-{os.getpid()}",
+)
+_BACKEND_DISABLE_DIR = Path("/tmp/mis_backend_state") / _BACKEND_SESSION_ID
+_BACKEND_DISABLE_DIR.mkdir(parents=True, exist_ok=True)
+_BACKEND_SKIP_LOGGED: set[str] = set()
 
 # Per-backend minimum intervals (seconds between consecutive requests)
 _BACKEND_MIN_INTERVALS: dict[str, float] = {
-    "wikimedia_commons": 1.5,  # Wikimedia is very strict on anonymous rate limits
-    "openverse": 0.5,
-    "pexels": 0.2,
-    "pixabay": 0.2,
+    "wikimedia_commons": float(os.environ.get("MIS_WIKIMEDIA_MIN_INTERVAL", "3.0")),
+    "openverse": float(os.environ.get("MIS_OPENVERSE_MIN_INTERVAL", "0.5")),
+    "pexels": float(os.environ.get("MIS_PEXELS_MIN_INTERVAL", "0.2")),
+    "pixabay": float(os.environ.get("MIS_PIXABAY_MIN_INTERVAL", "0.2")),
 }
+
+
+def _disabled_backend_marker(backend: str) -> Path:
+    """Return the run-scoped marker file for a disabled backend."""
+    safe_name = re.sub(r"[^a-zA-Z0-9_.-]+", "_", backend)
+    return _BACKEND_DISABLE_DIR / f"{safe_name}.disabled"
+
+
+def _disable_backend_for_run(backend: str, reason: str) -> None:
+    """Disable a backend for the current run after a connection/API failure."""
+    marker = _disabled_backend_marker(backend)
+    try:
+        marker.write_text(reason[:2000] + "\n", encoding="utf-8")
+    except Exception:
+        logger.debug("Failed to persist disabled-backend marker for %s", backend, exc_info=True)
+    logger.warning("Disabling backend %s for this run after failure: %s", backend, reason)
+
+
+def _is_backend_disabled_for_run(backend: str) -> bool:
+    """Return True when a backend has been disabled for this run."""
+    marker = _disabled_backend_marker(backend)
+    if marker.exists():
+        if backend not in _BACKEND_SKIP_LOGGED:
+            try:
+                reason = marker.read_text(encoding="utf-8").strip()
+            except Exception:
+                reason = ""
+            logger.warning(
+                "Skipping backend %s for this run because it previously failed%s",
+                backend,
+                f": {reason}" if reason else "",
+            )
+            _BACKEND_SKIP_LOGGED.add(backend)
+        return True
+    return False
 
 
 def _backend_rate_limit(backend: str) -> None:
@@ -660,18 +708,26 @@ def _retrieve_from_wikimedia_commons(
         + urllib.parse.urlencode(params)
     )
 
-    max_retries = 3
+    max_retries = int(os.environ.get("MIS_WIKIMEDIA_MAX_RETRIES", "4"))
     data = None
     for attempt in range(max_retries):
         _backend_rate_limit("wikimedia_commons")
         try:
+            if attempt == 0:
+                logger.info(
+                    "Wikimedia request: query=%r limit=%s ua=%r min_interval=%ss",
+                    query_text,
+                    params["gsrlimit"],
+                    DEFAULT_HTTP_HEADERS.get("User-Agent", ""),
+                    _BACKEND_MIN_INTERVALS.get("wikimedia_commons", 0.0),
+                )
             request = urllib.request.Request(url, headers=DEFAULT_HTTP_HEADERS)
             with urllib.request.urlopen(request, timeout=30) as response:
                 data = json.loads(response.read().decode("utf-8"))
             break
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < max_retries - 1:
-                wait = 3 * (attempt + 1)
+                wait = int(os.environ.get("MIS_WIKIMEDIA_RETRY_BASE_SECONDS", "5")) * (attempt + 1)
                 logger.warning(
                     "Wikimedia 429 for '%s' (attempt %d/%d), retrying in %ds",
                     query_text, attempt + 1, max_retries, wait,
@@ -680,12 +736,14 @@ def _retrieve_from_wikimedia_commons(
                 continue
             detail = _format_http_error(e)
             logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+            _disable_backend_for_run("wikimedia_commons", detail)
             if _strict_backend_errors_enabled():
                 _raise_image_source_error("wikimedia_commons", query_text, detail)
             return []
         except Exception as e:
             detail = str(e)
             logger.error("Wikimedia Commons retrieval failed for '%s': %s", query_text, detail)
+            _disable_backend_for_run("wikimedia_commons", detail)
             if _strict_backend_errors_enabled():
                 _raise_image_source_error("wikimedia_commons", query_text, detail)
             return []
@@ -876,16 +934,19 @@ def _retrieve_from_openverse(
                 continue
             detail = _format_http_error(e)
             logger.error("Openverse retrieval failed for '%s': %s", query_text, detail)
+            _disable_backend_for_run("openverse", detail)
             if _strict_backend_errors_enabled():
                 _raise_image_source_error("openverse", query_text, detail)
             return []
         except Exception as e:
             detail = str(e)
             logger.error("Openverse retrieval failed for '%s': %s", query_text, detail)
+            _disable_backend_for_run("openverse", detail)
             if _strict_backend_errors_enabled():
                 _raise_image_source_error("openverse", query_text, detail)
             return []
     if data is None:
+        _disable_backend_for_run("openverse", "request exhausted retries or token was rejected")
         if _strict_backend_errors_enabled():
             _raise_image_source_error(
                 "openverse",
@@ -1184,12 +1245,14 @@ def _retrieve_from_pexels(
     except urllib.error.HTTPError as e:
         detail = _format_http_error(e)
         logger.error("Pexels retrieval failed for '%s': %s", query_text, detail)
+        _disable_backend_for_run("pexels", detail)
         if _strict_backend_errors_enabled():
             _raise_image_source_error("pexels", query_text, detail)
         return []
     except Exception as e:
         detail = str(e)
         logger.error("Pexels retrieval failed for '%s': %s", query_text, detail)
+        _disable_backend_for_run("pexels", detail)
         if _strict_backend_errors_enabled():
             _raise_image_source_error("pexels", query_text, detail)
         return []
@@ -1263,12 +1326,14 @@ def _retrieve_from_pixabay(
     except urllib.error.HTTPError as e:
         detail = _format_http_error(e)
         logger.error("Pixabay retrieval failed for '%s': %s", query_text, detail)
+        _disable_backend_for_run("pixabay", detail)
         if _strict_backend_errors_enabled():
             _raise_image_source_error("pixabay", query_text, detail)
         return []
     except Exception as e:
         detail = str(e)
         logger.error("Pixabay retrieval failed for '%s': %s", query_text, detail)
+        _disable_backend_for_run("pixabay", detail)
         if _strict_backend_errors_enabled():
             _raise_image_source_error("pixabay", query_text, detail)
         return []
@@ -1315,6 +1380,8 @@ def _retrieve_from_backend(
     min_height: int,
 ) -> list[dict]:
     """Dispatch retrieval to a single backend."""
+    if _is_backend_disabled_for_run(backend):
+        return []
     if backend == "clip-retrieval":
         return _retrieve_from_clip_retrieval(
             query_text,

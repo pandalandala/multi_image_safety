@@ -83,6 +83,24 @@ def get_llm_runtime_limits() -> tuple[dict, int, float, int]:
     return local_cfg, max_model_len, gpu_memory_utilization, tensor_parallel_size
 
 
+def get_path6_chain_generation_params() -> tuple[int, int]:
+    """Return TAG generation breadth knobs."""
+    chains_per_category = int(os.environ.get("MIS_PATH6_CHAINS_PER_CATEGORY", "160"))
+    rounds = int(os.environ.get("MIS_PATH6_CHAIN_ROUNDS", "8"))
+    return max(20, chains_per_category), max(1, rounds)
+
+
+def get_path6_chain_scoring_params() -> tuple[float, float, float, int]:
+    """Return CLIP filtering knobs for TAG chains."""
+    config = load_config()
+    clip_cfg = config.get("clip", {})
+    theta_safe = float(os.environ.get("MIS_PATH6_THETA_SAFE", str(clip_cfg.get("theta_safe", 0.40))))
+    theta_harm = float(os.environ.get("MIS_PATH6_THETA_HARM", "0.24"))
+    min_pass_rate = float(os.environ.get("MIS_PATH6_MIN_PASS_RATE", "0.04"))
+    fallback_top_k = int(os.environ.get("MIS_PATH6_FALLBACK_TOP_K", "6000"))
+    return theta_safe, theta_harm, min_pass_rate, max(200, fallback_top_k)
+
+
 def run_subprocess(code: str, gpu_ids: str | None = None) -> int:
     """Run Python code in an isolated subprocess."""
     env = os.environ.copy()
@@ -134,6 +152,8 @@ def select_llm_runtime() -> tuple[list[int], str, str, dict, int, float, int]:
     llm_gpu_memory_utilization,
     llm_tensor_parallel_size,
 ) = select_llm_runtime()
+path6_chains_per_category, path6_chain_rounds = get_path6_chain_generation_params()
+path6_theta_safe, path6_theta_harm, path6_min_pass_rate, path6_fallback_top_k = get_path6_chain_scoring_params()
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) -> bool:
@@ -146,6 +166,17 @@ def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) ->
     )
 
 
+def can_resume_from_fusion_checkpoint() -> bool:
+    """Allow Step 4/5 resume even when upstream step markers were damaged."""
+    fusion_file = OUTPUT_DIR / "fusion_pairs.jsonl"
+    return (not force_rerun) and is_step_complete(
+        OUTPUT_DIR,
+        "step3_fuse_pairs",
+        expected_outputs=[fusion_file],
+        validator=lambda: jsonl_record_count(fusion_file) >= 1,
+    )
+
+
 # ── Step 1: LLM generates concept chains ─────────────────────────────────────
 logger.info("=" * 60)
 logger.info("PATH 6 STEP 1: LLM TAG chain generation (vLLM)")
@@ -153,8 +184,14 @@ logger.info("=" * 60)
 
 chains_file = OUTPUT_DIR / "raw_chains.jsonl"
 
+raw_chains = []
+
 if step_complete("step1_generate_chains", chains_file):
     logger.info("Skipping Step 1; completion marker found")
+    raw_chains = load_jsonl(chains_file)
+elif can_resume_from_fusion_checkpoint():
+    logger.info("Skipping Step 1; reusing existing Step 3 fusion checkpoint for resume")
+    raw_chains = load_jsonl(chains_file) if chains_file.exists() else []
 else:
     clear_step_state(OUTPUT_DIR, "step1_generate_chains", stale_paths=[chains_file])
     start_step(OUTPUT_DIR, "step1_generate_chains", cleanup_paths=[chains_file])
@@ -167,7 +204,11 @@ from vllm import LLM, SamplingParams
 setup_logging()
 
 descriptions = get_category_harm_descriptions()
-prompt_items = prepare_chain_gen_prompts(descriptions, chains_per_category=40, rounds=4)
+prompt_items = prepare_chain_gen_prompts(
+    descriptions,
+    chains_per_category={path6_chains_per_category},
+    rounds={path6_chain_rounds},
+)
 conversations = [[{{"role": "user", "content": item["prompt"]}}] for item in prompt_items]
 
 print(f'Loading LLM for {{len(conversations)}} TAG chain prompts...')
@@ -180,7 +221,7 @@ llm = LLM(
     gpu_memory_utilization={llm_gpu_memory_utilization},
     disable_custom_all_reduce=True,
 )
-sampling_params = SamplingParams(temperature=0.8, max_tokens=4096, top_p=0.95)
+sampling_params = SamplingParams(temperature=0.8, max_tokens={llm_max_model_len}, top_p=0.95)
 outputs = llm.chat(conversations, sampling_params, chat_template_kwargs={{"enable_thinking": False}})
 
 all_chains = []
@@ -207,8 +248,8 @@ print(f'Total chains generated: {{len(all_chains)}}')
         expected_outputs=[chains_file],
         metadata={"records": jsonl_record_count(chains_file)},
     )
+    raw_chains = load_jsonl(chains_file)
 
-raw_chains = load_jsonl(chains_file)
 logger.info(f"Raw chains: {len(raw_chains)}")
 
 # ── Step 2: CLIP scoring and filtering ───────────────────────────────────────
@@ -218,9 +259,14 @@ logger.info("=" * 60)
 
 scored_file = OUTPUT_DIR / "scored_chains.jsonl"
 
+scored_chains = []
+
 if step_complete("step2_score_chains", scored_file):
     logger.info("Skipping Step 2; completion marker found")
     scored_chains = load_jsonl(scored_file)
+elif can_resume_from_fusion_checkpoint():
+    logger.info("Skipping Step 2; reusing existing Step 3 fusion checkpoint for resume")
+    scored_chains = load_jsonl(scored_file) if scored_file.exists() else []
 else:
     clear_step_state(OUTPUT_DIR, "step2_score_chains", stale_paths=[scored_file])
     start_step(OUTPUT_DIR, "step2_score_chains", cleanup_paths=[scored_file])
@@ -235,8 +281,10 @@ clip_cfg = config.get("clip", {{}})
 chains = load_jsonl('{chains_file}')
 scored = score_chains_clip(
     chains,
-    theta_safe=clip_cfg.get("theta_safe", 0.40),
-    theta_harm=min(clip_cfg.get("theta_harm", 0.35), 0.30),  # Slightly relaxed for chains
+    theta_safe={path6_theta_safe},
+    theta_harm={path6_theta_harm},
+    min_pass_rate={path6_min_pass_rate},
+    fallback_top_k={path6_fallback_top_k},
 )
 save_jsonl(scored, '{scored_file}')
 print(f'Scored chains: {{len(scored)}} / {{len(chains)}} passed')

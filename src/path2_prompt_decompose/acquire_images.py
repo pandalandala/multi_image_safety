@@ -145,16 +145,23 @@ def acquire_single_image(
     *,
     prefer_generation: bool = True,
 ) -> tuple[bool, str]:
-    """Acquire one image via local datasets, then web retrieval, then T2I generation."""
+    """Acquire one image via retrieval/generation, with configurable preference order."""
     if not _has_valid_description(description):
         logger.warning("Skipping image acquisition for empty description at %s", output_path)
         return False, ""
 
-    retrieved, source = retrieve_image(description, output_path)
-    if retrieved:
-        return True, source
-    if generate_image(description, output_path):
-        return True, "generated"
+    if prefer_generation:
+        if generate_image(description, output_path):
+            return True, "generated"
+        retrieved, source = retrieve_image(description, output_path)
+        if retrieved:
+            return True, source
+    else:
+        retrieved, source = retrieve_image(description, output_path)
+        if retrieved:
+            return True, source
+        if generate_image(description, output_path):
+            return True, "generated"
     return False, ""
 
 

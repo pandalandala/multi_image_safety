@@ -27,7 +27,6 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    os.environ.setdefault("HF_HOME", "/mnt2/xuran_hdd/cache")
     os.environ.setdefault("OMP_NUM_THREADS", "1")
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
@@ -38,9 +37,11 @@ def main() -> int:
         os.environ.setdefault("HF_TOKEN", token_path.read_text(encoding="utf-8").strip())
 
     from src.common.schema import Pattern, SourcePath
-    from src.common.utils import load_jsonl, save_jsonl, setup_logging
+    from src.common.utils import get_hf_home, load_jsonl, save_jsonl, setup_logging
     from src.path3_dataset_expand.cross_pair import parse_cross_pair_response
     from vllm import LLM, SamplingParams
+
+    os.environ.setdefault("HF_HOME", get_hf_home())
 
     setup_logging()
 

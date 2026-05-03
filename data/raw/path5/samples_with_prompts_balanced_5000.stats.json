@@ -1,0 +1,227 @@
+{
+  "input": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/samples_with_prompts.jsonl",
+  "output": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/samples_with_prompts_balanced_5000.jsonl",
+  "target": 5000,
+  "before": {
+    "samples": 18403,
+    "unique_images_used": 887,
+    "total_image_appearances": 36806,
+    "avg_use_per_image": 41.49492671927847,
+    "max_image_use": 134,
+    "usage_histogram": {
+      "11-20": 164,
+      "21-50": 316,
+      "51-100": 319,
+      "101+": 11,
+      "3-5": 20,
+      "6-10": 49,
+      "1-2": 8
+    },
+    "category_counts": {
+      "PRIVACY": 2343,
+      "MISINFO": 1260,
+      "SELF_HARM": 2817,
+      "CRIME": 5439,
+      "IP": 547,
+      "VIOLENCE": 2367,
+      "HATE": 592,
+      "REGULATED": 572,
+      "ADVICE": 150,
+      "WMD": 1535,
+      "SEXUAL": 774,
+      "DECEPTION": 7
+    },
+    "top_20_most_used_images": [
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/27.png",
+        "count": 134
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/26.png",
+        "count": 117
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/3.png",
+        "count": 117
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/57.png",
+        "count": 116
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/WMD/9.png",
+        "count": 115
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/22.png",
+        "count": 114
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/65.png",
+        "count": 112
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/12.png",
+        "count": 109
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/58.png",
+        "count": 109
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/52.png",
+        "count": 108
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/2.png",
+        "count": 102
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/CRIME/32.png",
+        "count": 100
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/24.png",
+        "count": 99
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/42.png",
+        "count": 99
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/52.png",
+        "count": 98
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/2.png",
+        "count": 98
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/21.png",
+        "count": 97
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/32.png",
+        "count": 97
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/3.png",
+        "count": 97
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/8.png",
+        "count": 97
+      }
+    ]
+  },
+  "after": {
+    "samples": 5000,
+    "unique_images_used": 691,
+    "total_image_appearances": 10000,
+    "avg_use_per_image": 14.47178002894356,
+    "max_image_use": 28,
+    "usage_histogram": {
+      "6-10": 133,
+      "11-20": 276,
+      "21-50": 172,
+      "1-2": 51,
+      "3-5": 59
+    },
+    "category_counts": {
+      "PRIVACY": 464,
+      "CRIME": 1755,
+      "SELF_HARM": 605,
+      "ADVICE": 93,
+      "WMD": 344,
+      "VIOLENCE": 319,
+      "MISINFO": 266,
+      "SEXUAL": 474,
+      "REGULATED": 266,
+      "IP": 239,
+      "HATE": 171,
+      "DECEPTION": 4
+    },
+    "top_20_most_used_images": [
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/61.png",
+        "count": 28
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/IP/63.png",
+        "count": 28
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/MISINFO/54.png",
+        "count": 28
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/26.png",
+        "count": 28
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/21.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/CRIME/93.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/ADVICE/26.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/CRIME/27.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/VIOLENCE/40.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/61.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/68.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/CRIME/64.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/18.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/WMD/88.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SEXUAL/66.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/31.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/PRIVACY/11.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SEXUAL/2.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/REGULATED/19.png",
+        "count": 27
+      },
+      {
+        "path": "/mnt/hdd/xuran/multi_image_safety/data/raw/path5/crawled_images/SELF_HARM/47.png",
+        "count": 27
+      }
+    ]
+  }
+}

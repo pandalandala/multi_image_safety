@@ -21,6 +21,15 @@ export MIS_PATH2_GPU_MEMORY_UTILIZATION="${MIS_PATH2_GPU_MEMORY_UTILIZATION:-0.6
 export MIS_PATH2_VLLM_BATCH_SIZE="${MIS_PATH2_VLLM_BATCH_SIZE:-64}"
 export PYTHONPATH="$PROJECT_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
+# ── 是否清除 step 完成标记，重新增量运行 ──────────────────────────────────────
+# 修改这里：1 = 清除标记（增量重跑所有步骤），0 = 跳过已完成步骤
+CLEAN=0
+
+# 也可以在命令行传 --clean 覆盖此设置
+for arg in "$@"; do
+  [[ "$arg" == "--clean" ]] && CLEAN=1
+done
+
 echo "Running Path 2: Prompt Decomposition"
 echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-<not set>}"
 echo "MIS_GPU_CANDIDATES: ${MIS_GPU_CANDIDATES:-<not set>}"
@@ -28,4 +37,7 @@ echo "PEXELS_API_KEY: ${PEXELS_API_KEY:+<set>}"
 echo "PIXABAY_API_KEY: ${PIXABAY_API_KEY:+<set>}"
 echo "Log file: ${LOG_FILE}"
 
-python "$PROJECT_ROOT/run_path2.py" "$@" 2>&1 | tee "$LOG_FILE"
+clean_flag=()
+[[ "$CLEAN" == "1" ]] && clean_flag=("--clean")
+
+python "$PROJECT_ROOT/run_path2.py" "${clean_flag[@]}" 2>&1 | tee "$LOG_FILE"

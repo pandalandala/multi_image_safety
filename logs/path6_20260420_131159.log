@@ -1,0 +1,252 @@
+2026-04-20 13:11:59 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=0,1,2,3 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-20 13:11:59 [INFO] __main__: Path 6 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0
+2026-04-20 13:11:59 [INFO] __main__: ============================================================
+2026-04-20 13:11:59 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-20 13:11:59 [INFO] __main__: ============================================================
+Loading LLM for 110 TAG chain prompts...
+INFO 04-20 13:12:07 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-20 13:12:07 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-20 13:12:09 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-20 13:12:09 [model.py:1678] Using max model len 4096
+INFO 04-20 13:12:09 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-20 13:12:11 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-20 13:12:11 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-20 13:12:11 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-20 13:12:11 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-20 13:12:11 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-20 13:12:11 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-20 13:12:11 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-20 13:12:30 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-20 13:12:30 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=4, local_world_size=4
+(Worker pid=2590179) INFO 04-20 13:12:42 [parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:36429 backend=nccl
+(Worker pid=2590180) INFO 04-20 13:12:42 [parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:36429 backend=nccl
+(Worker pid=2590182) INFO 04-20 13:12:42 [parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:36429 backend=nccl
+(Worker pid=2590181) INFO 04-20 13:12:42 [parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:36429 backend=nccl
+(Worker pid=2590179) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2590179) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2590179) INFO 04-20 13:12:43 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=2590180) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2590180) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2590181) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2590182) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2590181) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2590182) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2590179) WARNING 04-20 13:12:43 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2590180) WARNING 04-20 13:12:43 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2590181) WARNING 04-20 13:12:43 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2590182) WARNING 04-20 13:12:43 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2590179) INFO 04-20 13:12:44 [parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:58 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:59 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:59 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:59 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:59 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=2590179) INFO 04-20 13:12:59 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:00<00:04,  2.47it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:01<00:05,  1.75it/s]
+(Worker_TP3 pid=2590182) INFO 04-20 13:13:01 [weight_utils.py:581] Time spent downloading weights for Qwen/Qwen3.5-27B: 0.585649 seconds
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:01<00:05,  1.41it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:02<00:05,  1.28it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  45% Completed | 5/11 [00:03<00:04,  1.22it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  55% Completed | 6/11 [00:04<00:04,  1.18it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  64% Completed | 7/11 [00:05<00:03,  1.18it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  73% Completed | 8/11 [00:06<00:02,  1.28it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  82% Completed | 9/11 [00:06<00:01,  1.41it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards:  91% Completed | 10/11 [00:07<00:00,  1.35it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:08<00:00,  1.49it/s]
+(Worker_TP0 pid=2590179) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:08<00:00,  1.37it/s]
+(Worker_TP0 pid=2590179) 
+(Worker_TP0 pid=2590179) INFO 04-20 13:13:08 [default_loader.py:384] Loading weights took 8.06 seconds
+(Worker_TP0 pid=2590179) INFO 04-20 13:13:09 [gpu_model_runner.py:4820] Model loading took 12.87 GiB memory and 9.702903 seconds
+(Worker_TP0 pid=2590179) INFO 04-20 13:13:11 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP0 pid=2590179) INFO 04-20 13:13:25 [gpu_worker.py:436] Available KV cache memory: 18.07 GiB
+INFO 04-20 13:13:25 [kv_cache_utils.py:1319] GPU KV cache size: 295,568 tokens
+INFO 04-20 13:13:25 [kv_cache_utils.py:1324] Maximum concurrency for 4,096 tokens per request: 167.67x
+INFO 04-20 13:13:27 [core.py:283] init engine (profile, create kv cache, warmup model) took 15.85 seconds
+Rendering conversations:   0%|          | 0/110 [00:00<?, ?it/s]INFO 04-20 13:13:34 [hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+Rendering conversations:   1%|          | 1/110 [00:06<12:22,  6.81s/it]Rendering conversations:  61%|██████    | 67/110 [00:06<00:03, 13.69it/s]Rendering conversations: 100%|██████████| 110/110 [00:06<00:00, 15.77it/s]
+Processed prompts:   0%|          | 0/110 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts:   1%|          | 1/110 [00:21<39:09, 21.56s/it, est. speed input: 15.63 toks/s, output: 2.60 toks/s]Processed prompts:   2%|▏         | 2/110 [00:21<16:06,  8.95s/it, est. speed input: 30.81 toks/s, output: 5.12 toks/s]Processed prompts:   3%|▎         | 3/110 [00:22<08:59,  5.04s/it, est. speed input: 45.25 toks/s, output: 7.70 toks/s]Processed prompts:   4%|▎         | 4/110 [00:22<05:44,  3.25s/it, est. speed input: 59.23 toks/s, output: 10.23 toks/s]Processed prompts:   5%|▍         | 5/110 [00:22<03:43,  2.12s/it, est. speed input: 73.33 toks/s, output: 13.04 toks/s]Processed prompts:   5%|▌         | 6/110 [00:23<02:38,  1.53s/it, est. speed input: 85.37 toks/s, output: 15.77 toks/s]Processed prompts:   7%|▋         | 8/110 [00:23<01:22,  1.24it/s, est. speed input: 113.07 toks/s, output: 21.34 toks/s]Processed prompts:   8%|▊         | 9/110 [00:23<01:03,  1.59it/s, est. speed input: 127.14 toks/s, output: 24.14 toks/s]Processed prompts:  10%|█         | 11/110 [00:23<00:38,  2.58it/s, est. speed input: 155.07 toks/s, output: 29.77 toks/s]Processed prompts:  12%|█▏        | 13/110 [00:23<00:25,  3.77it/s, est. speed input: 182.03 toks/s, output: 35.50 toks/s]Processed prompts:  14%|█▎        | 15/110 [00:23<00:20,  4.65it/s, est. speed input: 208.29 toks/s, output: 41.10 toks/s]Processed prompts:  15%|█▌        | 17/110 [00:23<00:15,  6.13it/s, est. speed input: 233.78 toks/s, output: 47.03 toks/s]Processed prompts:  17%|█▋        | 19/110 [00:24<00:11,  7.66it/s, est. speed input: 260.07 toks/s, output: 53.06 toks/s]Processed prompts:  19%|█▉        | 21/110 [00:24<00:09,  9.19it/s, est. speed input: 286.36 toks/s, output: 58.99 toks/s]Processed prompts:  21%|██        | 23/110 [00:24<00:08, 10.61it/s, est. speed input: 312.58 toks/s, output: 64.94 toks/s]Processed prompts:  24%|██▎       | 26/110 [00:24<00:06, 13.78it/s, est. speed input: 351.56 toks/s, output: 74.04 toks/s]Processed prompts:  25%|██▌       | 28/110 [00:24<00:05, 14.18it/s, est. speed input: 376.36 toks/s, output: 80.04 toks/s]Processed prompts:  28%|██▊       | 31/110 [00:24<00:04, 16.61it/s, est. speed input: 415.19 toks/s, output: 89.10 toks/s]Processed prompts:  30%|███       | 33/110 [00:24<00:05, 12.86it/s, est. speed input: 437.29 toks/s, output: 94.64 toks/s]Processed prompts:  32%|███▏      | 35/110 [00:25<00:05, 13.69it/s, est. speed input: 461.83 toks/s, output: 100.69 toks/s]Processed prompts:  34%|███▎      | 37/110 [00:25<00:05, 14.25it/s, est. speed input: 486.00 toks/s, output: 106.85 toks/s]Processed prompts:  35%|███▌      | 39/110 [00:25<00:07,  9.77it/s, est. speed input: 505.14 toks/s, output: 112.09 toks/s]Processed prompts:  37%|███▋      | 41/110 [00:25<00:06, 11.00it/s, est. speed input: 528.95 toks/s, output: 118.28 toks/s]Processed prompts:  39%|███▉      | 43/110 [00:26<00:07,  8.43it/s, est. speed input: 547.21 toks/s, output: 123.35 toks/s]Processed prompts:  41%|████      | 45/110 [00:26<00:11,  5.78it/s, est. speed input: 559.98 toks/s, output: 127.60 toks/s]Processed prompts:  42%|████▏     | 46/110 [00:26<00:11,  5.37it/s, est. speed input: 566.95 toks/s, output: 130.02 toks/s]Processed prompts:  43%|████▎     | 47/110 [00:27<00:10,  5.78it/s, est. speed input: 576.63 toks/s, output: 133.03 toks/s]Processed prompts:  44%|████▎     | 48/110 [00:27<00:13,  4.53it/s, est. speed input: 579.47 toks/s, output: 134.90 toks/s]Processed prompts:  45%|████▍     | 49/110 [00:27<00:13,  4.38it/s, est. speed input: 584.62 toks/s, output: 137.47 toks/s]Processed prompts:  47%|████▋     | 52/110 [00:27<00:07,  7.53it/s, est. speed input: 618.17 toks/s, output: 148.03 toks/s]Processed prompts:  49%|████▉     | 54/110 [00:28<00:09,  5.96it/s, est. speed input: 631.37 toks/s, output: 153.23 toks/s]Processed prompts:  50%|█████     | 55/110 [00:28<00:08,  6.29it/s, est. speed input: 639.63 toks/s, output: 156.48 toks/s]Processed prompts:  52%|█████▏    | 57/110 [00:28<00:06,  7.95it/s, est. speed input: 660.54 toks/s, output: 163.31 toks/s]Processed prompts:  54%|█████▎    | 59/110 [00:28<00:07,  6.91it/s, est. speed input: 674.71 toks/s, output: 169.01 toks/s]Processed prompts:  55%|█████▍    | 60/110 [00:29<00:06,  7.15it/s, est. speed input: 682.42 toks/s, output: 172.31 toks/s]Processed prompts:  56%|█████▋    | 62/110 [00:29<00:07,  6.48it/s, est. speed input: 695.78 toks/s, output: 178.16 toks/s]Processed prompts:  59%|█████▉    | 65/110 [00:29<00:04,  9.30it/s, est. speed input: 726.42 toks/s, output: 189.29 toks/s]Processed prompts:  61%|██████    | 67/110 [00:29<00:04,  8.99it/s, est. speed input: 742.70 toks/s, output: 195.83 toks/s]Processed prompts:  63%|██████▎   | 69/110 [00:30<00:05,  7.61it/s, est. speed input: 755.97 toks/s, output: 201.69 toks/s]Processed prompts:  65%|██████▍   | 71/110 [00:30<00:04,  9.05it/s, est. speed input: 775.44 toks/s, output: 208.92 toks/s]Processed prompts:  66%|██████▋   | 73/110 [00:30<00:04,  7.62it/s, est. speed input: 787.54 toks/s, output: 214.66 toks/s]Processed prompts:  67%|██████▋   | 74/110 [00:30<00:04,  7.72it/s, est. speed input: 795.37 toks/s, output: 217.95 toks/s]Processed prompts:  68%|██████▊   | 75/110 [00:30<00:04,  7.83it/s, est. speed input: 802.16 toks/s, output: 221.35 toks/s]Processed prompts:  72%|███████▏  | 79/110 [00:30<00:02, 13.24it/s, est. speed input: 840.45 toks/s, output: 237.33 toks/s]Processed prompts:  74%|███████▎  | 81/110 [00:31<00:03,  7.31it/s, est. speed input: 845.88 toks/s, output: 241.48 toks/s]Processed prompts:  75%|███████▌  | 83/110 [00:31<00:03,  8.62it/s, est. speed input: 863.69 toks/s, output: 249.13 toks/s]Processed prompts:  77%|███████▋  | 85/110 [00:32<00:04,  5.94it/s, est. speed input: 868.64 toks/s, output: 252.99 toks/s]Processed prompts:  79%|███████▉  | 87/110 [00:34<00:11,  2.07it/s, est. speed input: 825.38 toks/s, output: 243.68 toks/s]Processed prompts:  80%|████████  | 88/110 [00:35<00:09,  2.26it/s, est. speed input: 828.23 toks/s, output: 246.71 toks/s]Processed prompts:  82%|████████▏ | 90/110 [00:35<00:07,  2.82it/s, est. speed input: 838.96 toks/s, output: 253.49 toks/s]Processed prompts:  83%|████████▎ | 91/110 [00:35<00:05,  3.21it/s, est. speed input: 845.30 toks/s, output: 257.37 toks/s]Processed prompts:  84%|████████▎ | 92/110 [00:35<00:06,  2.88it/s, est. speed input: 843.38 toks/s, output: 258.74 toks/s]Processed prompts:  85%|████████▍ | 93/110 [00:36<00:05,  3.10it/s, est. speed input: 847.04 toks/s, output: 261.80 toks/s]Processed prompts:  85%|████████▌ | 94/110 [00:43<00:34,  2.18s/it, est. speed input: 705.86 toks/s, output: 221.28 toks/s]Processed prompts:  86%|████████▋ | 95/110 [00:44<00:24,  1.63s/it, est. speed input: 711.04 toks/s, output: 226.12 toks/s]Processed prompts:  87%|████████▋ | 96/110 [00:44<00:17,  1.26s/it, est. speed input: 714.47 toks/s, output: 230.32 toks/s]Processed prompts:  88%|████████▊ | 97/110 [01:23<02:34, 11.92s/it, est. speed input: 383.03 toks/s, output: 129.06 toks/s]Processed prompts:  89%|████████▉ | 98/110 [01:34<02:18, 11.58s/it, est. speed input: 342.59 toks/s, output: 121.46 toks/s]Processed prompts:  90%|█████████ | 99/110 [07:09<19:20, 105.51s/it, est. speed input: 76.00 toks/s, output: 35.41 toks/s] Processed prompts:  91%|█████████ | 100/110 [07:09<12:26, 74.67s/it, est. speed input: 76.72 toks/s, output: 44.13 toks/s]Processed prompts:  92%|█████████▏| 101/110 [07:09<07:54, 52.69s/it, est. speed input: 77.46 toks/s, output: 52.86 toks/s]Processed prompts:  93%|█████████▎| 102/110 [07:09<04:56, 37.09s/it, est. speed input: 78.21 toks/s, output: 61.61 toks/s]Processed prompts:  94%|█████████▎| 103/110 [07:10<03:02, 26.08s/it, est. speed input: 78.96 toks/s, output: 70.35 toks/s]Processed prompts:  95%|█████████▌| 105/110 [07:10<01:10, 14.13s/it, est. speed input: 80.47 toks/s, output: 87.83 toks/s]Processed prompts:  96%|█████████▋| 106/110 [07:10<00:42, 10.67s/it, est. speed input: 81.22 toks/s, output: 96.56 toks/s]Processed prompts:  98%|█████████▊| 108/110 [07:10<00:12,  6.27s/it, est. speed input: 82.73 toks/s, output: 114.04 toks/s]Processed prompts: 100%|██████████| 110/110 [07:13<00:00,  4.61s/it, est. speed input: 83.47 toks/s, output: 130.54 toks/s]Processed prompts: 100%|██████████| 110/110 [07:13<00:00,  4.61s/it, est. speed input: 83.47 toks/s, output: 130.54 toks/s]Processed prompts: 100%|██████████| 110/110 [07:13<00:00,  3.95s/it, est. speed input: 83.47 toks/s, output: 130.54 toks/s]
+2026-04-20 13:20:48 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/raw_chains.jsonl
+(Worker_TP0 pid=2590179) INFO 04-20 13:20:48 [multiproc_executor.py:764] Parent process exited, terminating worker queues
+(Worker_TP1 pid=2590180) INFO 04-20 13:20:48 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP2 pid=2590181) INFO 04-20 13:20:48 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP3 pid=2590182) INFO 04-20 13:20:48 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP0 pid=2590179) INFO 04-20 13:20:48 [multiproc_executor.py:859] WorkerProc shutting down.
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+  WMD: 0 chains parsed
+  VIOLENCE: 0 chains parsed
+  SELF_HARM: 0 chains parsed
+  SEXUAL: 0 chains parsed
+  HATE: 0 chains parsed
+  CRIME: 0 chains parsed
+  PRIVACY: 0 chains parsed
+  MISINFO: 0 chains parsed
+  IP: 0 chains parsed
+  REGULATED: 0 chains parsed
+  ADVICE: 0 chains parsed
+Total chains generated: 0
+2026-04-20 13:20:53 [INFO] __main__: Raw chains: 0
+2026-04-20 13:20:53 [INFO] __main__: ============================================================
+2026-04-20 13:20:53 [INFO] __main__: PATH 6 STEP 2: CLIP chain scoring
+2026-04-20 13:20:53 [INFO] __main__: ============================================================
+2026-04-20 13:21:00 [INFO] root: Loaded ViT-L-14 model config.
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+2026-04-20 13:21:05 [INFO] root: Loading pretrained ViT-L-14 weights (openai).
+2026-04-20 13:21:06 [INFO] src.common.clip_utils: Loaded CLIP model ViT-L-14/openai on cuda
+2026-04-20 13:21:06 [INFO] src.path5_embedding_pair.harm_vector: Built 11 harm vectors (multi-description averaged)
+2026-04-20 13:21:06 [INFO] src.path6_tag_kg_fusion.tag_builder: Chain CLIP hard filter: 0 / 0 chains passed (0.0%, theta_safe=0.40, theta_harm=0.20)
+2026-04-20 13:21:06 [INFO] src.common.utils: Saved 0 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/scored_chains.jsonl
+Scored chains: 0 / 0 passed
+2026-04-20 13:21:08 [INFO] __main__: ============================================================
+2026-04-20 13:21:08 [INFO] __main__: PATH 6 STEP 3: Fusion with Path 1 KG pairs
+2026-04-20 13:21:08 [INFO] __main__: ============================================================
+2026-04-20 13:21:08 [INFO] __main__: Skipping Step 3; completion marker found
+2026-04-20 13:21:08 [INFO] __main__: Fusion pairs: 2149
+2026-04-20 13:21:10 [INFO] src.path1_kg_concept.pair_filter: Retrieval-friendly filter: kept 1594 / 2149 pairs (max_query_words=3, rewritten=0)
+2026-04-20 13:21:10 [INFO] src.path1_kg_concept.pair_filter: Sample retrieval-filter rejects: 'petn' + 'neuromechanism' (bad concept1 query='petn'); 'petn' + 'nanoart' (bad concept1 query='petn'); 'petn' + 'bioproduction' (bad concept1 query='petn'); 'petn' + 'biosimulation' (bad concept1 query='petn'); 'petn' + 'phytotronics' (bad concept1 query='petn'); 'petn' + 'euphenic' (bad concept1 query='petn'); 'petn' + 'cornalean' (bad concept1 query='petn'); 'petn' + 'monophyte' (bad concept1 query='petn')
+2026-04-20 13:21:10 [INFO] __main__: Retrieval-friendly fusion pairs: 1594
+2026-04-20 13:21:10 [INFO] __main__: ============================================================
+2026-04-20 13:21:10 [INFO] __main__: PATH 6 STEP 4: Image acquisition (local -> web -> T2I fallback)
+2026-04-20 13:21:10 [INFO] __main__: ============================================================
+2026-04-20 13:21:10 [INFO] __main__: Path 6 Step 4 GPU runtime: selected_gpus=0,1,2,3 gpu_count=4 tensor_parallel_size=1 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-20 13:21:10 [INFO] __main__: Path 6 Step 4 GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0
+2026-04-20 13:21:10 [INFO] src.common.utils: Saved 399 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_0.jsonl
+2026-04-20 13:21:10 [INFO] src.common.utils: Saved 399 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_1.jsonl
+2026-04-20 13:21:10 [INFO] src.common.utils: Saved 399 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_2.jsonl
+2026-04-20 13:21:10 [INFO] src.common.utils: Saved 397 items to /mnt/hdd/xuran/multi_image_safety/data/raw/path6/_img_chunk_3.jsonl
+2026-04-20 13:21:10 [INFO] __main__: Started GPU 0 PID=2614530 (~399 pairs)
+2026-04-20 13:21:10 [INFO] __main__: Started GPU 1 PID=2614531 (~399 pairs)
+2026-04-20 13:21:10 [INFO] __main__: Started GPU 2 PID=2614532 (~399 pairs)
+2026-04-20 13:21:10 [INFO] __main__: Started GPU 3 PID=2614533 (~399 pairs)
+2026-04-20 13:21:11,915 [GPU1] INFO Retrieval phase: fetching 51 fusion concept images with 8 worker threads
+2026-04-20 13:21:11,929 [GPU3] INFO Retrieval phase: fetching 12 fusion concept images with 8 worker threads
+2026-04-20 13:21:11,939 [GPU2] INFO Retrieval phase: fetching 4 fusion concept images with 8 worker threads
+2026-04-20 13:21:11,967 [GPU2] INFO Skipping local dataset search for 'designer pattern' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:11,973 [GPU2] INFO Skipping local dataset search for 'sealed lead box' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,032 [GPU3] INFO Skipping local dataset search for 'late night' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,054 [GPU0] INFO Retrieval phase: fetching 615 fusion concept images with 8 worker threads
+2026-04-20 13:21:12,059 [GPU3] INFO Skipping local dataset search for 'dust' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,092 [GPU0] INFO Skipping local dataset search for 'whizbang' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,103 [GPU0] INFO Skipping local dataset search for 'whizbang' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,114 [GPU0] INFO Skipping local dataset search for 'taxadiene' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,059 [GPU3] INFO Skipping local dataset search for 'sleep study chart' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,144 [GPU3] INFO Skipping local dataset search for 'official letter' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,147 [GPU0] INFO Skipping local dataset search for 'whizbang' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,149 [GPU1] INFO Skipping local dataset search for 'supercontext' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,150 [GPU2] INFO Skipping local dataset search for 'designer pattern' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,165 [GPU1] INFO Skipping local dataset search for 'humbuggery' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,171 [GPU2] INFO Skipping local dataset search for 'legal disclaimer' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,166 [GPU1] INFO Skipping local dataset search for 'plagiaristic' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,187 [GPU1] INFO Skipping local dataset search for 'tenendum' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,165 [GPU3] INFO Skipping local dataset search for 'sync error' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,205 [GPU1] INFO Skipping local dataset search for 'dispunishable' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,245 [GPU0] INFO Skipping local dataset search for 'whizbang' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,166 [GPU3] INFO Skipping local dataset search for 'famous movie quote' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,214 [GPU1] INFO Skipping local dataset search for 'acutely' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,262 [GPU0] INFO Skipping local dataset search for 'whizbang' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,219 [GPU1] INFO Skipping local dataset search for 'roukoop' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,267 [GPU1] INFO Skipping local dataset search for 'rightsless' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,215 [GPU3] INFO Skipping local dataset search for 'cloudy mirror' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,289 [GPU0] INFO Skipping local dataset search for 'urotoxin' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,215 [GPU3] INFO Skipping local dataset search for 'dark room' because MIS_PATH6_SKIP_LOCAL_DATASETS=1
+2026-04-20 13:21:12,457 [GPU0] INFO Skipping local dataset search for 'cellfectin' because MIS_PATH6_SKIP_LOCAL_DATASETS=1

@@ -78,7 +78,12 @@ def fetch_images_for_samples(
     start_id: int = 0,
     prefer_retrieval: bool = True,
 ) -> list[dict]:
-    """Fetch images for all intent-injected samples."""
+    """Fetch images for all intent-injected samples.
+
+    Source diversification: image1 is retrieved first (real photo), image2
+    is generated first (T2I). This ensures the two images in a pair come from
+    visually different sources, matching the design goal of independent contexts.
+    """
     results = []
     force_regenerate = should_force_regenerate_images()
 
@@ -104,10 +109,11 @@ def fetch_images_for_samples(
             if img1_path.exists() and force_regenerate:
                 img1_path.unlink(missing_ok=True)
             from src.path2_prompt_decompose.acquire_images import acquire_single_image
+            # image1: retrieval-first → real photo from local dataset / web
             success1, acquisition1 = acquire_single_image(
                 desc1,
                 img1_path,
-                prefer_generation=not prefer_retrieval,
+                prefer_generation=False,
             )
 
         if img2_path.exists() and (not force_regenerate or acquisition2 in {"retrieved", "crawled"}):
@@ -117,10 +123,11 @@ def fetch_images_for_samples(
             if img2_path.exists() and force_regenerate:
                 img2_path.unlink(missing_ok=True)
             from src.path2_prompt_decompose.acquire_images import acquire_single_image
+            # image2: generation-first → T2I for visual diversity from image1
             success2, acquisition2 = acquire_single_image(
                 desc2,
                 img2_path,
-                prefer_generation=not prefer_retrieval,
+                prefer_generation=True,
             )
 
         if success1 and success2:

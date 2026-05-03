@@ -1,0 +1,93 @@
+2026-04-20 13:08:41 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=0,1 gpu_count=2 tensor_parallel_size=2 worker_count=2 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-20 13:08:41 [INFO] __main__: Path 6 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0
+2026-04-20 13:08:41 [INFO] __main__: ============================================================
+2026-04-20 13:08:41 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-20 13:08:41 [INFO] __main__: ============================================================
+Loading LLM for 110 TAG chain prompts...
+INFO 04-20 13:08:49 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 3072, 'tensor_parallel_size': 2, 'gpu_memory_utilization': 0.55, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-20 13:08:49 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-20 13:08:51 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-20 13:08:51 [model.py:1678] Using max model len 3072
+INFO 04-20 13:08:51 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-20 13:08:53 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-20 13:08:53 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-20 13:08:53 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-20 13:08:53 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-20 13:08:53 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-20 13:08:53 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-20 13:08:53 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-20 13:09:11 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=3072, download_dir=None, load_format=auto, tensor_parallel_size=2, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-20 13:09:11 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=2, local_world_size=2
+(Worker pid=2581113) INFO 04-20 13:09:23 [parallel_state.py:1400] world_size=2 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:50655 backend=nccl
+(Worker pid=2581114) INFO 04-20 13:09:23 [parallel_state.py:1400] world_size=2 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:50655 backend=nccl
+(Worker pid=2581114) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2581114) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2581113) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=2581113) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=2581113) INFO 04-20 13:09:24 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=2581113) WARNING 04-20 13:09:25 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2581114) WARNING 04-20 13:09:25 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=2581113) INFO 04-20 13:09:25 [parallel_state.py:1716] rank 0 in world size 2 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:41 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:42 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:42 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:42 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:42 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:42 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:00<00:07,  1.34it/s]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:01<00:09,  1.04s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:03<00:10,  1.26s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:04<00:09,  1.33s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  45% Completed | 5/11 [00:06<00:08,  1.37s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  55% Completed | 6/11 [00:07<00:06,  1.38s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  64% Completed | 7/11 [00:09<00:05,  1.36s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  73% Completed | 8/11 [00:10<00:03,  1.23s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  82% Completed | 9/11 [00:10<00:02,  1.10s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards:  91% Completed | 10/11 [00:12<00:01,  1.17s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:12<00:00,  1.04s/it]
+(Worker_TP0 pid=2581113) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:12<00:00,  1.18s/it]
+(Worker_TP0 pid=2581113) 
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:57 [default_loader.py:384] Loading weights took 13.03 seconds
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:58 [gpu_model_runner.py:4820] Model loading took 25.61 GiB memory and 15.019906 seconds
+(Worker_TP0 pid=2581113) INFO 04-20 13:09:58 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP1 pid=2581114) /mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (24). This may indicate the inputs were passed in head-first format [B, H, T, ...] when head_first=False was specified. Please verify your input tensor format matches the expected shape [B, T, H, ...].
+(Worker_TP1 pid=2581114)   return fn(*contiguous_args, **contiguous_kwargs)
+(Worker_TP0 pid=2581113) /mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/model_executor/layers/fla/ops/utils.py:113: UserWarning: Input tensor shape suggests potential format mismatch: seq_len (16) < num_heads (24). This may indicate the inputs were passed in head-first format [B, H, T, ...] when head_first=False was specified. Please verify your input tensor format matches the expected shape [B, T, H, ...].
+(Worker_TP0 pid=2581113)   return fn(*contiguous_args, **contiguous_kwargs)
+(Worker_TP0 pid=2581113) INFO 04-20 13:10:12 [gpu_worker.py:436] Available KV cache memory: -0.99 GiB
+Traceback (most recent call last):
+  File "<string>", line 18, in <module>
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 177, in from_engine_args
+    return cls(
+           ^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 111, in __init__
+    self.engine_core = EngineCoreClient.make_client(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 103, in make_client
+    return InprocClient(vllm_config, executor_class, log_stats)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core_client.py", line 285, in __init__
+    self.engine_core = EngineCore(*args, **kwargs)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 124, in __init__
+    kv_cache_config = self._initialize_kv_caches(vllm_config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/core.py", line 258, in _initialize_kv_caches
+    kv_cache_configs = get_kv_cache_configs(
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/core/kv_cache_utils.py", line 1579, in get_kv_cache_configs
+    _check_enough_kv_cache_memory(
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/core/kv_cache_utils.py", line 626, in _check_enough_kv_cache_memory
+    raise ValueError(
+ValueError: No available memory for the cache blocks. Try increasing `gpu_memory_utilization` when initializing the engine. See https://docs.vllm.ai/en/latest/configuration/conserving_memory/ for more details.
+(Worker_TP0 pid=2581113) INFO 04-20 13:10:12 [multiproc_executor.py:764] Parent process exited, terminating worker queues
+(Worker_TP0 pid=2581113) INFO 04-20 13:10:12 [multiproc_executor.py:859] WorkerProc shutting down.
+(Worker_TP1 pid=2581114) INFO 04-20 13:10:12 [multiproc_executor.py:859] WorkerProc shutting down.
+2026-04-20 13:10:17 [ERROR] __main__: TAG chain generation failed

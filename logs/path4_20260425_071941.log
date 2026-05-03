@@ -1,0 +1,67 @@
+2026-04-25 07:19:41 [INFO] __main__: Path 4 LLM GPU runtime: selected_gpus=0,1,2,3 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-25 07:19:41 [INFO] __main__: Path 4 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0
+2026-04-25 07:19:41 [INFO] __main__: ============================================================
+2026-04-25 07:19:41 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
+2026-04-25 07:19:41 [INFO] __main__: ============================================================
+INFO 04-25 07:19:49 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-25 07:19:49 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+INFO 04-25 07:19:51 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+INFO 04-25 07:19:51 [model.py:1678] Using max model len 4096
+INFO 04-25 07:19:51 [scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+INFO 04-25 07:19:53 [config.py:281] Setting attention block size to 784 tokens to ensure that attention page size is >= mamba page size.
+INFO 04-25 07:19:53 [config.py:312] Padding mamba page size by 0.13% to ensure that mamba page size and attention page size are exactly equal.
+INFO 04-25 07:19:53 [vllm.py:790] Asynchronous scheduling is enabled.
+WARNING 04-25 07:19:53 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 04-25 07:19:53 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 04-25 07:19:53 [vllm.py:1025] Cudagraph is disabled under eager mode
+INFO 04-25 07:19:53 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+INFO 04-25 07:20:10 [core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen3.5-27B', speculative_config=None, tokenizer='Qwen/Qwen3.5-27B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.bfloat16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=True, quantization=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen3.5-27B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': False, 'alignment_asserts': False, 'scalar_asserts': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+INFO 04-25 07:20:10 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=143.248.158.38 (local), world_size=4, local_world_size=4
+(Worker pid=97660) INFO 04-25 07:20:21 [parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:49303 backend=nccl
+(Worker pid=97672) INFO 04-25 07:20:21 [parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:49303 backend=nccl
+(Worker pid=97659) INFO 04-25 07:20:21 [parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:49303 backend=nccl
+(Worker pid=97671) INFO 04-25 07:20:22 [parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:49303 backend=nccl
+(Worker pid=97672) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=97672) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=97659) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=97659) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=97659) INFO 04-25 07:20:22 [pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=97671) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=97671) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=97660) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=97660) <frozen importlib._bootstrap_external>:1241: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=97659) WARNING 04-25 07:20:23 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=97671) WARNING 04-25 07:20:23 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=97672) WARNING 04-25 07:20:23 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=97660) WARNING 04-25 07:20:23 [symm_mem.py:66] SymmMemCommunicator: Device capability 8.6 not supported, communicator is not available.
+(Worker pid=97659) INFO 04-25 07:20:23 [parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker_TP0 pid=97659) INFO 04-25 07:20:37 [gpu_model_runner.py:4735] Starting to load model Qwen/Qwen3.5-27B...
+(Worker_TP0 pid=97659) INFO 04-25 07:20:38 [cuda.py:390] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(Worker_TP0 pid=97659) INFO 04-25 07:20:38 [mm_encoder_attention.py:230] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(Worker_TP0 pid=97659) INFO 04-25 07:20:38 [gdn_linear_attn.py:147] Using Triton/FLA GDN prefill kernel
+(Worker_TP0 pid=97659) INFO 04-25 07:20:38 [cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker_TP0 pid=97659) INFO 04-25 07:20:38 [flash_attn.py:596] Using FlashAttention version 2
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:   0% Completed | 0/11 [00:00<?, ?it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:   9% Completed | 1/11 [00:00<00:03,  2.50it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  18% Completed | 2/11 [00:00<00:04,  2.07it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  27% Completed | 3/11 [00:01<00:04,  1.83it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  36% Completed | 4/11 [00:02<00:04,  1.73it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  45% Completed | 5/11 [00:02<00:03,  1.67it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  55% Completed | 6/11 [00:03<00:03,  1.63it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  64% Completed | 7/11 [00:04<00:02,  1.60it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  73% Completed | 8/11 [00:04<00:01,  1.66it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  82% Completed | 9/11 [00:05<00:01,  1.72it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards:  91% Completed | 10/11 [00:06<00:00,  1.52it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:06<00:00,  1.64it/s]
+(Worker_TP0 pid=97659) Loading safetensors checkpoint shards: 100% Completed | 11/11 [00:06<00:00,  1.68it/s]
+(Worker_TP0 pid=97659) 
+(Worker_TP0 pid=97659) INFO 04-25 07:20:46 [default_loader.py:384] Loading weights took 6.57 seconds
+(Worker_TP0 pid=97659) INFO 04-25 07:20:47 [gpu_model_runner.py:4820] Model loading took 12.87 GiB memory and 8.202400 seconds
+(Worker_TP0 pid=97659) INFO 04-25 07:20:50 [gpu_model_runner.py:5753] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(Worker_TP0 pid=97659) INFO 04-25 07:21:03 [gpu_worker.py:436] Available KV cache memory: 18.07 GiB
+INFO 04-25 07:21:03 [kv_cache_utils.py:1319] GPU KV cache size: 295,568 tokens
+INFO 04-25 07:21:03 [kv_cache_utils.py:1324] Maximum concurrency for 4,096 tokens per request: 167.67x
+INFO 04-25 07:21:04 [core.py:283] init engine (profile, create kv cache, warmup model) took 14.82 seconds
+Rendering conversations:   0%|          | 0/80 [00:00<?, ?it/s]INFO 04-25 07:21:11 [hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+Rendering conversations:   1%|▏         | 1/80 [00:06<08:15,  6.27s/it]Rendering conversations: 100%|██████████| 80/80 [00:06<00:00, 12.59it/s]
+Processed prompts:   0%|          | 0/80 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]

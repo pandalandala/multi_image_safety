@@ -80,43 +80,64 @@ def inject_intents_batch(
     scenes: list[dict],
     harm_categories: list[str] | None = None,
     safety_modes: list[str] | None = None,
-    max_combinations: int = 3000,
+    max_combinations: int = 4000,
+    max_per_scene: int = 2,
 ) -> list[str]:
     """
     Generate batch prompts for intent injection.
-    Crosses scene-activity pairs with safety modes and harm categories.
+
+    Each scene is assigned up to max_per_scene (safety_mode, harm_category)
+    combinations.  Assignments happen in rounds so the first pass gives one
+    combo to every scene before any scene gets a second, maximising diversity.
+    Within the same scene the two combos always differ in both mode AND category.
     """
     if harm_categories is None:
         harm_categories = [c.value for c in HarmCategory]
     if safety_modes is None:
         safety_modes = SAFETY_MODES
 
-    prompts_with_meta = []
     import random
 
-    for scene in scenes:
-        # Randomly sample a few safety modes and harm categories per scene
-        modes = random.sample(safety_modes, min(3, len(safety_modes)))
-        cats = random.sample(harm_categories, min(2, len(harm_categories)))
+    all_combos = [(m, c) for m in safety_modes for c in harm_categories]
+    prompts_with_meta: list[dict] = []
+    scene_used: dict[str, set] = {}
 
-        for mode in modes:
-            for cat in cats:
-                prompt = build_intent_inject_prompt(
-                    scene["scene_category"],
-                    scene["activity"],
-                    mode,
-                    cat,
-                )
-                prompts_with_meta.append({
-                    "prompt": prompt,
-                    "scene_category": scene["scene_category"],
-                    "activity": scene["activity"],
-                    "safety_mode": mode,
-                    "harm_category": cat,
-                })
+    for _round in range(max_per_scene):
+        if len(prompts_with_meta) >= max_combinations:
+            break
+        round_pool = list(all_combos)
+        random.shuffle(round_pool)
+        pool_iter = iter(round_pool * (len(scenes) // max(len(round_pool), 1) + 2))
 
-                if len(prompts_with_meta) >= max_combinations:
-                    return prompts_with_meta
+        for scene in scenes:
+            if len(prompts_with_meta) >= max_combinations:
+                break
+            key = f"{scene['scene_category']}::{scene['activity']}"
+            used = scene_used.setdefault(key, set())
+
+            mode, cat = None, None
+            for _ in range(len(all_combos) * 2):
+                m, c = next(pool_iter)
+                if (m, c) not in used:
+                    mode, cat = m, c
+                    break
+            if mode is None:
+                continue
+
+            used.add((mode, cat))
+            prompt = build_intent_inject_prompt(
+                scene["scene_category"],
+                scene["activity"],
+                mode,
+                cat,
+            )
+            prompts_with_meta.append({
+                "prompt": prompt,
+                "scene_category": scene["scene_category"],
+                "activity": scene["activity"],
+                "safety_mode": mode,
+                "harm_category": cat,
+            })
 
     return prompts_with_meta
 
@@ -160,12 +181,13 @@ def run_vllm(
     scenes: list[dict],
     model_path: str,
     tensor_parallel_size: int = 2,
-    max_combinations: int = 3000,
+    max_combinations: int = 4000,
+    max_per_scene: int = 2,
 ) -> list[dict]:
     """Run intent injection using local vLLM."""
     from vllm import LLM, SamplingParams
 
-    prompts_with_meta = inject_intents_batch(scenes, max_combinations=max_combinations)
+    prompts_with_meta = inject_intents_batch(scenes, max_combinations=max_combinations, max_per_scene=max_per_scene)
     logger.info(f"Generated {len(prompts_with_meta)} intent injection prompts")
 
     from src.common.utils import get_safe_vllm_kwargs
@@ -194,7 +216,8 @@ def run(
     input_file: str | Path | None = None,
     output_dir: str | Path | None = None,
     use_api: bool = False,
-    max_combinations: int = 3000,
+    max_combinations: int = 4000,
+    max_per_scene: int = 2,
 ):
     """Main entry point."""
     if input_file is None:
@@ -207,7 +230,7 @@ def run(
 
     if use_api:
         # API-based: iterate and call individually
-        prompts_with_meta = inject_intents_batch(scenes, max_combinations=max_combinations)
+        prompts_with_meta = inject_intents_batch(scenes, max_combinations=max_combinations, max_per_scene=max_per_scene)
         save_jsonl(prompts_with_meta, Path(output_dir) / "intent_batch_prompts.jsonl")
         logger.info(f"Saved {len(prompts_with_meta)} prompts for API processing")
         return prompts_with_meta
@@ -220,6 +243,7 @@ def run(
                 local_config.get("tensor_parallel_size")
             ),
             max_combinations=max_combinations,
+            max_per_scene=max_per_scene,
         )
         save_jsonl(results, Path(output_dir) / "intent_injected_samples.jsonl")
         return results

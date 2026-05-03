@@ -8,6 +8,7 @@ Ensures concept pairs satisfy the compositional harm criteria:
 from __future__ import annotations
 
 import logging
+import os
 
 import numpy as np
 
@@ -138,6 +139,10 @@ def filter_pairs_for_retrieval(
     """Keep only pairs whose concepts look simple enough for image retrieval."""
     kept: list[dict] = []
     rejected_examples: list[str] = []
+    allow_compact_rewrite = str(
+        os.environ.get("MIS_RETRIEVAL_ALLOW_COMPACT_REWRITE", "1")
+    ).strip().lower() in {"1", "true", "yes", "on"}
+    rewritten = 0
 
     for pair in pairs:
         concept1 = str(pair.get("concept1", "")).strip()
@@ -145,22 +150,30 @@ def filter_pairs_for_retrieval(
         query1 = build_compact_retrieval_query(concept1, max_words=max_query_words)
         query2 = build_compact_retrieval_query(concept2, max_words=max_query_words)
 
-        if not is_retrieval_friendly_query(concept1, max_words=max_query_words):
+        concept1_friendly = is_retrieval_friendly_query(concept1, max_words=max_query_words)
+        concept2_friendly = is_retrieval_friendly_query(concept2, max_words=max_query_words)
+        query1_friendly = bool(query1) and is_retrieval_friendly_query(query1, max_words=max_query_words)
+        query2_friendly = bool(query2) and is_retrieval_friendly_query(query2, max_words=max_query_words)
+
+        if not concept1_friendly and not (allow_compact_rewrite and query1_friendly):
             if len(rejected_examples) < 8:
                 rejected_examples.append(f"{concept1!r} + {concept2!r} (bad concept1 query={query1!r})")
             continue
-        if not is_retrieval_friendly_query(concept2, max_words=max_query_words):
+        if not concept2_friendly and not (allow_compact_rewrite and query2_friendly):
             if len(rejected_examples) < 8:
                 rejected_examples.append(f"{concept1!r} + {concept2!r} (bad concept2 query={query2!r})")
             continue
 
         pair["concept1_query"] = query1
         pair["concept2_query"] = query2
+        if allow_compact_rewrite and (not concept1_friendly or not concept2_friendly):
+            pair["retrieval_query_rewritten"] = True
+            rewritten += 1
         kept.append(pair)
 
     logger.info(
-        "Retrieval-friendly filter: kept %d / %d pairs (max_query_words=%d)",
-        len(kept), len(pairs), max_query_words,
+        "Retrieval-friendly filter: kept %d / %d pairs (max_query_words=%d, rewritten=%d)",
+        len(kept), len(pairs), max_query_words, rewritten,
     )
     if rejected_examples:
         logger.info("Sample retrieval-filter rejects: %s", "; ".join(rejected_examples))

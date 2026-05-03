@@ -17,7 +17,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-file", type=str, required=True)
     parser.add_argument("--output-dir", type=str, required=True)
-    parser.add_argument("--max-combinations", type=int, default=3000)
+    parser.add_argument("--max-combinations", type=int, default=4000)
+    parser.add_argument("--max-per-scene", type=int, default=2)
     parser.add_argument("--use-api", action="store_true")
     return parser.parse_args()
 
@@ -44,6 +45,7 @@ def main() -> int:
         output_dir=args.output_dir,
         use_api=args.use_api,
         max_combinations=args.max_combinations,
+        max_per_scene=args.max_per_scene,
     )
     print(f"Intent injection complete: {len(results)} samples")
     return 0

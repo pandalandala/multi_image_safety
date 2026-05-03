@@ -1,0 +1,38 @@
+2026-04-20 05:46:50 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=0,1,2,3,4,5,6,7 gpu_count=8 tensor_parallel_size=8 worker_count=8 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-20 05:46:50 [INFO] __main__: Path 6 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0; GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: Skipping Step 1; completion marker found
+2026-04-20 05:46:50 [INFO] __main__: Raw chains: 1057
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: PATH 6 STEP 2: CLIP chain scoring
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: Skipping Step 2; completion marker found
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: PATH 6 STEP 3: Fusion with Path 1 KG pairs
+2026-04-20 05:46:50 [INFO] __main__: ============================================================
+2026-04-20 05:46:50 [INFO] __main__: Skipping Step 3; completion marker found
+2026-04-20 05:46:50 [INFO] __main__: Fusion pairs: 798
+2026-04-20 05:46:52 [INFO] src.path1_kg_concept.pair_filter: Retrieval-friendly filter: kept 468 / 798 pairs (max_query_words=3, rewritten=0)
+2026-04-20 05:46:52 [INFO] src.path1_kg_concept.pair_filter: Sample retrieval-filter rejects: 'coffee shop' + 'session hijacking' (bad concept2 query='session hijacking'); 'home renovation' + 'counterfeit fabric' (bad concept1 query='home renovation'); 'public transit app' + 'digital segregation' (bad concept2 query='digital segregation'); 'lottery ticket' + 'state gaming commission' (bad concept2 query='state gaming commission'); 'library card' + 'contraband list' (bad concept2 query='contraband list'); 'fishing trip' + 'collision' (bad concept2 query='collision'); 'home renovation' + 'theft ring' (bad concept1 query='home renovation'); 'family road trip' + 'state gaming commission' (bad concept2 query='state gaming commission')
+2026-04-20 05:46:52 [INFO] __main__: Retrieval-friendly fusion pairs: 468
+2026-04-20 05:46:52 [INFO] __main__: ============================================================
+2026-04-20 05:46:52 [INFO] __main__: PATH 6 STEP 4: Image acquisition (local -> web -> T2I fallback)
+2026-04-20 05:46:52 [INFO] __main__: ============================================================
+2026-04-20 05:46:52 [INFO] __main__: Skipping Step 4; completion marker found: 429 pairs
+2026-04-20 05:46:52 [INFO] __main__: Pairs with images: 429
+2026-04-20 05:46:52 [INFO] __main__: ============================================================
+2026-04-20 05:46:52 [INFO] __main__: PATH 6 STEP 5: LLM prompt generation + MTC scoring (vLLM)
+2026-04-20 05:46:52 [INFO] __main__: ============================================================
+2026-04-20 05:46:52 [INFO] __main__: Skipping Step 5; completion marker found
+
+================================================================================
+PATH 6 COMPLETE: 384 samples
+  Raw chains: 1057
+  Scored chains: 800
+  Fusion pairs: 468
+  With images: 429
+  Final samples: 384
+  Output: /mnt/hdd/xuran/multi_image_safety/data/raw/path6/validated_samples.jsonl
+================================================================================

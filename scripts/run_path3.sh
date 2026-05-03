@@ -20,11 +20,24 @@ export MIS_PATH3_MAX_MODEL_LEN="${MIS_PATH3_MAX_MODEL_LEN:-4096}"
 export MIS_PATH3_GPU_MEMORY_UTILIZATION="${MIS_PATH3_GPU_MEMORY_UTILIZATION:-0.68}"
 export PYTHONPATH="$PROJECT_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
-echo "Running Path 3: expansion (Method A text-only + Method B with images)"
+# ── 是否清除 step 完成标记，重新增量运行 ──────────────────────────────────────
+# 修改这里：1 = 清除标记（增量重跑所有步骤），0 = 跳过已完成步骤
+CLEAN=1
+
+# 也可以在命令行传 --clean 覆盖此设置
+for arg in "$@"; do
+  [[ "$arg" == "--clean" ]] && CLEAN=1
+done
+
+echo "Running Path 3: expansion (Method A + Method B + Step4 T2I)"
+echo "CLEAN=${CLEAN}  (1=re-run all steps incrementally, 0=skip completed steps)"
 echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-<not set>}"
 echo "MIS_GPU_CANDIDATES: ${MIS_GPU_CANDIDATES:-<not set>}"
 echo "PEXELS_API_KEY: ${PEXELS_API_KEY:+<set>}"
 echo "PIXABAY_API_KEY: ${PIXABAY_API_KEY:+<set>}"
 echo "Log file: ${LOG_FILE}"
 
-python -m src.pipeline.run_path 3 "$@" 2>&1 | tee "$LOG_FILE"
+clean_flag=()
+[[ "$CLEAN" == "1" ]] && clean_flag=("--clean")
+
+python "$PROJECT_ROOT/run_path3.py" "${clean_flag[@]}" 2>&1 | tee "$LOG_FILE"

@@ -57,7 +57,7 @@ if "--clean" in sys.argv:
     clear_all_step_states(OUTPUT_DIR)
     sys.argv.remove("--clean")
 
-MAX_PATH5_CANDIDATE_PAIRS = 10000
+MAX_PATH5_CANDIDATE_PAIRS = int(os.environ.get("MIS_PATH5_MAX_CANDIDATE_PAIRS", "40000"))
 force_rerun = env_flag_is_true("MIS_FORCE_RERUN_COMPLETED_STEPS")
 
 
@@ -152,14 +152,16 @@ if not step1_done:
         cleanup_paths=[crawled_file, OUTPUT_DIR / "_t2i_generated.jsonl"],
     )
 
-MIN_IMAGES_FOR_PATH5 = 300
+MIN_IMAGES_FOR_PATH5 = int(os.environ.get("MIS_PATH5_MIN_IMAGES", "1800"))
+PATH5_MAX_IMAGES_PER_CATEGORY = int(os.environ.get("MIS_PATH5_MAX_IMAGES_PER_CATEGORY", "1200"))
+PATH5_T2I_MAX_PER_CATEGORY = int(os.environ.get("MIS_PATH5_T2I_MAX_PER_CATEGORY", "180"))
 
 # Step A: Try crawl if enabled and no images yet
 if not crawled and laion_enabled:
     logger.info("External retrieval enabled — crawling configured image backends")
     from src.path5_embedding_pair.crawl_images import run as run_crawl
     crawled = _normalize_crawled_infos(
-        run_crawl(output_dir=OUTPUT_DIR, max_per_category=500)
+        run_crawl(output_dir=OUTPUT_DIR, max_per_category=PATH5_MAX_IMAGES_PER_CATEGORY)
     )
     if crawled:
         save_jsonl(crawled, crawled_file)
@@ -198,7 +200,7 @@ from src.common.utils import setup_logging, save_jsonl
 from src.path3_dataset_expand.expand import generate_images_from_queries
 setup_logging()
 
-paths, sources, infos = generate_images_from_queries('{OUTPUT_DIR}', max_per_category=80)
+paths, sources, infos = generate_images_from_queries('{OUTPUT_DIR}', max_per_category={PATH5_T2I_MAX_PER_CATEGORY})
 save_jsonl(infos, '{t2i_output_file}')
 print(f'T2I generated {{len(infos)}} images')
 """

@@ -1,0 +1,31 @@
+Running selected paths sequentially
+Selected paths: path1 path3 path5 path6
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+MIS_GPU_CANDIDATES: <not set>
+Master log: /mnt/hdd/xuran/multi_image_safety/logs/run_all_20260422_173809.log
+
+============================================================
+[2026-04-22 17:38:09] Starting path1
+Script: /mnt/hdd/xuran/multi_image_safety/scripts/run_path1.sh
+============================================================
+Running Path 1: KG Concept Pair Mining
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+MIS_GPU_CANDIDATES: <not set>
+MIS_PATH1_ALLOW_IMAGE_GENERATION: 1
+MIS_RETRIEVAL_MAX_QUERY_WORDS: 2
+MIS_LOCAL_SEARCH_MODE: fast
+MIS_LOCAL_SEARCH_EARLY_STOP_AT: 4
+MIS_SINGLE_IMAGE_LOCAL_CANDIDATES: 4
+MIS_RECAP_QUERY_LIMIT: 24
+MIS_RETRIEVAL_WORKERS_PER_GPU: 8
+MIS_PATH5_CRAWL_WORKERS: 12
+PEXELS_API_KEY: <set>
+PIXABAY_API_KEY: <set>
+Log file: /mnt/hdd/xuran/multi_image_safety/logs/path1_20260422_173809.log
+2026-04-22 17:38:09 [INFO] __main__: Path 1 LLM GPU runtime: selected_gpus=0,1,2,3 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-22 17:38:09 [INFO] __main__: Path 1 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0
+2026-04-22 17:38:09 [INFO] __main__: ============================================================
+2026-04-22 17:38:09 [INFO] __main__: PATH 1 STEP 1a: Numberbatch concept pair mining
+2026-04-22 17:38:09 [INFO] __main__: ============================================================
+2026-04-22 17:38:09 [INFO] src.path1_kg_concept.concept_mine: Numberbatch already cached at /mnt/hdd/xuran/cache/conceptnet/numberbatch-en-19.08.txt.gz
+2026-04-22 17:38:09 [INFO] src.path1_kg_concept.concept_mine: Loading Numberbatch embeddings ...

@@ -1,0 +1,50 @@
+/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/open_clip/factory.py:388: UserWarning: These pretrained weights were trained with QuickGELU activation but the model config does not have that enabled. Consider using a model config with a "-quickgelu" suffix or enable with a flag.
+  warnings.warn(
+Loading pipeline components...:   0%|          | 0/9 [00:00<?, ?it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][A
+Loading checkpoint shards:  50%|█████     | 1/2 [00:06<00:06,  6.72s/it][A
+Loading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.37s/it][ALoading checkpoint shards: 100%|██████████| 2/2 [00:12<00:00,  6.42s/it]
+Loading pipeline components...:  11%|█         | 1/9 [00:12<01:43, 12.89s/it]Loading pipeline components...:  33%|███▎      | 3/9 [00:13<00:20,  3.39s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s][ALoading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 22.47it/s]
+Loading pipeline components...:  56%|█████▌    | 5/9 [00:15<00:08,  2.18s/it]You set `add_prefix_space`. The tokenizer needs to be converted from the slow tokenizers
+Loading pipeline components...:  78%|███████▊  | 7/9 [00:15<00:02,  1.31s/it]Loading pipeline components...:  89%|████████▉ | 8/9 [00:15<00:01,  1.09s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:17<00:00,  1.29s/it]Loading pipeline components...: 100%|██████████| 9/9 [00:17<00:00,  1.95s/it]
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/image_fetch.py", line 113, in fetch_images_for_samples
+    success1, acquisition1 = acquire_single_image(
+                             ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path2_prompt_decompose/acquire_images.py", line 156, in acquire_single_image
+    if generate_image(description, output_path):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/image_generation.py", line 267, in generate_image
+    pipe = get_t2i_pipeline(backend_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/image_generation.py", line 210, in get_t2i_pipeline
+    return _build_pipeline(backend_name, backend_cfg, root_cfg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/image_generation.py", line 163, in _build_pipeline
+    pipe = pipe.to(device)
+           ^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/diffusers/pipelines/pipeline_utils.py", line 565, in to
+    module.to(device, dtype)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/transformers/modeling_utils.py", line 4343, in to
+    return super().to(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1381, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 933, in _apply
+    module._apply(fn)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 933, in _apply
+    module._apply(fn)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 933, in _apply
+    module._apply(fn)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 964, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1367, in convert
+    return t.to(
+           ^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/torch/cuda/__init__.py", line 424, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: No CUDA GPUs are available

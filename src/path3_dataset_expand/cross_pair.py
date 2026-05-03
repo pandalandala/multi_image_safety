@@ -9,6 +9,7 @@ find harm in vector-added image pairs.
 
 import json
 import logging
+import os
 import random
 from itertools import combinations
 from pathlib import Path
@@ -81,6 +82,15 @@ def get_image_semantic_label(info: dict) -> str:
         or str(info.get("description", "")).strip()
         or str(info.get("caption", "")).strip()
         or str(info.get("query", "")).strip()
+    )
+
+
+def get_image_source(info: dict) -> str:
+    """Return the normalized data source/provider for an image."""
+    return (
+        str(info.get("dataset", "")).strip()
+        or str(info.get("provider", "")).strip()
+        or "unknown"
     )
 
 
@@ -171,6 +181,12 @@ def generate_candidate_pairs(
 
     Returns list of dicts with keys: info1, info2, pairing_mode
     """
+    max_intra_per_cat = int(os.environ.get("MIS_PATH5_MAX_INTRA_PER_CATEGORY", str(max_intra_per_cat)))
+    max_cross_per_combo = int(os.environ.get("MIS_PATH5_MAX_CROSS_PER_COMBO", str(max_cross_per_combo)))
+    max_cross_source_per_cat = int(os.environ.get("MIS_PATH5_MAX_CROSS_SOURCE_PER_CATEGORY", "1200"))
+    max_uncategorized_mix = int(os.environ.get("MIS_PATH5_MAX_UNCATEGORIZED_MIX", "1800"))
+    max_total = int(os.environ.get("MIS_PATH5_MAX_CANDIDATE_PAIRS", str(max_total)))
+
     # Filter to images with at least one semantic handle: class or description.
     semantic_ready = [i for i in image_infos if get_image_semantic_label(i)]
     logger.info(f"Images with class/description: {len(semantic_ready)}/{len(image_infos)}")
@@ -199,6 +215,20 @@ def generate_candidate_pairs(
         logger.info(f"Uncategorized images: {len(no_category)}")
 
     pairs = []
+    pair_signatures = set()
+
+    def _append_pair(info1: dict, info2: dict, pairing_mode: str, category_hint: str) -> bool:
+        signature = pair_signature(info1, info2)
+        if signature[0] == signature[1] or signature in pair_signatures:
+            return False
+        pair_signatures.add(signature)
+        pairs.append({
+            "info1": info1,
+            "info2": info2,
+            "pairing_mode": pairing_mode,
+            "category_hint": category_hint,
+        })
+        return True
 
     # 1. Intra-category pairing
     for cat, infos in by_category.items():
@@ -206,14 +236,33 @@ def generate_candidate_pairs(
             continue
         sampled = sample_intra_category_indices(len(infos), max_intra_per_cat)
         for i, j in sampled:
-            pairs.append({
-                "info1": infos[i],
-                "info2": infos[j],
-                "pairing_mode": "intra_category",
-                "category_hint": cat,
-            })
+            _append_pair(infos[i], infos[j], "intra_category", cat)
 
     logger.info(f"Intra-category pairs: {len(pairs)}")
+
+    # 1b. Within-category cross-source pairing to encourage dataset diversity.
+    cross_source_count = 0
+    for cat, infos in by_category.items():
+        by_source: dict[str, list[dict]] = {}
+        for info in infos:
+            by_source.setdefault(get_image_source(info), []).append(info)
+        sources = [source for source, items in by_source.items() if items]
+        if len(sources) < 2:
+            continue
+        per_combo_cap = max(1, max_cross_source_per_cat // max(1, len(sources) * (len(sources) - 1) // 2))
+        for i, source_a in enumerate(sources):
+            for source_b in sources[i + 1:]:
+                sampled = sample_cross_category_indices(by_source[source_a], by_source[source_b], per_combo_cap)
+                for idx_a, idx_b in sampled:
+                    if _append_pair(
+                        by_source[source_a][idx_a],
+                        by_source[source_b][idx_b],
+                        "intra_category_cross_source",
+                        cat,
+                    ):
+                        cross_source_count += 1
+
+    logger.info(f"Intra-category cross-source pairs: {cross_source_count}")
 
     # 2. Cross-category pairing (complementary categories)
     cross_count = 0
@@ -224,13 +273,8 @@ def generate_candidate_pairs(
             continue
         sampled = sample_cross_category_indices(infos_a, infos_b, max_cross_per_combo)
         for i, j in sampled:
-            pairs.append({
-                "info1": infos_a[i],
-                "info2": infos_b[j],
-                "pairing_mode": "cross_category",
-                "category_hint": f"{cat_a}+{cat_b}",
-            })
-            cross_count += 1
+            if _append_pair(infos_a[i], infos_b[j], "cross_category", f"{cat_a}+{cat_b}"):
+                cross_count += 1
 
     logger.info(f"Cross-category pairs: {cross_count}")
 
@@ -238,17 +282,12 @@ def generate_candidate_pairs(
     uncat_count = 0
     if no_category and by_category:
         all_categorized = [info for infos in by_category.values() for info in infos]
-        n = min(500, len(no_category) * 2)
+        n = min(max_uncategorized_mix, len(no_category) * 3)
         for _ in range(n):
             a = random.choice(no_category)
             b = random.choice(all_categorized)
-            pairs.append({
-                "info1": a,
-                "info2": b,
-                "pairing_mode": "uncategorized_mix",
-                "category_hint": b.get("category", ""),
-            })
-            uncat_count += 1
+            if _append_pair(a, b, "uncategorized_mix", b.get("category", "")):
+                uncat_count += 1
 
     logger.info(f"Uncategorized-mix pairs: {uncat_count}")
 
@@ -257,7 +296,17 @@ def generate_candidate_pairs(
     if len(pairs) > max_total:
         pairs = pairs[:max_total]
 
-    logger.info(f"Total candidate pairs: {len(pairs)}")
+    source_pair_counts: dict[str, int] = {}
+    for pair in pairs:
+        left = get_image_source(pair["info1"])
+        right = get_image_source(pair["info2"])
+        key = " x ".join(sorted((left, right)))
+        source_pair_counts[key] = source_pair_counts.get(key, 0) + 1
+    logger.info(
+        "Total candidate pairs: %d source_mix=%s",
+        len(pairs),
+        ", ".join(f"{k}:{v}" for k, v in sorted(source_pair_counts.items())),
+    )
     return pairs
 
 
@@ -269,6 +318,8 @@ def prepare_cross_pair_prompts(pairs: list[dict]) -> list[str]:
         cls2 = pair["info2"].get("class_label", "") or pair["info2"].get("class", "")
         desc1 = pair["info1"].get("description", "")
         desc2 = pair["info2"].get("description", "")
+        src1 = get_image_source(pair["info1"])
+        src2 = get_image_source(pair["info2"])
         cat_hint = pair.get("category_hint", "")
 
         sem1 = cls1 or desc1
@@ -286,8 +337,10 @@ def prepare_cross_pair_prompts(pairs: list[dict]) -> list[str]:
 
         user_prompt = f"""Image 1 class: {cls1 or "unknown"}
 Image 1 description: {desc1 or "n/a"}
+Image 1 dataset: {src1}
 Image 2 class: {cls2 or "unknown"}
 Image 2 description: {desc2 or "n/a"}
+Image 2 dataset: {src2}
 Category hint: {cat_hint}
 
 Determine if these two images could form a harmful combination. Each image should be individually benign, but together they should imply a harmful scenario."""

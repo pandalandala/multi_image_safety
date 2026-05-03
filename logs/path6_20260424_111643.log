@@ -1,0 +1,24 @@
+2026-04-24 11:16:43 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=0,1,2,3,4,5,6,7 gpu_count=8 tensor_parallel_size=8 worker_count=8 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-24 11:16:43 [INFO] __main__: Path 6 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0; GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=45.4/48.0GiB util=1% procs=1
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 1; reusing existing Step 3 fusion checkpoint for resume
+2026-04-24 11:16:43 [INFO] __main__: Raw chains: 0
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 6 STEP 2: CLIP chain scoring
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 2; reusing existing Step 3 fusion checkpoint for resume
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 6 STEP 3: Fusion with Path 1 KG pairs
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 3; completion marker found
+2026-04-24 11:16:43 [INFO] __main__: Fusion pairs: 1787
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/multi_image_safety/run_path6.py", line 341, in <module>
+    from src.path1_kg_concept.pair_filter import filter_pairs_for_retrieval
+  File "/mnt/hdd/xuran/multi_image_safety/src/path1_kg_concept/pair_filter.py", line 15, in <module>
+    from src.common.clip_utils import encode_text, cosine_similarity
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/clip_utils.py", line 15, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'

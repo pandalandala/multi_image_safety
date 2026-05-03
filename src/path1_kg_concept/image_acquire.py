@@ -47,6 +47,16 @@ def _get_retrieval_worker_count() -> int:
     return max(2, min(8, cpu_count // 4 if cpu_count >= 8 else 2))
 
 
+def _get_local_candidate_limit(num_results: int) -> int:
+    env_value = os.environ.get("MIS_SINGLE_IMAGE_LOCAL_CANDIDATES", "").strip()
+    if env_value:
+        try:
+            return max(1, min(num_results, int(env_value)))
+        except ValueError:
+            logger.warning("Invalid MIS_SINGLE_IMAGE_LOCAL_CANDIDATES=%r; falling back to default", env_value)
+    return max(3, min(num_results, get_retrieval_clip_candidate_limit() + 2))
+
+
 def _retrieve_concept_image(
     concept: str,
     output_path: Path,
@@ -76,7 +86,12 @@ def _retrieve_concept_image(
             return "local"
 
     # ── 1. Local datasets ──────────────────────────────────────────
-    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
+    local_results = search_local(
+        concept,
+        num_results=_get_local_candidate_limit(max(num_results, get_retrieval_clip_candidate_limit())),
+        min_width=min_w,
+        min_height=min_h,
+    )
     ranked_local = rank_local_results_by_clip(query, local_results, min_width=min_w, min_height=min_h)
     if ranked_local:
         best_local = ranked_local[0]

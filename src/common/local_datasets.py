@@ -20,6 +20,7 @@ import shutil
 import sqlite3
 import threading
 import time
+import math
 from pathlib import Path
 from typing import Optional
 
@@ -40,10 +41,18 @@ _coco_index: Optional[dict] = None
 _open_images_index: Optional[dict] = None
 _imagenet_index: Optional[dict] = None
 _recap_index_paths: Optional[dict] = None
+_local_query_cache: dict[tuple[str, int, int, int, str], list[dict]] = {}
 _coco_index_lock = threading.Lock()
 _open_images_index_lock = threading.Lock()
 _imagenet_index_lock = threading.Lock()
 _recap_index_paths_lock = threading.Lock()
+
+
+def _env_flag(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if not raw:
+        return default
+    return raw in {"1", "true", "yes", "on"}
 
 
 def _format_elapsed(seconds: float) -> str:
@@ -97,6 +106,116 @@ def _get_local_datasets_config() -> dict:
         return config.get("local_datasets", {})
     except Exception:
         return {}
+
+
+def _tokenize(text: str) -> list[str]:
+    return [tok for tok in re.findall(r"\w+", str(text or "").lower()) if tok]
+
+
+def _get_local_search_target(dataset_name: str, requested: int) -> int:
+    env_specific = os.environ.get(f"MIS_LOCAL_SEARCH_TARGET_{dataset_name.upper()}", "").strip()
+    env_global = os.environ.get("MIS_LOCAL_SEARCH_TARGET_CANDIDATES", "").strip()
+    for raw in (env_specific, env_global):
+        if raw:
+            try:
+                return max(1, min(requested, int(raw)))
+            except ValueError:
+                logger.warning("Invalid local search target %r for %s", raw, dataset_name)
+    return max(1, requested)
+
+
+def _get_recap_limit(num_results: int) -> int:
+    env_value = os.environ.get("MIS_RECAP_QUERY_LIMIT", "").strip()
+    if env_value:
+        try:
+            return max(num_results, int(env_value))
+        except ValueError:
+            logger.warning("Invalid MIS_RECAP_QUERY_LIMIT=%r; falling back to default", env_value)
+    return max(20, num_results * 6)
+
+
+def _get_local_source_mix_enabled() -> bool:
+    return _env_flag("MIS_LOCAL_SOURCE_MIX", default=False)
+
+
+def _get_local_source_soft_cap(num_results: int, active_sources: int) -> int:
+    env_value = os.environ.get("MIS_LOCAL_SEARCH_SOFT_CAP", "").strip()
+    if env_value:
+        try:
+            return max(1, int(env_value))
+        except ValueError:
+            logger.warning("Invalid MIS_LOCAL_SEARCH_SOFT_CAP=%r; falling back to default", env_value)
+    if active_sources <= 0:
+        return max(1, num_results)
+    return max(1, math.ceil(num_results / active_sources))
+
+
+def _merge_source_diverse_results(
+    results_by_source: dict[str, list[dict]],
+    order: list[str],
+    num_results: int,
+) -> list[dict]:
+    """Mix candidates from all local datasets instead of letting one source dominate."""
+    queues = {
+        source: list(results_by_source.get(source, []))
+        for source in order
+        if results_by_source.get(source)
+    }
+    if not queues:
+        return []
+
+    selected: list[dict] = []
+    seen_paths: set[str] = set()
+    active_sources = [source for source in order if source in queues]
+    soft_cap = _get_local_source_soft_cap(num_results, len(active_sources))
+    taken_by_source = {source: 0 for source in active_sources}
+
+    def _take_from_source(source: str) -> bool:
+        queue = queues.get(source, [])
+        while queue:
+            item = queue.pop(0)
+            path = item.get("path", "")
+            if not path or path in seen_paths:
+                continue
+            seen_paths.add(path)
+            selected.append(item)
+            taken_by_source[source] = taken_by_source.get(source, 0) + 1
+            return True
+        return False
+
+    while len(selected) < num_results:
+        progressed = False
+        for source in active_sources:
+            if taken_by_source.get(source, 0) >= soft_cap:
+                continue
+            if _take_from_source(source):
+                progressed = True
+                if len(selected) >= num_results:
+                    break
+        if not progressed:
+            break
+
+    while len(selected) < num_results:
+        progressed = False
+        for source in active_sources:
+            if _take_from_source(source):
+                progressed = True
+                if len(selected) >= num_results:
+                    break
+        if not progressed:
+            break
+
+    if selected:
+        counts: dict[str, int] = {}
+        for item in selected:
+            provider = str(item.get("provider", item.get("dataset", "unknown")))
+            counts[provider] = counts.get(provider, 0) + 1
+        logger.info(
+            "Local search mixed select: total=%d source_breakdown=%s",
+            len(selected),
+            ", ".join(f"{source}:{count}" for source, count in sorted(counts.items())),
+        )
+    return selected
 
 
 def _check_image_size(path: Path, min_width: int, min_height: int) -> tuple[bool, int, int]:
@@ -213,6 +332,7 @@ def _load_coco_index() -> dict:
         )
 
         index: dict[int, dict] = {}
+        token_index: dict[str, set[int]] = {}
         image_start = time.time()
         images = data.get("images", [])
         for i, img in enumerate(images, start=1):
@@ -230,7 +350,10 @@ def _load_coco_index() -> dict:
         for i, ann in enumerate(annotations, start=1):
             img_id = ann["image_id"]
             if img_id in index:
-                index[img_id]["captions"].append(ann["caption"].lower())
+                caption = ann["caption"].lower()
+                index[img_id]["captions"].append(caption)
+                for token in set(_tokenize(caption)):
+                    token_index.setdefault(token, set()).add(img_id)
             _log_progress("MSCOCO caption attach", i, annotation_start, total=len(annotations), every=100000)
         _log_progress(
             "MSCOCO caption attach",
@@ -240,7 +363,7 @@ def _load_coco_index() -> dict:
             force=True,
         )
 
-        _coco_index = index
+        _coco_index = {"images": index, "token_index": token_index}
         logger.info(
             "MSCOCO index loaded: %d images, %d captions total_elapsed=%s",
             len(index),
@@ -260,7 +383,13 @@ def _search_coco(query: str, num_results: int, min_w: int, min_h: int) -> list[d
         return []
 
     scored: list[tuple[float, dict]] = []
-    for meta in index.values():
+    candidate_ids: set[int] = set()
+    for _, query_words in _build_query_variants(query_lower):
+        for token in query_words:
+            candidate_ids.update(index.get("token_index", {}).get(token, set()))
+    candidates = [index["images"][img_id] for img_id in candidate_ids] if candidate_ids else list(index["images"].values())
+
+    for meta in candidates:
         if meta["width"] < min_w or meta["height"] < min_h:
             continue
         best = 0.0
@@ -278,6 +407,7 @@ def _search_coco(query: str, num_results: int, min_w: int, min_h: int) -> list[d
                 "width": meta["width"],
                 "height": meta["height"],
                 "provider": "mscoco",
+                "dataset": "mscoco",
                 "class": _infer_class_label(best_cap, fallback=query_lower),
                 "class_label": _infer_class_label(best_cap, fallback=query_lower),
                 "score": best,
@@ -374,6 +504,7 @@ def _load_open_images_index() -> dict:
         _log_progress("Open Images file scan", processed_files, scan_start, force=True)
 
         index: dict[str, dict] = {}
+        token_index: dict[str, set[str]] = {}
         build_start = time.time()
         image_items = list(image_labels.items())
         for i, (image_id, labels) in enumerate(image_items, start=1):
@@ -381,6 +512,9 @@ def _load_open_images_index() -> dict:
             if not img_path:
                 continue
             index[image_id] = {"path": str(img_path), "labels": labels}
+            for label in labels:
+                for token in set(_tokenize(label)):
+                    token_index.setdefault(token, set()).add(image_id)
             _log_progress(
                 "Open Images index build",
                 i,
@@ -396,7 +530,7 @@ def _load_open_images_index() -> dict:
             force=True,
         )
 
-        _open_images_index = index
+        _open_images_index = {"images": index, "token_index": token_index}
         logger.info(
             "Open Images index loaded: %d images total_elapsed=%s",
             len(index),
@@ -415,7 +549,17 @@ def _search_open_images(query: str, num_results: int, min_w: int, min_h: int) ->
         return []
 
     scored: list[tuple[float, str, str]] = []
-    for image_id, meta in index.items():
+    candidate_ids: set[str] = set()
+    for _, query_words in _build_query_variants(query_lower):
+        for token in query_words:
+            candidate_ids.update(index.get("token_index", {}).get(token, set()))
+    candidate_items = (
+        [(image_id, index["images"][image_id]) for image_id in candidate_ids if image_id in index["images"]]
+        if candidate_ids
+        else list(index["images"].items())
+    )
+
+    for image_id, meta in candidate_items:
         best = 0.0
         best_label = ""
         for label in meta["labels"]:
@@ -445,6 +589,7 @@ def _search_open_images(query: str, num_results: int, min_w: int, min_h: int) ->
             "width": w,
             "height": h,
             "provider": "open_images",
+            "dataset": "open_images",
             "class": _infer_class_label(label, fallback=query_lower),
             "class_label": _infer_class_label(label, fallback=query_lower),
             "score": score,
@@ -567,6 +712,7 @@ def _search_imagenet(query: str, num_results: int, min_w: int, min_h: int) -> li
                 "width": w,
                 "height": h,
                 "provider": "imagenet",
+                "dataset": "imagenet",
                 "class": _infer_class_label(meta["description"], fallback=query_lower),
                 "class_label": _infer_class_label(meta["description"], fallback=query_lower),
                 "score": score,
@@ -801,7 +947,7 @@ def _search_recap_source(
     if not fts_query:
         return []
 
-    limit = max(50, num_results * 20)
+    limit = _get_recap_limit(num_results)
     rows = None
     for attempt in range(2):
         con = sqlite3.connect(paths["index_db"])
@@ -966,6 +1112,21 @@ def search_local(
     if not cfg.get("enabled", False):
         return []
 
+    order = _get_local_search_order()
+    normalized_query = " ".join(str(query).strip().lower().split())
+    cache_policy = "|".join([
+        ",".join(order),
+        os.environ.get("MIS_LOCAL_SEARCH_MODE", "fast").strip().lower(),
+        f"mix={int(_get_local_source_mix_enabled())}",
+        os.environ.get("MIS_LOCAL_SEARCH_EARLY_STOP_AT", "4").strip(),
+        os.environ.get("MIS_LOCAL_SEARCH_TARGET_CANDIDATES", "").strip(),
+        os.environ.get("MIS_RECAP_QUERY_LIMIT", "").strip(),
+    ])
+    cache_key = (normalized_query, int(num_results), int(min_width), int(min_height), cache_policy)
+    cached = _local_query_cache.get(cache_key)
+    if cached is not None:
+        return [dict(item) for item in cached[:num_results]]
+
     searchers = {
         "mscoco": _search_coco_sequential,
         "open_images": _search_open_images_sequential,
@@ -974,13 +1135,57 @@ def search_local(
         "recap_cc12m": _search_recap_cc12m_sequential,
     }
 
+    fast_mode = os.environ.get("MIS_LOCAL_SEARCH_MODE", "fast").strip().lower()
+    mix_sources = _get_local_source_mix_enabled()
+    if mix_sources:
+        results_by_source: dict[str, list[dict]] = {}
+        for dataset_name in order:
+            target = max(num_results, _get_local_search_target(dataset_name, num_results))
+            dataset_start = time.time()
+            logger.info(
+                "Local search: query=%r dataset=%s target=%d mode=mixed current=0/%d",
+                query,
+                dataset_name,
+                target,
+                num_results,
+            )
+            dataset_results = searchers[dataset_name](query, target, min_width, min_height)
+            logger.info(
+                "Local search done: query=%r dataset=%s hits=%d elapsed=%s",
+                query,
+                dataset_name,
+                len(dataset_results),
+                _format_elapsed(time.time() - dataset_start),
+            )
+            results_by_source[dataset_name] = dataset_results
+        mixed_results = _merge_source_diverse_results(results_by_source, order, num_results)
+        _local_query_cache[cache_key] = [dict(item) for item in mixed_results]
+        return mixed_results
+
     ordered_results: list[dict] = []
     seen: set[str] = set()
-    for dataset_name in _get_local_search_order():
+    for dataset_name in order:
         remaining = num_results - len(ordered_results)
         if remaining <= 0:
             break
-        dataset_results = searchers[dataset_name](query, remaining, min_width, min_height)
+        target = _get_local_search_target(dataset_name, remaining)
+        dataset_start = time.time()
+        logger.info(
+            "Local search: query=%r dataset=%s target=%d current=%d/%d",
+            query,
+            dataset_name,
+            target,
+            len(ordered_results),
+            num_results,
+        )
+        dataset_results = searchers[dataset_name](query, target, min_width, min_height)
+        logger.info(
+            "Local search done: query=%r dataset=%s hits=%d elapsed=%s",
+            query,
+            dataset_name,
+            len(dataset_results),
+            _format_elapsed(time.time() - dataset_start),
+        )
         for result in dataset_results:
             path = result["path"]
             if path in seen:
@@ -989,6 +1194,11 @@ def search_local(
             ordered_results.append(result)
             if len(ordered_results) >= num_results:
                 break
+        if fast_mode == "fast" and ordered_results:
+            early_stop_target = min(num_results, max(1, int(os.environ.get("MIS_LOCAL_SEARCH_EARLY_STOP_AT", "4"))))
+            if len(ordered_results) >= early_stop_target:
+                break
+    _local_query_cache[cache_key] = [dict(item) for item in ordered_results]
     return ordered_results
 
 

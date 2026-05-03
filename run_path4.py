@@ -146,7 +146,9 @@ else:
             "--output-dir",
             str(OUTPUT_DIR),
             "--max-combinations",
-            "3000",
+            "4000",
+            "--max-per-scene",
+            "2",
         ],
     )
     if rc != 0:

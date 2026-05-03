@@ -32,6 +32,7 @@ from src.common.utils import (
     fail_step,
     finish_step,
     get_effective_tensor_parallel_size,
+    get_hf_home,
     get_visible_gpu_csv,
     is_step_complete,
     jsonl_record_count,
@@ -42,43 +43,7 @@ from src.common.utils import (
     start_step,
     setup_logging,
 )
-def write_path3_status(
-    output_dir: Path,
-    *,
-    method_a_text_only: int,
-    method_b_with_images: int,
-    merged_total: int,
-    method_a_with_images: int = 0,
-) -> Path:
-    """Write the current active Path 3 status note."""
-    status_path = output_dir / "STATUS.md"
-    lines = [
-        "# Path 3 Status",
-        "",
-        "Canonical flow:",
-        "1. `run_path3.py` builds the active mixed Path 3 output.",
-        "2. Method A is text-only at this stage.",
-        "3. Method B already has real image paths.",
-        "4. `run_path3_step4_images.py` is the optional next step if you want images for Method A too.",
-        "",
-        "Current counts:",
-        f"- Method A text-only: {method_a_text_only}",
-        f"- Method B with images: {method_b_with_images}",
-        f"- Method A with images: {method_a_with_images}",
-        f"- Mixed merged output: {merged_total}",
-        "",
-        "Key files:",
-        "- `method_a_decomposed.jsonl`: Method A text-only samples",
-        "- `method_b_cross_paired.jsonl`: Method B samples with `image1_path` / `image2_path`",
-        "- `method_a_with_images.jsonl`: created only after Method A image acquisition",
-        "- `cross_paired_samples.jsonl`: current merged Path 3 output",
-        "",
-        "Active logs:",
-        "- `logs/p3_expand.log`: canonical Path 3 expansion log",
-        "- `logs/p3_acquire_images.log`: Method A image acquisition log",
-    ]
-    status_path.write_text("\n".join(lines) + "\n")
-    return status_path
+from src.path3_dataset_expand.status import write_path3_status
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -102,9 +67,16 @@ LLM_PROFILE = apply_gpu_runtime_profile(
 )
 log_gpu_runtime_profile(logger, LLM_PROFILE, "Path 3 LLM")
 ALL_GPU_IDS = LLM_PROFILE["selected_gpu_csv"]
+HF_HOME = get_hf_home()
 LLM_MAX_MODEL_LEN = LLM_PROFILE["max_model_len"]
 LLM_GPU_MEMORY_UTILIZATION = LLM_PROFILE["gpu_memory_utilization"]
-LLM_TENSOR_PARALLEL_SIZE = LLM_PROFILE["tensor_parallel_size"]
+LLM_TENSOR_PARALLEL_SIZE = get_effective_tensor_parallel_size(LLM_PROFILE["tensor_parallel_size"])
+if LLM_TENSOR_PARALLEL_SIZE == 3:
+    logger.warning(
+        "Path 3 selected 3 visible GPUs for Qwen/Qwen3.5-27B; forcing tensor_parallel_size=2 "
+        "because 3-way TP is incompatible with this model."
+    )
+    LLM_TENSOR_PARALLEL_SIZE = 2
 
 
 def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) -> bool:
@@ -209,7 +181,7 @@ def _build_worker_env(gpu_ids: str | None = None) -> dict[str, str]:
     """Build a stable subprocess runtime environment for Path 3 workers."""
     env = os.environ.copy()
     env["CUDA_VISIBLE_DEVICES"] = gpu_ids or ALL_GPU_IDS
-    env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+    env["HF_HOME"] = HF_HOME
     env["PYTHONPATH"] = str(PROJ)
     env.setdefault("OMP_NUM_THREADS", "1")
     env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
@@ -469,7 +441,7 @@ def main() -> None:
 
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = ALL_GPU_IDS
-        env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+        env["HF_HOME"] = HF_HOME
         env["PYTHONPATH"] = str(PROJ)
 
         temp_info_file = OUTPUT_DIR / "_t2i_generated_infos.jsonl"
@@ -482,7 +454,7 @@ def main() -> None:
         code = f"""
 import sys, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '{ALL_GPU_IDS}'
-os.environ['HF_HOME'] = '/mnt2/xuran_hdd/cache'
+os.environ['HF_HOME'] = '{HF_HOME}'
 sys.path.insert(0, '{PROJ}')
 from src.common.utils import setup_logging, save_jsonl
 from src.path3_dataset_expand.expand import generate_images_from_queries
@@ -539,23 +511,36 @@ print(f'T2I fallback: {{len(infos)}} images generated')
         metadata={"records": len(all_results)},
     )
 
-    method_a_with_images = len(_load_existing_jsonl(OUTPUT_DIR / "method_a_with_images.jsonl"))
+    # ── Step 4: Method A image acquisition (T2I, parallel per GPU) ──────────────
+    logger.info("=" * 60)
+    logger.info("PATH 3 STEP 4: Method A image acquisition (T2I parallel subprocesses)")
+    logger.info("=" * 60)
+    method_a_with_images_file = OUTPUT_DIR / "method_a_with_images.jsonl"
+    rc_step4 = _run_worker_script("run_path3_step4_images.py", [])
+    if rc_step4 != 0:
+        logger.warning("Step 4 image acquisition failed (exit code %d); continuing", rc_step4)
+
+    method_a_with_images = len(_load_existing_jsonl(method_a_with_images_file))
+    # Re-read merged output (step 4 may have updated it)
+    final_results = _load_existing_jsonl(merged_output)
     status_path = write_path3_status(
         OUTPUT_DIR,
         method_a_text_only=len(method_a_results),
         method_b_with_images=len(method_b_results),
-        merged_total=len(all_results),
+        merged_total=len(final_results),
         method_a_with_images=method_a_with_images,
     )
 
     print("\n" + "=" * 80)
-    print(f"✓ PATH 3 EXPAND COMPLETE: {len(all_results)} samples")
+    if rc_step4 == 0:
+        print(f"✓ PATH 3 COMPLETE: {len(final_results)} samples")
+    else:
+        print(f"! PATH 3 PARTIAL: Step 4 image acquisition failed (exit code {rc_step4})")
     print(f"  Method A text-only:      {len(method_a_results)}")
-    print(f"  Method B with images:    {len(method_b_results)}")
     print(f"  Method A with images:    {method_a_with_images}")
+    print(f"  Method B with images:    {len(method_b_results)}")
     print(f"  Mixed merged output:     {merged_output}")
     print(f"  Status note:             {status_path}")
-    print("  Next step if needed:     python run_path3_step4_images.py")
     print("=" * 80)
 
 

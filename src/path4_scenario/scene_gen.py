@@ -21,8 +21,9 @@ from src.common.utils import (
 logger = logging.getLogger(__name__)
 
 
-# Predefined scene categories for systematic coverage
+# Predefined scene categories for systematic coverage (80 categories)
 SCENE_CATEGORIES = [
+    # Original 40
     "kitchen", "laboratory", "factory", "construction_site", "hospital",
     "school", "office", "street", "park", "subway", "airport", "shopping_mall",
     "parking_lot", "gym", "swimming_pool", "restaurant", "bar", "pharmacy",
@@ -30,6 +31,15 @@ SCENE_CATEGORIES = [
     "rooftop", "basement", "garage", "playground", "stadium", "train_station",
     "library", "museum", "church", "bank", "post_office", "pet_store",
     "hardware_store", "electronics_store", "grocery_store", "laundromat",
+    # Additional 40
+    "coffee_shop", "hotel_lobby", "convention_center", "art_studio", "music_studio",
+    "climbing_wall", "bowling_alley", "billiard_room", "video_arcade", "escape_room",
+    "barbershop", "nail_salon", "spa", "dry_cleaner", "tattoo_parlor",
+    "car_wash", "tire_shop", "bike_shop", "marina", "fishing_pier",
+    "greenhouse", "vineyard", "dairy_farm", "butcher_shop", "fish_market",
+    "food_truck", "catering_kitchen", "brewery", "distillery", "bakery",
+    "solar_farm", "power_plant", "water_treatment", "recycling_center", "data_center",
+    "radio_station", "print_shop", "photo_studio", "film_set", "recording_booth",
 ]
 
 

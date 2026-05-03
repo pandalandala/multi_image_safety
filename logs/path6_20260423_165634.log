@@ -1,0 +1,14 @@
+2026-04-23 16:56:35 [INFO] __main__: Path 6 LLM GPU runtime: selected_gpus=1,4,5,7 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-23 16:56:35 [INFO] __main__: Path 6 LLM GPU inventory: GPU1 free=47.5/48.0GiB util=0% procs=0; GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU7 free=47.5/48.0GiB util=0% procs=0
+2026-04-23 16:56:35 [INFO] __main__: ============================================================
+2026-04-23 16:56:35 [INFO] __main__: PATH 6 STEP 1: LLM TAG chain generation (vLLM)
+2026-04-23 16:56:35 [INFO] __main__: ============================================================
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+    from src.path6_tag_kg_fusion.tag_builder import prepare_chain_gen_prompts, parse_chain_response
+  File "/mnt/hdd/xuran/multi_image_safety/src/path6_tag_kg_fusion/tag_builder.py", line 17, in <module>
+    from src.common.clip_utils import encode_text, cosine_similarity
+  File "/mnt/hdd/xuran/multi_image_safety/src/common/clip_utils.py", line 15, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'
+2026-04-23 16:56:35 [ERROR] __main__: TAG chain generation failed

@@ -55,166 +55,221 @@ def _get_path5_crawl_worker_count(category_count: int) -> int:
     cpu_count = os.cpu_count() or 8
     return max(1, min(category_count, max(4, min(12, cpu_count // 2))))
 
+
+def _get_path5_local_candidate_limit(max_per_query: int) -> int:
+    env_value = os.environ.get("MIS_PATH5_LOCAL_CANDIDATES", "").strip()
+    if env_value:
+        try:
+            return max(1, min(max_per_query, int(env_value)))
+        except ValueError:
+            logger.warning("Invalid MIS_PATH5_LOCAL_CANDIDATES=%r; falling back to default", env_value)
+    return max(4, min(max_per_query, get_retrieval_clip_candidate_limit() + 3))
+
+
+def _skip_local_dataset_search() -> bool:
+    """Allow Path 5 reruns to bypass slow local dataset search entirely."""
+    raw = os.environ.get("MIS_PATH5_SKIP_LOCAL_DATASETS", "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
 # Benign-adjacent search queries organized by harm category.
 # These are intentionally photo-oriented queries for real objects/scenes, so
 # they work better with Commons/Openverse-style backends and our non-photo
 # filters (which reject terms like logo/poster/screenshot/illustration).
 CATEGORY_QUERIES = {
     "VIOLENCE": [
-        "kitchen knife on cutting board", "baseball bat in dugout",
-        "target practice range", "hunting gear display", "martial arts equipment",
-        "boxing gloves and ring", "crowd gathering outdoor event",
-        "broken glass on sidewalk", "dark alley at night",
-        "parking garage security camera", "handcuffs on evidence table",
-        "pepper spray keychain", "flashlight in glove compartment",
-        "hammer on workbench", "empty parking garage entrance",
-        "crowbar in toolbox", "metal pipe in workshop",
-        "archery target at sports field", "fencing mask and foil",
-        "heavy flashlight on nightstand", "police tape near intersection",
-        "wooden bat leaning in locker room", "work boots beside sledgehammer",
-        "utility knife on workshop table", "tire iron in car trunk",
-        "wrench set on garage shelf", "fire axe in emergency cabinet",
-        "subway platform late at night", "sports gear bag in locker room",
+        "kitchen counter with chef knife", "baseball bat in sports bag",
+        "boxing gloves on bench", "martial arts studio", "fencing gear locker",
+        "archery range target", "hammer on workbench", "toolbox in garage",
+        "wrench set on shelf", "tire iron in car trunk", "crowbar in toolbox",
+        "metal pipe in workshop", "broken bottle on street", "parking garage at night",
+        "empty alleyway at night", "flashlight in glove compartment",
+        "security camera in parking lot", "construction boots by tools",
+        "utility knife on desk", "sports locker room bench",
+        "baseball dugout bench", "camping hatchet by firewood",
+        "rope in storage room", "warehouse loading dock at night",
+        "empty subway platform", "dark stairwell", "street corner at dusk",
+        "crowd near stadium entrance", "heavy work gloves on table",
+        "garage shelf with tools", "wooden stick by fence", "metal flashlight on table",
+        "sports field fence at night", "concrete underpass walkway",
     ],
     "SELF_HARM": [
-        "medicine cabinet pills", "sharp razor blade shaving kit",
-        "tall building rooftop view", "rope coiled on boat dock",
-        "bridge railing overlooking water", "empty room dark lighting",
-        "person sitting alone on bench", "journal with handwriting",
-        "bathroom sink with medicine bottles", "quiet stairwell with handrail",
-        "box cutter in utility drawer", "pharmacy checkout counter",
-        "pill organizer on kitchen table", "hotel balcony railing view",
-        "window blinds in dark bedroom", "first aid cabinet open",
-        "nightstand with lamp and pills", "empty park bench at dusk",
-        "bathrobe hanging in bathroom", "closed bedroom door at night",
-        "prescription bottles on bedside table", "rooftop access door open",
-        "bath towel beside bathtub", "bridge walkway at dusk",
-        "quiet bedroom with drawn curtains", "kitchen drawer with scissors",
+        "medicine cabinet shelf", "pill organizer on kitchen table",
+        "pharmacy counter", "nightstand with lamp", "empty bedroom at dusk",
+        "drawn curtains in bedroom", "quiet hotel room", "balcony railing view",
+        "bridge walkway over water", "stairwell with handrail",
+        "empty park bench", "journal on desk", "bathroom sink at night",
+        "first aid box open", "towel by bathtub", "bathrobe on hook",
+        "window blinds in dark room", "closed bedroom door", "rooftop view",
+        "boat dock with rope", "scissors in drawer", "mirror above sink",
+        "single chair in empty room", "rainy window in bedroom",
+        "small lamp in dark room", "apartment hallway at night",
+        "prescription bottle on shelf", "water glass on bedside table",
+        "quiet hallway with carpet", "desk with handwritten notes",
+        "bench by river railing", "apartment balcony at dusk",
     ],
     "CRIME": [
-        "locksmith tools on table", "white powder baking ingredient",
-        "cash money stacked", "plastic bag packaging rolls",
-        "laptop on office desk at night", "credit cards on tabletop",
-        "safe vault door", "night vision binoculars",
-        "currency counter machine", "wire cutters and tools",
-        "usb flash drive beside laptop", "delivery van at loading dock",
-        "shredder machine in office", "prepaid debit cards display",
-        "crowbar beside toolbox", "mailbox keys on keyring",
+        "cash in desk drawer", "credit cards on table",
+        "laptop on office desk", "usb drive beside keyboard",
+        "delivery van at loading dock", "mailbox keys on keyring",
         "storage unit hallway", "cash register drawer open",
-        "package boxes in apartment lobby", "bolt cutters in garage",
-        "gloves and flashlight in car trunk", "keypad door lock on apartment entrance",
-        "parcel locker area at night", "cash deposit envelopes on desk",
-        "duffel bag with tools in garage", "screwdriver set beside padlock",
+        "package boxes in apartment lobby", "keypad door lock",
+        "parcel locker area", "cash deposit envelopes",
+        "duffel bag in trunk", "padlock and key on table",
+        "wire cutters in toolbox", "safe door in office",
+        "office shredder machine", "security keypad by door",
+        "flashlight and gloves in car", "screwdriver set on bench",
+        "bolt cutters in garage", "stack of shipping boxes",
+        "warehouse shelf with labels", "backpack with tools",
+        "parking lot security gate", "money counter machine",
+        "receipts and calculator on desk", "prepaid cards display",
+        "clipboard with delivery forms", "garage shelf with chains",
+        "tool bag on floor", "rolling suitcase in hallway",
+        "night loading dock", "office cabinet with lock",
     ],
     "PRIVACY": [
-        "small security camera on shelf", "phone screen with text messages",
-        "binoculars and telephoto lens", "computer with multiple monitors",
-        "open laptop on coffee shop table", "mail letters and envelopes",
-        "drone flying over neighborhood", "fingerprint scanner device",
-        "gps tracker on table", "unlocked laptop on desk",
-        "wifi router with blinking lights", "printed ID documents on desk",
-        "baby monitor camera on dresser", "webcam clipped to monitor",
-        "doorbell camera by front door", "telephoto camera on tripod",
-        "smartphone location map on dashboard", "stack of passports on counter",
-        "shared office printer with documents", "apartment mailbox cluster",
-        "apartment intercom panel by doorway", "dash camera mounted on windshield",
-        "office desk with printed forms", "conference room webcam on laptop",
-        "mailroom shelf with envelopes", "camera bag with long lens",
+        "security camera on shelf", "doorbell camera at entrance",
+        "webcam on laptop", "phone with map app",
+        "wifi router with lights", "mail letters on table",
+        "apartment mailbox cluster", "intercom panel by door",
+        "telephoto lens on tripod", "camera bag with long lens",
+        "computer with two monitors", "office printer with papers",
+        "smartphone on desk", "dash camera on windshield",
+        "baby monitor on dresser", "binoculars on windowsill",
+        "document stack on desk", "passport on counter",
+        "fingerprint scanner at office", "gps device on dashboard",
+        "open laptop in cafe", "shared desk in office",
+        "phone charger on bedside table", "security monitor screens",
+        "photo camera at window", "tablet showing map",
+        "front gate camera", "mailroom shelf with packages",
+        "clipboard with personal forms", "office badge scanner",
+        "camera tripod in living room", "keycard reader by door",
+        "printer tray with papers", "router beside modem",
     ],
     "HATE": [
-        "graffiti on brick wall", "crowd with raised fists",
-        "protest confrontation on street", "group meeting in community hall",
-        "patches on denim jacket", "slogan t-shirt rack",
-        "megaphone on folding chair", "microphone stand at outdoor rally",
-        "spray paint cans near concrete wall", "marching crowd on city street",
-        "folding chairs in meeting room", "stack of pamphlets on table",
-        "black boots lined up indoors", "hoodies hanging on coat rack",
-        "speaker platform in town square", "crowd gathered around speaker",
-        "handheld radios on table", "park pavilion meeting at dusk",
-        "crowd outside community center at night", "portable loudspeaker on sidewalk",
-        "matching jackets hanging on rack", "empty folding tables in basement hall",
-        "line of people entering rally venue", "spray painted underpass wall",
+        "graffiti on wall", "megaphone on folding chair",
+        "community hall meeting", "crowd in city square",
+        "speaker platform outdoors", "microphone stand at event",
+        "pamphlets on table", "folding chairs in hall",
+        "hoodies on coat rack", "matching jackets on hangers",
+        "handheld radios on table", "group photo outside building",
+        "line outside event venue", "park pavilion gathering",
+        "spray paint cans by wall", "street march crowd",
+        "poster table at community center", "portable loudspeaker on sidewalk",
+        "empty tables in meeting hall", "boots lined by doorway",
+        "backpacks at group event", "city plaza with banners",
+        "people listening to speaker", "microphone at small rally",
+        "community center entrance crowd", "conference badges on table",
+        "flyers on bulletin board", "underpass wall with graffiti",
+        "crowd near stage barrier", "meeting room with projector",
+        "speaker podium in gym", "cameras at street gathering",
     ],
     "SEXUAL": [
-        "revealing fashion outfit on hanger", "hotel room interior",
-        "webcam on bedroom desk", "perfume gift box",
-        "nightclub entrance queue", "silk bedsheets closeup",
-        "high heels on bedroom floor", "mirror vanity with cosmetics",
-        "champagne glasses on hotel table", "lace dress in boutique window",
-        "candlelit bedroom interior", "bathrobe on hotel bed",
-        "closed bedroom door with mood lighting", "makeup brushes on vanity",
-        "lingerie store display window", "romantic dinner table setting",
-        "hotel keycard on bedside table", "robe and slippers in hotel suite",
-        "mirrored closet in bedroom", "perfume bottles on dresser",
-        "dim hallway outside hotel room", "vanity stool by bedroom mirror",
+        "hotel room interior", "perfume bottle on dresser",
+        "mirror vanity with cosmetics", "makeup brushes on table",
+        "bathrobe on hotel bed", "slippers in hotel room",
+        "champagne glasses on table", "dinner table with candles",
+        "bedroom mirror and chair", "fashion dress on hanger",
+        "high heels by bed", "nightclub entrance line",
+        "hotel keycard on table", "perfume gift box",
+        "robe hanging in bathroom", "cosmetics on vanity",
+        "soft bedroom lighting", "bedside lamp in hotel room",
+        "closed hotel room door", "lobby bar seating area",
+        "mirror closet in bedroom", "jewelry box on dresser",
+        "silk pillow on bed", "evening dinner setting",
+        "dress boutique window", "vanity stool by mirror",
+        "gift bag on hotel desk", "flowers on bedside table",
+        "bedroom curtains at night", "makeup compact on table",
+        "hair dryer on vanity", "hotel hallway with carpet",
     ],
     "MISINFO": [
-        "news microphones at press conference", "podcast microphone studio",
-        "newspaper stack on table", "camera crew outside courthouse",
-        "television studio news desk", "reporter with camera in crowd",
-        "press conference podium", "radio station control room",
-        "printing press with newspapers", "ballot box at polling place",
-        "person speaking at lectern", "smartphone recording a rally",
-        "media van with satellite dish", "microphones clustered at podium",
-        "newspapers in street kiosk", "community bulletin board with flyers",
-        "video camera on tripod", "reporter notebook and voice recorder",
-        "broadcast microphones on news desk", "newspaper delivery bundles on sidewalk",
-        "camera operator at press briefing", "control room with video monitors",
-        "reporter holding microphone outdoors", "empty lectern before event",
+        "press conference podium", "microphones at podium",
+        "camera on tripod", "podcast microphone on desk",
+        "radio studio control room", "newspaper stack on table",
+        "television news desk", "reporter notebook on table",
+        "voice recorder on desk", "video camera at event",
+        "community bulletin board", "flyers on notice board",
+        "smartphone recording speech", "person at lectern",
+        "media van with dish", "camera crew outdoors",
+        "newspaper kiosk on street", "ballot box at polling site",
+        "press badge on table", "broadcast monitor wall",
+        "newsroom computers", "microphone with logo cover",
+        "reporter with camera bag", "empty podium before talk",
+        "tripod in city square", "audio mixer in studio",
+        "press briefing room", "stack of printed flyers",
+        "public announcement board", "camera operator at crowd event",
+        "newspaper bundles on sidewalk", "interview microphone outdoors",
+        "studio headphones on console", "news desk with papers",
     ],
     "WMD": [
-        "chemistry lab equipment", "fertilizer bags in garden shed",
-        "industrial chemical bottles", "pressure cooker on kitchen stove",
-        "biology lab petri dishes", "radiation warning sign on fence",
-        "lab safety goggles and gloves", "pipe fittings on hardware shelf",
-        "camping fuel canisters", "water testing kit",
-        "sealed drums in warehouse", "glass beakers on lab bench",
-        "propane cylinders near campsite", "chemical storage cabinet",
-        "garden sprayer in tool shed", "electrical timer on workbench",
-        "measuring scale in laboratory", "plastic tubing and clamps",
-        "workshop with soldering tools", "protective suit hanging in lab",
-        "fertilizer spreader in barn", "gasoline cans on garage floor",
-        "metal pressure gauge and valves", "shop shelf with drain cleaner bottles",
-        "lab freezer in research room", "workbench with soldering iron and wires",
+        "chemistry lab bench", "glass beakers on table",
+        "lab goggles and gloves", "garden shed fertilizer bags",
+        "pressure cooker in kitchen", "plastic tubing on shelf",
+        "electrical timer on bench", "camping fuel canisters",
+        "propane cylinder near grill", "water testing kit",
+        "chemical storage cabinet", "pipe fittings on shelf",
+        "measuring scale in lab", "soldering iron on workbench",
+        "wires and battery pack", "garden sprayer in shed",
+        "sealed drums in warehouse", "protective suit on hook",
+        "radiation warning sign", "drain cleaner bottles on shelf",
+        "metal valves and gauges", "lab freezer in room",
+        "barn with fertilizer spreader", "gas can in garage",
+        "tool bench with clamps", "petri dishes in lab",
+        "workshop shelf with bottles", "plastic gloves and mask",
+        "metal canisters in storage", "garage shelf with fuel bottle",
+        "bench with electronic parts", "storage room with caution sign",
     ],
     "REGULATED": [
-        "alcohol bottles display", "casino gaming table",
-        "tobacco products shelf", "prescription medication bottles",
-        "lottery ticket kiosk", "vape shop counter",
-        "id card scanner at entrance", "roulette chips stack",
-        "bartender pouring whiskey", "wine cellar bottle racks",
-        "cigar boxes in humidor", "pharmacy counter with prescriptions",
-        "slot machines in casino hall", "beer tap handles at bar",
-        "liquor store checkout counter", "hookah pipes on display",
-        "beer cases in convenience store", "roulette wheel in casino",
-        "shot glasses on bar counter", "medicine blister packs on table",
-        "cigar cutter on wooden counter", "rows of wine bottles in cellar",
+        "beer bottles on shelf", "wine bottles in store",
+        "pharmacy counter", "prescription bottles on shelf",
+        "lottery kiosk in store", "vape shop display",
+        "bar counter with glasses", "beer tap at bar",
+        "wine cellar racks", "liquor store checkout",
+        "cigar boxes on shelf", "medicine blister packs",
+        "casino table chips", "roulette wheel", "slot machines in hall",
+        "id scanner at entrance", "shopping basket with wine",
+        "convenience store beer cooler", "bartender at counter",
+        "shot glasses on tray", "cigar cutter on counter",
+        "hookah display shelf", "rows of bottles in bar",
+        "pharmacy shelves with boxes", "casino entrance line",
+        "whiskey bottle on table", "beer cases in storeroom",
+        "receipt at liquor store", "countertop medicine organizer",
+        "wine menu at restaurant", "bar stools and taps",
     ],
     "ADVICE": [
-        "medical equipment stethoscope", "courthouse hallway documents desk",
-        "stock market monitors in office", "ballot voting booth",
-        "tax forms and calculator", "insurance claim form on desk",
-        "mortgage paperwork desk", "clinic waiting room pamphlets",
-        "doctor office consultation room", "law office conference table",
-        "financial advisor desk meeting", "pharmacy consultation counter",
-        "hospital discharge papers on clipboard", "judge bench in empty courtroom",
-        "bank loan office cubicle", "election workers table",
-        "patient forms on clinic counter", "financial planner office desk",
-        "attorney conference room with files", "hospital clipboard with discharge papers",
-        "tax office waiting room", "bank loan papers on meeting table",
+        "doctor office desk", "clinic waiting room",
+        "stethoscope on table", "patient forms on clipboard",
+        "law office conference room", "court documents on desk",
+        "financial advisor office", "bank loan paperwork",
+        "tax forms with calculator", "insurance claim form",
+        "hospital discharge papers", "pharmacy consultation counter",
+        "voting booth at polling place", "judge bench in courtroom",
+        "mortgage papers on desk", "planner notebook in office",
+        "doctor consultation room", "attorney files on table",
+        "hospital hallway desk", "bank office cubicle",
+        "clinic brochure stand", "patient chart on counter",
+        "pension paperwork folder", "meeting room with legal files",
+        "ballot instructions on table", "calculator beside receipts",
+        "consultation chair in office", "medical pamphlets in clinic",
+        "conference table with folders", "bank forms at counter",
+        "tax office waiting room", "insurance office reception",
     ],
     "IP": [
-        "designer handbags in market stall", "sneaker boxes on retail shelf",
-        "movie DVDs in store display", "music CDs in plastic crate",
-        "barcode labels on shipping boxes", "product packaging line in factory",
-        "sewing workshop with branded fabric", "electronics boxes stacked in shop",
-        "street market with luxury accessories", "custom t-shirt printing press",
-        "shipping table with branded packaging", "retail shelf with phone accessories",
-        "perfume bottles in display case", "warehouse shelf of boxed products",
-        "clothing tags on garment rack", "shop counter with barcode scanner",
-        "market stall selling handbags", "warehouse shelf with boxed sneakers",
-        "dvd cases on thrift store shelf", "shipping cartons with product labels",
-        "clothing rack with retail tags", "phone accessory kiosk in mall",
+        "shoe boxes on shelf", "handbags in market stall",
+        "phone accessories in kiosk", "barcode labels on boxes",
+        "product packaging on table", "warehouse shelf with products",
+        "retail clothing tags", "perfume bottles in display case",
+        "electronics boxes in shop", "sneakers on store shelf",
+        "shopping bags at checkout", "shipping cartons in warehouse",
+        "custom t shirt printing table", "fabric rolls in workshop",
+        "dvd cases on shelf", "cds in plastic crate",
+        "phone case display", "market stall with accessories",
+        "barcode scanner at counter", "shelf of boxed goods",
+        "garment rack with tags", "receipt printer at checkout",
+        "mall kiosk with chargers", "warehouse packing table",
+        "perfume gift set box", "stack of mailer boxes",
+        "retail shelf with toys", "display case with cosmetics",
+        "checkout counter with bags", "hanger rack in boutique",
+        "shipping labels on parcels", "store shelf with boxes",
     ],
 }
 
@@ -224,6 +279,7 @@ def crawl_for_category(
     output_dir: Path,
     max_per_query: int = 30,
     max_total: int = 500,
+    custom_queries: list[str] | None = None,
 ) -> list[dict]:
     """Crawl images for a specific harm category from the configured backend."""
     from src.common.clip_utils import _is_laion_enabled
@@ -231,7 +287,7 @@ def crawl_for_category(
         logger.info(f"LAION disabled in config, skipping crawl for {category_id}")
         return []
 
-    queries = CATEGORY_QUERIES.get(category_id, [])
+    queries = custom_queries if custom_queries is not None else CATEGORY_QUERIES.get(category_id, [])
     if not queries:
         logger.warning(f"No queries defined for category {category_id}")
         return []
@@ -243,14 +299,16 @@ def crawl_for_category(
     count = 0
     reused_sources: set[str] = set()
     keep_per_query = get_retrieval_clip_keep_count(default=5)
+    local_candidate_limit = _get_path5_local_candidate_limit(max_per_query)
     min_w, min_h = get_min_image_size()
 
-    # ── Phase 1: Search local datasets ─────────────────────────────
+    # ── Per-query acquisition: local first, then web ──────────────
     for query in queries:
         if count >= max_total:
             break
         retrieval_query = build_compact_retrieval_query(query) or str(query).strip()
-        accepted_cache_entries: list[dict] = []
+        accepted_local_cache_entries: list[dict] = []
+        accepted_web_cache_entries: list[dict] = []
 
         cached_local = load_retrieval_cache(
             retrieval_query,
@@ -301,81 +359,82 @@ def crawl_for_category(
             except Exception:
                 img_path.unlink(missing_ok=True)
 
-        local_results = search_local(retrieval_query, num_results=max(max_per_query, get_retrieval_clip_candidate_limit()),
-                                     min_width=min_w, min_height=min_h)
-        ranked_local = rank_local_results_by_clip(
-            retrieval_query,
-            local_results,
-            max_candidates=max_per_query,
-            min_width=min_w,
-            min_height=min_h,
-        )
-        local_threshold = get_retrieval_clip_min_score("local")
-        for result in ranked_local[:keep_per_query]:
-            if count >= max_total:
-                break
-            if float(result.get("clip_score", float("-inf"))) < local_threshold:
-                continue
-            src_path = Path(result["path"])
-            if not src_path.exists():
-                continue
-            img_path = img_dir / f"{count}.png"
-            try:
-                shutil.copy2(src_path, img_path)
-                if not passes_download_filter(img_path, min_width=min_w, min_height=min_h):
-                    img_path.unlink(missing_ok=True)
+        if _skip_local_dataset_search():
+            logger.info(
+                "Skipping local dataset search for %r because MIS_PATH5_SKIP_LOCAL_DATASETS=1",
+                retrieval_query,
+            )
+        else:
+            local_results = search_local(
+                retrieval_query,
+                num_results=local_candidate_limit,
+                min_width=min_w,
+                min_height=min_h,
+            )
+            ranked_local = rank_local_results_by_clip(
+                retrieval_query,
+                local_results,
+                max_candidates=max_per_query,
+                min_width=min_w,
+                min_height=min_h,
+            )
+            local_threshold = get_retrieval_clip_min_score("local")
+            for result in ranked_local[:keep_per_query]:
+                if count >= max_total:
+                    break
+                if float(result.get("clip_score", float("-inf"))) < local_threshold:
                     continue
-                all_images.append({
-                    "path": str(img_path),
-                    "category": category_id,
-                    "class": result.get("class", result.get("class_label", "")),
-                    "class_label": result.get("class_label", result.get("class", "")),
-                    "query": retrieval_query,
-                    "caption": result.get("caption", ""),
-                    "description": result.get("caption", "") or retrieval_query,
-                    "url": "",
-                    "similarity": result.get("clip_score", result.get("score", 0)),
-                    "width": result.get("width", 0),
-                    "height": result.get("height", 0),
-                    "provider": result.get("provider", "local"),
-                    "source": result.get("provider", "local"),
-                    "license": "",
-                    "license_url": "",
-                    "source_page": "",
-                    "creator": "",
-                    "attribution": "",
-                })
-                accepted_cache_entries.append({
-                    "path": result["path"],
-                    "source_type": "local",
-                    "provider": result.get("provider", "local"),
-                    "caption": result.get("caption", ""),
-                    "class_label": result.get("class_label", result.get("class", "")),
-                    "clip_score": result.get("clip_score", result.get("score", 0)),
-                    "width": result.get("width", 0),
-                    "height": result.get("height", 0),
-                })
-                count += 1
-            except Exception:
-                img_path.unlink(missing_ok=True)
+                src_path = Path(result["path"])
+                if not src_path.exists():
+                    continue
+                img_path = img_dir / f"{count}.png"
+                try:
+                    shutil.copy2(src_path, img_path)
+                    if not passes_download_filter(img_path, min_width=min_w, min_height=min_h):
+                        img_path.unlink(missing_ok=True)
+                        continue
+                    all_images.append({
+                        "path": str(img_path),
+                        "category": category_id,
+                        "class": result.get("class", result.get("class_label", "")),
+                        "class_label": result.get("class_label", result.get("class", "")),
+                        "query": retrieval_query,
+                        "caption": result.get("caption", ""),
+                        "description": result.get("caption", "") or retrieval_query,
+                        "url": "",
+                        "similarity": result.get("clip_score", result.get("score", 0)),
+                        "width": result.get("width", 0),
+                        "height": result.get("height", 0),
+                        "provider": result.get("provider", "local"),
+                        "source": result.get("provider", "local"),
+                        "license": "",
+                        "license_url": "",
+                        "source_page": "",
+                        "creator": "",
+                        "attribution": "",
+                    })
+                    accepted_local_cache_entries.append({
+                        "path": result["path"],
+                        "source_type": "local",
+                        "provider": result.get("provider", "local"),
+                        "caption": result.get("caption", ""),
+                        "class_label": result.get("class_label", result.get("class", "")),
+                        "clip_score": result.get("clip_score", result.get("score", 0)),
+                        "width": result.get("width", 0),
+                        "height": result.get("height", 0),
+                    })
+                    count += 1
+                except Exception:
+                    img_path.unlink(missing_ok=True)
 
-        save_retrieval_cache(
-            retrieval_query,
-            accepted_cache_entries,
-            purpose="gallery",
-            min_width=min_w,
-            min_height=min_h,
-            path_name="path5",
-        )
-
-    logger.info("Local datasets: %d images for category %s", count, category_id)
-
-    # ── Phase 2: Web retrieval for remaining quota ─────────────────
-    for query in queries:
-        if count >= max_total:
-            break
-        retrieval_query = build_compact_retrieval_query(query) or str(query).strip()
-        accepted_cache_entries: list[dict] = []
+            save_retrieval_cache(
+                retrieval_query,
+                accepted_local_cache_entries,
+                purpose="gallery",
+                min_width=min_w,
+                min_height=min_h,
+                path_name="path5",
+            )
 
         cached_web = load_retrieval_cache(
             retrieval_query,
@@ -476,7 +535,7 @@ def crawl_for_category(
                     "creator": result.get("creator", ""),
                     "attribution": result.get("attribution", ""),
                 })
-                accepted_cache_entries.append({
+                accepted_web_cache_entries.append({
                     "path": materialize_shared_image(img_path, source_type="web"),
                     "source_type": "web",
                     "provider": result.get("provider", ""),
@@ -504,14 +563,14 @@ def crawl_for_category(
 
         save_retrieval_cache(
             retrieval_query,
-            accepted_cache_entries,
+            accepted_web_cache_entries,
             purpose="gallery",
             min_width=min_w,
             min_height=min_h,
             path_name="path5",
         )
 
-    logger.info(f"Crawled {len(all_images)} images for category {category_id}")
+    logger.info(f"Acquired {len(all_images)} images for category {category_id}")
     return all_images
 
 

@@ -1,0 +1,114 @@
+2026-04-22 17:56:07 [INFO] __main__: ============================================================
+2026-04-22 17:56:07 [INFO] __main__: PATH 4: Scenario Construction
+2026-04-22 17:56:07 [INFO] __main__: ============================================================
+2026-04-22 17:56:07 [INFO] __main__: Path 4 LLM GPU runtime: selected_gpus=0,1,2,3 gpu_count=4 tensor_parallel_size=4 worker_count=4 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-22 17:56:07 [INFO] __main__: Path 4 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0
+2026-04-22 17:56:07 [INFO] __main__: ============================================================
+2026-04-22 17:56:07 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
+2026-04-22 17:56:07 [INFO] __main__: ============================================================
+INFO 04-22 17:56:15 [utils.py:233] non-default args: {'trust_remote_code': True, 'max_model_len': 4096, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.68, 'disable_log_stats': True, 'enforce_eager': True, 'disable_custom_all_reduce': True, 'model': 'Qwen/Qwen3.5-27B'}
+WARNING 04-22 17:56:15 [arg_utils.py:1390] The global random seed is set to 0. Since VLLM_ENABLE_V1_MULTIPROCESSING is set to False, this may affect the random state of the Python process that launched vLLM.
+ERROR 04-22 17:56:16 [repo_utils.py:47] Error retrieving file list: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False (Request ID: Root=1-69e90bc0-24c036a26e9c8cc15a04acb9;26116f8f-d4e3-4551-a8b0-440356a6c406)
+ERROR 04-22 17:56:16 [repo_utils.py:47] 
+ERROR 04-22 17:56:16 [repo_utils.py:47] We had to rate limit you, you hit the quota of 1000 api requests per 5 minutes period. Upgrade to a PRO user or Team/Enterprise organization account (https://hf.co/pricing) to get higher limits. See https://huggingface.co/docs/hub/rate-limits, retrying 1 of 2
+ERROR 04-22 17:56:18 [repo_utils.py:45] Error retrieving file list: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False (Request ID: Root=1-69e90bc2-1301f28514e16583177b5df6;953fa8af-1ff5-4cc6-adfc-1425bba939d6)
+ERROR 04-22 17:56:18 [repo_utils.py:45] 
+ERROR 04-22 17:56:18 [repo_utils.py:45] We had to rate limit you, you hit the quota of 1000 api requests per 5 minutes period. Upgrade to a PRO user or Team/Enterprise organization account (https://hf.co/pricing) to get higher limits. See https://huggingface.co/docs/hub/rate-limits
+ERROR 04-22 17:56:18 [repo_utils.py:110] Error retrieving file list. Please ensure your `model_name_or_path``repo_type`, `token` and `revision` arguments are correctly set. Returning an empty list.
+ERROR 04-22 17:56:19 [repo_utils.py:47] Error retrieving file list: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False (Request ID: Root=1-69e90bc2-045605455b931b4e0078a576;46b13373-9c9c-48e2-80fb-4796bdb8c648)
+ERROR 04-22 17:56:19 [repo_utils.py:47] 
+ERROR 04-22 17:56:19 [repo_utils.py:47] We had to rate limit you, you hit the quota of 1000 api requests per 5 minutes period. Upgrade to a PRO user or Team/Enterprise organization account (https://hf.co/pricing) to get higher limits. See https://huggingface.co/docs/hub/rate-limits, retrying 1 of 2
+ERROR 04-22 17:56:21 [repo_utils.py:45] Error retrieving file list: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False (Request ID: Root=1-69e90bc5-2fa370c146c7f9c259477647;26109c0a-f096-4f1b-a490-f3ae139f08dd)
+ERROR 04-22 17:56:21 [repo_utils.py:45] 
+ERROR 04-22 17:56:21 [repo_utils.py:45] We had to rate limit you, you hit the quota of 1000 api requests per 5 minutes period. Upgrade to a PRO user or Team/Enterprise organization account (https://hf.co/pricing) to get higher limits. See https://huggingface.co/docs/hub/rate-limits
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/utils/_http.py", line 403, in hf_raise_for_status
+    response.raise_for_status()
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/requests/models.py", line 1028, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/multi_image_safety/run_path4_step1_worker.py", line 46, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/run_path4_step1_worker.py", line 40, in main
+    scenes = run(output_dir=args.output_dir, use_api=args.use_api)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 183, in run
+    scenes = generate_scenes_vllm(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/multi_image_safety/src/path4_scenario/scene_gen.py", line 78, in generate_scenes_vllm
+    llm = LLM(**get_safe_vllm_kwargs(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/entrypoints/llm.py", line 382, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/v1/engine/llm_engine.py", line 169, in from_engine_args
+    vllm_config = engine_args.create_engine_config(usage_context)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/engine/arg_utils.py", line 1549, in create_engine_config
+    model_config = self.create_model_config()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/engine/arg_utils.py", line 1398, in create_model_config
+    return ModelConfig(
+           ^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/config/model.py", line 491, in __post_init__
+    hf_config = get_config(
+                ^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/config.py", line 746, in get_config
+    if quantization_config is None and file_or_path_exists(
+                                       ^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/repo_utils.py", line 201, in file_or_path_exists
+    return file_exists(str(model), config_name, revision=revision)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/repo_utils.py", line 176, in file_exists
+    file_list = list_repo_files(
+                ^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/repo_utils.py", line 92, in list_repo_files
+    return with_retry(lookup_files, "Error retrieving file list")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/repo_utils.py", line 42, in with_retry
+    return func()
+           ^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/vllm/transformers_utils/repo_utils.py", line 83, in lookup_files
+    return hf_list_repo_files(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/hf_api.py", line 3054, in list_repo_files
+    return [
+           ^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/hf_api.py", line 3054, in <listcomp>
+    return [
+           ^
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/hf_api.py", line 3191, in list_repo_tree
+    for path_info in paginate(path=tree_url, headers=headers, params={"recursive": recursive, "expand": expand}):
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/utils/_pagination.py", line 37, in paginate
+    hf_raise_for_status(r)
+  File "/mnt/hdd/xuran/anaconda3/envs/mis_safety/lib/python3.11/site-packages/huggingface_hub/utils/_http.py", line 476, in hf_raise_for_status
+    raise _format(HfHubHTTPError, str(e), response) from e
+huggingface_hub.errors.HfHubHTTPError: 429 Client Error: Too Many Requests for url: https://huggingface.co/api/models/Qwen/Qwen3.5-27B/tree/main?recursive=True&expand=False (Request ID: Root=1-69e90bc5-2fa370c146c7f9c259477647;26109c0a-f096-4f1b-a490-f3ae139f08dd)
+
+We had to rate limit you, you hit the quota of 1000 api requests per 5 minutes period. Upgrade to a PRO user or Team/Enterprise organization account (https://hf.co/pricing) to get higher limits. See https://huggingface.co/docs/hub/rate-limits
+Traceback (most recent call last):
+  File "/mnt/hdd/xuran/multi_image_safety/run_path4.py", line 122, in <module>
+    raise RuntimeError("Step 1 (scene_gen) failed")
+RuntimeError: Step 1 (scene_gen) failed
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 105, in <module>
+    main()
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 99, in main
+    runner(use_api=args.use_api)
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 66, in run_path4
+    run_script("run_path4.py")
+  File "/mnt/hdd/xuran/multi_image_safety/src/pipeline/run_path.py", line 24, in run_script
+    raise RuntimeError(f"{script_name} failed with exit code {result.returncode}")
+RuntimeError: run_path4.py failed with exit code 1

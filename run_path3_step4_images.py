@@ -15,7 +15,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-os.environ["HF_HOME"] = "/mnt2/xuran_hdd/cache"
 sys.path.insert(0, str(Path(__file__).parent))
 
 from src.common.utils import (
@@ -24,6 +23,7 @@ from src.common.utils import (
     env_flag_is_true,
     fail_step,
     finish_step,
+    get_hf_home,
     get_visible_gpu_ids,
     is_step_complete,
     jsonl_record_count,
@@ -38,6 +38,8 @@ from src.path3_dataset_expand.status import write_path3_status
 
 setup_logging()
 logger = logging.getLogger(__name__)
+HF_HOME = get_hf_home()
+os.environ["HF_HOME"] = HF_HOME
 IMAGE_PROFILE = apply_gpu_runtime_profile(
     path_name="path3",
     task_type="image",
@@ -63,6 +65,8 @@ def step_complete(step_name: str, output_file: Path, *, min_records: int = 1) ->
         expected_outputs=[output_file],
         validator=lambda: jsonl_record_count(output_file) >= min_records,
     )
+
+
 def main() -> None:
     """Acquire images for Method A and refresh the merged Path 3 output."""
     if step_complete("step5_method_a_acquire_images", METHOD_A_WITH_IMAGES):
@@ -136,7 +140,7 @@ def main() -> None:
         code = f"""
 import sys, os
 os.environ['CUDA_VISIBLE_DEVICES'] = '{gpu_id}'
-os.environ['HF_HOME'] = '/mnt2/xuran_hdd/cache'
+os.environ['HF_HOME'] = '{HF_HOME}'
 sys.path.insert(0, '{PROJ}')
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -156,7 +160,7 @@ for j, sample in enumerate(samples):
         sample,
         sample_id,
         output_dir,
-        prefer_generation=True,
+        prefer_generation=False,
         force_regenerate={force_regenerate},
     )
     if result:
@@ -170,7 +174,7 @@ print(f'GPU {gpu_id}: DONE — {{len(results)}}/{{len(samples)}} succeeded')
 """
         env = os.environ.copy()
         env["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-        env["HF_HOME"] = "/mnt2/xuran_hdd/cache"
+        env["HF_HOME"] = HF_HOME
         env["PYTHONPATH"] = str(PROJ)
         proc = subprocess.Popen([PYTHON, "-c", code], env=env, cwd=str(PROJ))
         procs.append((proc, chunk_out, gpu_id))

@@ -47,6 +47,22 @@ def _get_retrieval_worker_count() -> int:
     return max(2, min(8, cpu_count // 4 if cpu_count >= 8 else 2))
 
 
+def _skip_local_dataset_search() -> bool:
+    """Allow reruns to bypass slow local dataset search and go straight to web/gen."""
+    raw = os.environ.get("MIS_PATH6_SKIP_LOCAL_DATASETS", "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
+def _get_local_candidate_limit(num_results: int) -> int:
+    env_value = os.environ.get("MIS_SINGLE_IMAGE_LOCAL_CANDIDATES", "").strip()
+    if env_value:
+        try:
+            return max(1, min(num_results, int(env_value)))
+        except ValueError:
+            logger.warning("Invalid MIS_SINGLE_IMAGE_LOCAL_CANDIDATES=%r; falling back to default", env_value)
+    return max(3, min(num_results, get_retrieval_clip_candidate_limit() + 2))
+
+
 def _retrieve_concept_image(
     concept: str,
     output_path: Path,
@@ -75,32 +91,40 @@ def _retrieve_concept_image(
             return "local"
 
     # ── 1. Local datasets ──────────────────────────────────────────
-    local_results = search_local(concept, num_results=max(num_results, get_retrieval_clip_candidate_limit()), min_width=min_w, min_height=min_h)
-    ranked_local = rank_local_results_by_clip(query, local_results, min_width=min_w, min_height=min_h)
-    if ranked_local:
-        best_local = ranked_local[0]
-        best_local_score = float(best_local.get("clip_score", float("-inf")))
-        if should_accept_retrieval_candidate(best_local_score, "local"):
-            if copy_local_image(best_local["path"], output_path):
-                logger.debug("Selected local image for %r with CLIP score %.3f", concept, best_local_score)
-                save_retrieval_cache(
-                    query,
-                    [{
-                        "path": best_local["path"],
-                        "source_type": "local",
-                        "provider": best_local.get("provider", "local"),
-                        "caption": best_local.get("caption", ""),
-                        "class_label": best_local.get("class_label", best_local.get("class", "")),
-                        "clip_score": best_local_score,
-                    }],
-                    purpose="single_image",
-                    min_width=min_w,
-                    min_height=min_h,
-                    path_name="path6",
-                )
-                return "local"
-        else:
-            logger.debug("Best local image for %r scored %.3f, below threshold; continuing to web retrieval", concept, best_local_score)
+    if _skip_local_dataset_search():
+        logger.info("Skipping local dataset search for %r because MIS_PATH6_SKIP_LOCAL_DATASETS=1", concept)
+    else:
+        local_results = search_local(
+            concept,
+            num_results=_get_local_candidate_limit(max(num_results, get_retrieval_clip_candidate_limit())),
+            min_width=min_w,
+            min_height=min_h,
+        )
+        ranked_local = rank_local_results_by_clip(query, local_results, min_width=min_w, min_height=min_h)
+        if ranked_local:
+            best_local = ranked_local[0]
+            best_local_score = float(best_local.get("clip_score", float("-inf")))
+            if should_accept_retrieval_candidate(best_local_score, "local"):
+                if copy_local_image(best_local["path"], output_path):
+                    logger.debug("Selected local image for %r with CLIP score %.3f", concept, best_local_score)
+                    save_retrieval_cache(
+                        query,
+                        [{
+                            "path": best_local["path"],
+                            "source_type": "local",
+                            "provider": best_local.get("provider", "local"),
+                            "caption": best_local.get("caption", ""),
+                            "class_label": best_local.get("class_label", best_local.get("class", "")),
+                            "clip_score": best_local_score,
+                        }],
+                        purpose="single_image",
+                        min_width=min_w,
+                        min_height=min_h,
+                        path_name="path6",
+                    )
+                    return "local"
+            else:
+                logger.debug("Best local image for %r scored %.3f, below threshold; continuing to web retrieval", concept, best_local_score)
 
     cached_web = load_retrieval_cache(
         query,

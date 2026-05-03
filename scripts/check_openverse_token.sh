@@ -6,6 +6,11 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # shellcheck disable=SC1091
 source "${PROJECT_ROOT}/scripts/_load_local_env.sh"
+
+if [[ -f "/mnt/hdd/xuran/anaconda3/bin/activate" ]]; then
+  # shellcheck disable=SC1091
+  source "/mnt/hdd/xuran/anaconda3/bin/activate" mis_safety
+fi
 export PYTHONPATH="${PROJECT_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
 
 QUERY="${1:-dog}"
@@ -26,11 +31,12 @@ import sys
 import urllib.parse
 import urllib.request
 
-from src.common.clip_utils import DEFAULT_HTTP_HEADERS
-
 query = sys.argv[1]
 token = os.environ.get("OPENVERSE_API_TOKEN", "").strip()
-headers = dict(DEFAULT_HTTP_HEADERS)
+headers = {
+    "User-Agent": "multi-image-safety/1.0",
+    "Accept": "application/json",
+}
 if token:
     headers["Authorization"] = f"Bearer {token}"
 

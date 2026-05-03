@@ -1,0 +1,25 @@
+2026-04-24 11:16:42 [INFO] __main__: ============================================================
+2026-04-24 11:16:42 [INFO] __main__: PATH 4: Scenario Construction
+2026-04-24 11:16:42 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Path 4 LLM GPU runtime: selected_gpus=0,1,2,3,4,5,6,7 gpu_count=8 tensor_parallel_size=8 worker_count=8 mode=adaptive fallback_mode=none fallback_reason=none
+2026-04-24 11:16:43 [INFO] __main__: Path 4 LLM GPU inventory: GPU0 free=47.5/48.0GiB util=0% procs=0; GPU1 free=47.5/48.0GiB util=0% procs=0; GPU2 free=47.5/48.0GiB util=0% procs=0; GPU3 free=47.5/48.0GiB util=0% procs=0; GPU4 free=47.5/48.0GiB util=0% procs=0; GPU5 free=47.5/48.0GiB util=0% procs=0; GPU6 free=47.5/48.0GiB util=0% procs=0; GPU7 free=45.4/48.0GiB util=0% procs=1
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 4 STEP 1: LLM scene generation
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 1; completion marker found
+2026-04-24 11:16:43 [INFO] __main__: Scene generation complete → /mnt/hdd/xuran/multi_image_safety/data/raw/path4/generated_scenes.jsonl
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 4 STEP 2: LLM intent injection
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 2; completion marker found
+2026-04-24 11:16:43 [INFO] __main__: Intent injection complete → /mnt/hdd/xuran/multi_image_safety/data/raw/path4/intent_injected_samples.jsonl
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 4 STEP 3: Image fetch (4-GPU parallel subprocesses)
+2026-04-24 11:16:43 [INFO] __main__: ============================================================
+2026-04-24 11:16:43 [INFO] __main__: Skipping Step 3; completion marker found: 720 samples
+
+================================================================================
+✓ PATH 4 COMPLETE: 720 samples with images
+Output: /mnt/hdd/xuran/multi_image_safety/data/raw/path4/samples_with_images.jsonl
+================================================================================
+2026-04-24 11:16:43 [INFO] __main__: PATH 4 complete!
