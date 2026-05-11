@@ -1,4 +1,4 @@
-project:
+xproject:
   name: multi_image_safety
   root: /mnt/hdd/xuran/multi_image_safety
   target_samples: 10000
@@ -12,7 +12,7 @@ llm:
     max_model_len: 4096
     temperature: 0.7
     top_p: 0.9
-    max_tokens: 2048
+    max_tokens: 2048 
     gpu_memory_utilization: 0.68
   api:
     provider: openai
